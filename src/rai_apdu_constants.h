@@ -19,11 +19,12 @@
 
 #define RAI_APDU_CONSTANTS_H
 
-#define RAI_CLA 0xE0
+#define RAI_CLA 0xA1
 #define RAI_ADM_CLA 0xD0
 #define RAI_NFCPAYMENT_CLA 0xF0
 
-#define RAI_INS_GET_WALLET_PUBLIC_KEY 0x40
+#define RAI_INS_GET_WALLET_PUBLIC_KEY 0x01
+#define RAI_INS_SIGN_BLOCK 0x02
 #define RAI_INS_GET_FIRMWARE_VERSION 0xC4
 
 #define RAI_SW_INCORRECT_LENGTH 0x6700
@@ -44,10 +45,6 @@
 #define ISO_OFFSET_P2 0x03
 #define ISO_OFFSET_LC 0x04
 #define ISO_OFFSET_CDATA 0x05
-
-#define RAI_2FA_NONE 0x00
-#define RAI_2FA_KEYBOARD 0x01
-#define RAI_2FA_SECURE_SCREEN 0x02
 
 #include "os.h"
 #include "rai_secure_value.h"

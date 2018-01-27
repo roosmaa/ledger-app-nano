@@ -18,7 +18,7 @@ This command returns the public key and the encoded address for the given BIP 32
 
 | *CLA* | *INS*  | *P1*                             | *P2* | *Lc* | *Le* |
 |-------|--------|----------------------------------|------|------|------|
-|   E0  |   40   |  00 : do not display the address |  00  |      |      |
+|   A1  |   01   |  00 : do not display the address |  00  |      |      |
 |       |        |  01 : display the address        |      |      |      |
 
 **Input data**
@@ -53,7 +53,7 @@ This command returns the signature for the provided block.
 
 | *CLA* | *INS*  | *P1*                 | *P2* | *Lc* | *Le* |
 |-------|--------|----------------------|------|------|------|
-|   E0  |   41   |  00 : open block     |  00  |      |      |
+|   A1  |   02   |  00 : open block     |  00  |      |      |
 |       |        |  01 : receive block  |      |      |      |
 |       |        |  02 : send block     |      |      |      |
 |       |        |  03 : change block   |      |      |      |
@@ -134,7 +134,7 @@ This command returns the firmware version of the dongle and additional features 
 
 | *CLA* | *INS*  | *P1* | *P2* | *Lc* | *Le* |
 |-------|--------|------|------|------|------|
-|   E0  |   C4   |  00  |  00  |  00  |  05  |
+|   A1  |   C4   |  00  |  00  |  00  |  05  |
 
 **Input data**
 
