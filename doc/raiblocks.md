@@ -6,7 +6,7 @@ This specification describes the APDU messages interface to communicate with the
 
 ## Wallet usage APDUs
 
-### Get Wallet Public Key
+### Get wallet public key
 
 #### Description
 
@@ -21,24 +21,104 @@ This command returns the public key and the encoded address for the given BIP 32
 |   E0  |   40   |  00 : do not display the address |  00  |      |      |
 |       |        |  01 : display the address        |      |      |      |
 
-**Input data*
+**Input data**
 
-| *Description*                                                                     | *Length*     |
-|-----------------------------------------------------------------------------------|--------------|
-| Number of BIP 32 derivations to perform (max 10)                                  | 1            |
-| First derivation index (big endian)                                               | 4            |
-| ...                                                                               | 4            |
-| Last derivation index (big endian)                                                | 4            |
+| *Description*                                     | *Length*  |
+|---------------------------------------------------|-----------|
+| Number of BIP 32 derivations to perform (max 10)  | 1         |
+| First derivation index (big endian)               | 4         |
+| ...                                               | 4         |
+| Last derivation index (big endian)                | 4         |
 
 **Output data**
 
-| *Description*                                                                     | *Length*     |
-|-----------------------------------------------------------------------------------|--------------|
-| Public Key length                                                                 | 1            |
-| Uncompressed Public Key                                                           | var          |
-| RaiBlocks address length                                                          | 1            |
-| RaiBlocks address                                                                 | var          |
-| BIP32 Chain code                                                                  | 32           |
+| *Description*                                     | *Length*  |
+|---------------------------------------------------|-----------|
+| Public key length                                 | 1         |
+| Public key                                        | var       |
+| Account address length                            | 1         |
+| Account address                                   | var       |
+| BIP32 chain code                                  | 32        |
+
+
+### Sign block
+
+#### Description
+
+This command returns the signature for the provided block.
+
+#### Coding
+
+**Command**
+
+| *CLA* | *INS*  | *P1*                 | *P2* | *Lc* | *Le* |
+|-------|--------|----------------------|------|------|------|
+|   E0  |   41   |  00 : open block     |  00  |      |      |
+|       |        |  01 : receive block  |      |      |      |
+|       |        |  02 : send block     |      |      |      |
+|       |        |  03 : change block   |      |      |      |
+
+
+**Input data (open block)**
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Number of BIP 32 derivations to perform (max 10)   | 1         |
+| First derivation index (big endian)                | 4         |
+| ...                                                | 4         |
+| Last derivation index (big endian)                 | 4         |
+| Representative address length                      | 1         |
+| Representative address                             | var       |
+| Source block hash                                  | 32        |
+
+
+**Input data (receive block)**
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Number of BIP 32 derivations to perform (max 10)   | 1         |
+| First derivation index (big endian)                | 4         |
+| ...                                                | 4         |
+| Last derivation index (big endian)                 | 4         |
+| Previous block hash                                | 32        |
+| Source block hash                                  | 32        |
+
+
+**Input data (send block)**
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Number of BIP 32 derivations to perform (max 10)   | 1         |
+| First derivation index (big endian)                | 4         |
+| ...                                                | 4         |
+| Last derivation index (big endian)                 | 4         |
+| Previous block hash                                | 32        |
+| Source block hash                                  | 32        |
+| Destination address length                         | 1         |
+| Destination address                                | var       |
+| New balance                                        | 16        |
+
+
+**Input data (change block)**
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Number of BIP 32 derivations to perform (max 10)   | 1         |
+| First derivation index (big endian)                | 4         |
+| ...                                                | 4         |
+| Last derivation index (big endian)                 | 4         |
+| Previous block hash                                | 32        |
+| Representative address length                      | 1         |
+| Representative address                             | var       |
+
+
+**Output data**
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Block hash                                         | 32        |
+| Signature                                          | 64        |
+
 
 ## Test and utility APDUs
 
