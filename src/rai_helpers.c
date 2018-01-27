@@ -18,8 +18,17 @@
 #include "rai_internal.h"
 #include "rai_apdu_constants.h"
 #include "ed25519.h"
+#include "blake2b.h"
 
 #define RAI_CURVE CX_CURVE_Ed25519
+
+// Define some binary "literals" for the massive bit manipulation operation
+// when converting public key to account string.
+#define B_11111 31
+#define B_01111 15
+#define B_00111  7
+#define B_00011  3
+#define B_00001  1
 
 uint32_t rai_read_u32(uint8_t *buffer, bool be,
                       bool skipSign) {
@@ -85,4 +94,61 @@ void rai_swap_bytes(uint8_t *target, uint8_t *source,
     for (i = 0; i < size; i++) {
         target[i] = source[size - 1 - i];
     }
+}
+
+void rai_write_account_string(uint8_t *buffer, const uint8_t publicKey[PUBLIC_KEY_LEN]) {
+    uint8_t k, i, c;
+    uint8_t check[5];
+
+    blake2b_ctx hash;
+    blake2b_init(&hash, sizeof(check), NULL, 0);
+    blake2b_update(&hash, publicKey, PUBLIC_KEY_LEN);
+    blake2b_final(&hash, check);
+
+    // Helper macro to create a virtual array of check and publicKey variables
+    #define accountData(x) (uint8_t)( \
+        ((x) < sizeof(check)) ? check[(x)] : \
+        ((x) - sizeof(check) < PUBLIC_KEY_LEN) ? publicKey[PUBLIC_KEY_LEN - 1 - ((x) - sizeof(check))] : \
+        0 \
+    )
+    for (k = 0; k < ACCOUNT_STRING_LEN - 4; k++) {
+        i = (k / 8) * 5;
+        c = 0;
+        switch (k % 8) {
+        case 0:
+            c = accountData(i) & B_11111;
+            break;
+        case 1:
+            c = (accountData(i) >> 5) & B_00111;
+            c |= (accountData(i + 1) & B_00011) << 3;
+            break;
+        case 2:
+            c = (accountData(i + 1) >> 2) & B_11111;
+            break;
+        case 3:
+            c = (accountData(i + 1) >> 7) & B_00001;
+            c |= (accountData(i + 2) & B_01111) << 1;
+            break;
+        case 4:
+            c = (accountData(i + 2) >> 4) & B_01111;
+            c |= (accountData(i + 3) & B_00001) << 4;
+            break;
+        case 5:
+            c = (accountData(i + 3) >> 1) & B_11111;
+            break;
+        case 6:
+            c = (accountData(i + 3) >> 6) & B_00011;
+            c |= (accountData(i + 4) & B_00111) << 2;
+            break;
+        case 7:
+            c = (accountData(i + 4) >> 3) & B_11111;
+            break;
+        }
+        buffer[ACCOUNT_STRING_LEN-1-k] = BASE32_ALPHABET[c];
+    }
+    #undef accountData
+    buffer[0] = 'x';
+    buffer[1] = 'r';
+    buffer[2] = 'b';
+    buffer[3] = '_';
 }

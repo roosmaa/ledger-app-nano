@@ -25,3 +25,10 @@ extern uint8_t const DISPATCHER_CLA[DISPATCHER_APDUS];
 extern uint8_t const DISPATCHER_INS[DISPATCHER_APDUS];
 extern uint8_t const DISPATCHER_DATA_IN[DISPATCHER_APDUS];
 extern apduProcessingFunction const DISPATCHER_FUNCTIONS[DISPATCHER_APDUS];
+
+#define PUBLIC_KEY_LEN 32
+#define PRIVATE_KEY_LEN 32
+
+#define ACCOUNT_STRING_LEN 64
+
+extern uint8_t const BASE32_ALPHABET[32];

@@ -21,8 +21,9 @@
 
 #include "rai_secure_value.h"
 #include "rai_context.h"
+#include "rai_rom_variables.h"
 
-extern uint8_t rai_public_key_D[32];
-extern uint8_t rai_private_key_D[32];
+extern uint8_t rai_public_key_D[PUBLIC_KEY_LEN];
+extern uint8_t rai_private_key_D[PRIVATE_KEY_LEN];
 
 #endif

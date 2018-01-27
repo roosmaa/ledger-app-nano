@@ -37,3 +37,8 @@ apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
     rai_apdu_get_wallet_public_key,
     rai_apdu_get_firmware_version,
 };
+
+uint8_t const BASE32_ALPHABET[32] = {
+    '1', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
+    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q',
+    'r', 's', 't', 'u', 'w', 'x', 'y', 'z' };

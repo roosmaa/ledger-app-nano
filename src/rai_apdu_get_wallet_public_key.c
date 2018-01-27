@@ -82,9 +82,9 @@ uint16_t rai_apdu_get_wallet_public_key() {
     outPtr += 1 + keyLength;
 
     // Encode & output account address
-    addressLength = 0;
+    addressLength = ACCOUNT_STRING_LEN;
     *outPtr = addressLength;
-    // TODO: Encode address
+    rai_write_account_string(outPtr + 1, rai_public_key_D);
     outPtr += 1 + addressLength;
 
     // Output chain code
