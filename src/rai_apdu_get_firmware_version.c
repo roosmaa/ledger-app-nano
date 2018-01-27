@@ -19,7 +19,6 @@
 #include "rai_internal.h"
 #include "rai_apdu_constants.h"
 
-#define FEATURES_COMPRESSED_KEYS 0x01
 #define FEATURES_SELF_SCREEN_BUTTONS 0x02
 #define FEATURES_EXTERNAL_SCREEN_BUTTONS 0x04
 #define FEATURES_NFC 0x08
