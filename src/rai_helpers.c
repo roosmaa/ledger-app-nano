@@ -17,6 +17,7 @@
 
 #include "rai_internal.h"
 #include "rai_apdu_constants.h"
+#include "ed25519.h"
 
 #define RAI_CURVE CX_CURVE_Ed25519
 
@@ -74,7 +75,7 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
                                rai_private_key_D, out_chainCode);
 
     if (derivePublic) {
-        // TODO: Derive public key
+        ed25519_publickey(rai_private_key_D, rai_public_key_D);
     }
 }
 

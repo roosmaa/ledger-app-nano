@@ -61,6 +61,10 @@ DEFINES    += U2F_MAX_MESSAGE_SIZE=200
 DEFINES   += UNUSED\(x\)=\(void\)x
 DEFINES   += APPVERSION=\"$(APPVERSION)\"
 
+# Ed25519 (donna)
+DEFINES   += ED25519_CUSTOMHASH
+DEFINES   += ED25519_CUSTOMRANDOM
+
 ##############
 # Compiler #
 ##############
@@ -81,9 +85,8 @@ LDLIBS   += -lm -lgcc -lc
 include $(BOLOS_SDK)/Makefile.glyphs
 
 ### variables processed by the common makefile.rules of the SDK to grab source files and include dirs
-APP_SOURCE_PATH  += src
+APP_SOURCE_PATH  += src vendor/ed25519-donna vendor/blake2
 SDK_SOURCE_PATH  += lib_stusb
-
 
 load: all
 	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
