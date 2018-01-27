@@ -17,5 +17,5 @@
 
 #include "rai_public_ram_key_variables.h"
 
-cx_ecfp_public_key_t rai_public_key_D;
-cx_ecfp_private_key_t rai_private_key_D;
+uint8_t rai_public_key_D[32];
+uint8_t rai_private_key_D[32];

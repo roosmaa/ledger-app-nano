@@ -54,33 +54,12 @@ void rai_write_u32_le(uint8_t *buffer, uint32_t value) {
     buffer[3] = ((value >> 24) & 0xff);
 }
 
-void rai_retrieve_keypair_discard(uint8_t *privateComponent,
-                                  bool derivePublic) {
-    BEGIN_TRY {
-        TRY {
-            cx_ecdsa_init_private_key(RAI_CURVE, privateComponent, 32,
-                                      &rai_private_key_D);
-
-            L_DEBUG_BUF(("Using private component\n", privateComponent, 32));
-
-            if (derivePublic) {
-                cx_ecfp_generate_pair(RAI_CURVE, &rai_public_key_D,
-                                      &rai_private_key_D, 1);
-            }
-        }
-        FINALLY {
-        }
-    }
-    END_TRY;
-}
-
 void rai_private_derive_keypair(uint8_t *bip32Path,
                                 bool derivePublic,
                                 uint8_t *out_chainCode) {
     uint8_t bip32PathLength;
     uint8_t i;
     uint32_t bip32PathInt[MAX_BIP32_PATH];
-    uint8_t privateComponent[32];
 
     bip32PathLength = bip32Path[0];
     if (bip32PathLength > MAX_BIP32_PATH) {
@@ -92,9 +71,11 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
         bip32Path += 4;
     }
     os_perso_derive_node_bip32(RAI_CURVE, bip32PathInt, bip32PathLength,
-                               privateComponent, out_chainCode);
-    rai_retrieve_keypair_discard(privateComponent, derivePublic);
-    os_memset(privateComponent, 0, sizeof(privateComponent));
+                               rai_private_key_D, out_chainCode);
+
+    if (derivePublic) {
+        // TODO: Derive public key
+    }
 }
 
 void rai_swap_bytes(uint8_t *target, uint8_t *source,

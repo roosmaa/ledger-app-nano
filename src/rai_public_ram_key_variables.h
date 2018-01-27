@@ -22,8 +22,7 @@
 #include "rai_secure_value.h"
 #include "rai_context.h"
 
-extern cx_ecfp_public_key_t rai_public_key_D;
-
-extern cx_ecfp_private_key_t rai_private_key_D;
+extern uint8_t rai_public_key_D[32];
+extern uint8_t rai_private_key_D[32];
 
 #endif

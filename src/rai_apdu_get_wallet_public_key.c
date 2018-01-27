@@ -38,6 +38,7 @@ void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
 #define P2_UNUSED 0x00
 
 uint16_t rai_apdu_get_wallet_public_key() {
+    uint8_t *outPtr;
     uint8_t keyLength;
     uint8_t addressLength;
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
@@ -71,22 +72,25 @@ uint16_t rai_apdu_get_wallet_public_key() {
 
     rai_private_derive_keypair(keyPath, true, chainCode);
 
+    outPtr = G_io_apdu_buffer;
+
     // Output raw public key
-    keyLength = sizeof(rai_public_key_D.W);
-    G_io_apdu_buffer[0] = keyLength;
-    os_memmove(G_io_apdu_buffer + 1, rai_public_key_D.W,
-               keyLength);
+    keyLength = sizeof(rai_public_key_D);
+    *outPtr = keyLength;
+    os_memmove(outPtr + 1, rai_public_key_D, keyLength);
+    outPtr += 1 + keyLength;
 
     // Encode & output account address
     addressLength = 0;
+    *outPtr = addressLength;
     // TODO: Encode address
-    G_io_apdu_buffer[1 + keyLength] = addressLength;
-    L_DEBUG_APP(("Length %d\n", addressLength));
+    outPtr += 1 + addressLength;
 
     // Output chain code
-    os_memmove(G_io_apdu_buffer + 1 + keyLength + 1 + addressLength, chainCode,
-               sizeof(chainCode));
-    rai_context_D.outLength = 1 + keyLength + 1 + addressLength + sizeof(chainCode);
+    os_memmove(outPtr, chainCode, sizeof(chainCode));
+    outPtr += sizeof(chainCode);
+
+    rai_context_D.outLength = outPtr - G_io_apdu_buffer;
 
     if (display) {
         // TODO: implement display
