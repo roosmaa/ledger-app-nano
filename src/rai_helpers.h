@@ -32,9 +32,6 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
                                 bool derivePublic,
                                 uint8_t *out_chainCode);
 
-void rai_swap_bytes(uint8_t *target, uint8_t *source,
-                    uint8_t size);
-
 void rai_write_account_string(uint8_t *buffer, const uint8_t publicKey[PUBLIC_KEY_LEN]);
 
 #endif

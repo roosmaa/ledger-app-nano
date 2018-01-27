@@ -88,14 +88,6 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
     }
 }
 
-void rai_swap_bytes(uint8_t *target, uint8_t *source,
-                    uint8_t size) {
-    uint8_t i;
-    for (i = 0; i < size; i++) {
-        target[i] = source[size - 1 - i];
-    }
-}
-
 void rai_write_account_string(uint8_t *buffer, const uint8_t publicKey[PUBLIC_KEY_LEN]) {
     uint8_t k, i, c;
     uint8_t check[5];
