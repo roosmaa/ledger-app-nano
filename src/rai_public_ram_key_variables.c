@@ -17,5 +17,5 @@
 
 #include "rai_public_ram_key_variables.h"
 
-uint8_t rai_public_key_D[PUBLIC_KEY_LEN];
-uint8_t rai_private_key_D[PRIVATE_KEY_LEN];
+rai_public_key_t rai_public_key_D;
+rai_private_key_t rai_private_key_D;

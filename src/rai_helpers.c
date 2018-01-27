@@ -88,19 +88,19 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
     }
 }
 
-void rai_write_account_string(uint8_t *buffer, const uint8_t publicKey[PUBLIC_KEY_LEN]) {
+void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey) {
     uint8_t k, i, c;
     uint8_t check[5];
 
     blake2b_ctx hash;
     blake2b_init(&hash, sizeof(check), NULL, 0);
-    blake2b_update(&hash, publicKey, PUBLIC_KEY_LEN);
+    blake2b_update(&hash, publicKey, sizeof(rai_public_key_t));
     blake2b_final(&hash, check);
 
     // Helper macro to create a virtual array of check and publicKey variables
     #define accountData(x) (uint8_t)( \
         ((x) < sizeof(check)) ? check[(x)] : \
-        ((x) - sizeof(check) < PUBLIC_KEY_LEN) ? publicKey[PUBLIC_KEY_LEN - 1 - ((x) - sizeof(check))] : \
+        ((x) - sizeof(check) < sizeof(rai_public_key_t)) ? publicKey[sizeof(rai_public_key_t) - 1 - ((x) - sizeof(check))] : \
         0 \
     )
     for (k = 0; k < ACCOUNT_STRING_LEN - 4; k++) {

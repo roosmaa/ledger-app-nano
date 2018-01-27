@@ -19,6 +19,8 @@
 
 #define RAI_HELPERS_H
 
+#include "rai_types.h"
+
 #define MAX_BIP32_PATH 10
 #define MAX_BIP32_PATH_LENGTH (4 * MAX_BIP32_PATH) + 1
 
@@ -32,6 +34,6 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
                                 bool derivePublic,
                                 uint8_t *out_chainCode);
 
-void rai_write_account_string(uint8_t *buffer, const uint8_t publicKey[PUBLIC_KEY_LEN]);
+void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey);
 
 #endif

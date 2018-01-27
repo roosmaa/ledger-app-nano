@@ -19,6 +19,7 @@
 #define RAI_INTERNAL_H
 
 #include "rai.h"
+#include "rai_types.h"
 #include "rai_public_ram_variables.h"
 #include "rai_public_ram_key_variables.h"
 #include "rai_rom_variables.h"

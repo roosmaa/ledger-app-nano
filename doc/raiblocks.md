@@ -96,7 +96,7 @@ This command returns the signature for the provided block.
 | Source block hash                                  | 32        |
 | Destination address length                         | 1         |
 | Destination address                                | var       |
-| New balance                                        | 16        |
+| New balance (big endian)                           | 16        |
 
 
 **Input data (change block)**
