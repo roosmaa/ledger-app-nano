@@ -71,6 +71,7 @@ uint16_t rai_apdu_get_wallet_public_key() {
     }
 
     rai_private_derive_keypair(keyPath, true, chainCode);
+    os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
 
     outPtr = G_io_apdu_buffer;
 
