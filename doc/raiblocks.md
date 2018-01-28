@@ -18,7 +18,7 @@ This command returns the public key and the encoded address for the given BIP 32
 
 | *CLA* | *INS*  | *P1*                             | *P2*                      | *Lc* | *Le* |
 |-------|--------|----------------------------------|---------------------------|------|------|
-|   A1  |   01   |  00 : do not display the address |  00 : without chain code  |      |      |
+|   A1  |   02   |  00 : do not display the address |  00 : without chain code  |      |      |
 |       |        |  01 : display the address        |  01 : with chain code     |      |      |
 
 **Input data**
@@ -53,7 +53,7 @@ This command returns the signature for the provided block.
 
 | *CLA* | *INS*  | *P1*                 | *P2* | *Lc* | *Le* |
 |-------|--------|----------------------|------|------|------|
-|   A1  |   02   |  00 : open block     |  00  |      |      |
+|   A1  |   03   |  00 : open block     |  00  |      |      |
 |       |        |  01 : receive block  |      |      |      |
 |       |        |  02 : send block     |      |      |      |
 |       |        |  03 : change block   |      |      |      |
