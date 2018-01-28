@@ -29,4 +29,4 @@ extern apduProcessingFunction const DISPATCHER_FUNCTIONS[DISPATCHER_APDUS];
 #define ACCOUNT_STRING_LEN 64
 
 extern uint8_t const BASE32_ALPHABET[32];
-extern uint8_t const BASE32_TABLE[74];
+extern uint8_t const BASE32_TABLE[75];
