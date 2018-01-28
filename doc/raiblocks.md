@@ -118,46 +118,6 @@ This command returns the signature for the provided block.
 | Block hash                                         | 32        |
 | Signature                                          | 64        |
 
-
-## Test and utility APDUs
-
-### Get Firmware Version
-
-#### Description
-
-This command returns the firmware version of the dongle and additional features supported
-
-#### Coding
-
-**Command**
-
-| *CLA* | *INS*  | *P1* | *P2* | *Lc* | *Le* |
-|-------|--------|------|------|------|------|
-|   A1  |   C4   |  00  |  00  |  00  |  05  |
-
-**Input data**
-
-None
-
-**Output data**
-
-| *Description*                                                                        | *Length* |
-|--------------------------------------------------------------------------------------|----------|
-| Features flag                                                                        |    01    |
-|   0x02 : implementation running with screen + buttons handled by the Secure Element  |          |
-|   0x04 : implementation running with screen + buttons handled externally             |          |
-|   0x08 : NFC transport and payment extensions supported                              |          |
-|   0x10 : BLE transport and low power extensions supported                            |          |
-|   0x20 : implementation running on a Trusted Execution Environment                   |          |
-| Architecture                                                                         |    01    |
-| Firmware major version                                                               |    01    |
-| Firmware minor version                                                               |    01    |
-| Firmware patch version                                                               |    01    |
-
-**Availability**
-
-This function is always available.
-
 ## Transport protocol
 
 ### General transport description

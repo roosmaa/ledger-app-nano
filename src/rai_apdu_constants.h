@@ -25,7 +25,6 @@
 
 #define RAI_INS_GET_WALLET_PUBLIC_KEY 0x01
 #define RAI_INS_SIGN_BLOCK 0x02
-#define RAI_INS_GET_FIRMWARE_VERSION 0xC4
 
 #define RAI_SW_INCORRECT_LENGTH 0x6700
 #define RAI_SW_SECURITY_STATUS_NOT_SATISFIED 0x6982
@@ -51,6 +50,5 @@
 
 uint16_t rai_apdu_get_wallet_public_key(void);
 uint16_t rai_apdu_sign_block(void);
-uint16_t rai_apdu_get_firmware_version(void);
 
 #endif
