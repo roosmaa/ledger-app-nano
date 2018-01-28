@@ -144,3 +144,49 @@ void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey)
     buffer[2] = 'b';
     buffer[3] = '_';
 }
+
+void rai_hash_block(rai_block_t *block) {
+    blake2b_ctx hash;
+    blake2b_init(&hash, sizeof(block->base.hash), NULL, 0);
+
+    switch (block->base.type) {
+    case RAI_UNKNOWN_BLOCK: break;
+    case RAI_OPEN_BLOCK:
+        blake2b_update(&hash, block->open.sourceBlock,
+            sizeof(block->open.sourceBlock));
+        blake2b_update(&hash, block->open.representative,
+            sizeof(block->open.representative));
+        blake2b_update(&hash, rai_public_key_D,
+            sizeof(rai_public_key_D));
+        break;
+    case RAI_RECEIVE_BLOCK:
+        blake2b_update(&hash, block->receive.previousBlock,
+            sizeof(block->receive.previousBlock));
+        blake2b_update(&hash, block->receive.sourceBlock,
+            sizeof(block->receive.sourceBlock));
+        break;
+    case RAI_SEND_BLOCK:
+        blake2b_update(&hash, block->send.previousBlock,
+            sizeof(block->send.previousBlock));
+        blake2b_update(&hash, block->send.destinationAccount,
+            sizeof(block->send.destinationAccount));
+        blake2b_update(&hash, block->send.balance,
+            sizeof(block->send.balance));
+        break;
+    case RAI_CHANGE_BLOCK:
+        blake2b_update(&hash, block->change.previousBlock,
+            sizeof(block->change.previousBlock));
+        blake2b_update(&hash, block->change.representative,
+            sizeof(block->change.representative));
+        break;
+    }
+
+    blake2b_final(&hash, block->base.hash);
+}
+
+void rai_sign_block(rai_block_t *block) {
+    ed25519_sign(
+        block->base.hash, sizeof(block->base.hash),
+        rai_private_key_D, rai_public_key_D,
+        block->base.signature);
+}

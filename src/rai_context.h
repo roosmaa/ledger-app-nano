@@ -20,11 +20,15 @@
 #define RAI_CONTEXT_H
 
 #include "os.h"
+#include "rai_types.h"
 #include "rai_secure_value.h"
 
 struct rai_context_s {
     /** Flag if dongle has been halted */
     secu8 halted;
+
+    /** Currently processed block **/
+    rai_block_t block;
 
     /** Length of the incoming command */
     uint16_t inLength;

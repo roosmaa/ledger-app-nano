@@ -17,13 +17,13 @@
 
 #include "rai_internal.h"
 
-#define DISPATCHER_APDUS 2
+#define DISPATCHER_APDUS 3
 
 typedef uint16_t (*apduProcessingFunction)(void);
 
 extern uint8_t const DISPATCHER_CLA[DISPATCHER_APDUS];
 extern uint8_t const DISPATCHER_INS[DISPATCHER_APDUS];
-extern uint8_t const DISPATCHER_DATA_IN[DISPATCHER_APDUS];
+extern bool const DISPATCHER_DATA_IN[DISPATCHER_APDUS];
 extern apduProcessingFunction const DISPATCHER_FUNCTIONS[DISPATCHER_APDUS];
 
 #define ACCOUNT_STRING_LEN 64

@@ -20,21 +20,25 @@
 
 uint8_t const DISPATCHER_CLA[] = {
     RAI_CLA, // rai_apdu_get_wallet_public_key,
+    RAI_CLA, // rai_apdu_sign_block,
     RAI_CLA, // rai_apdu_get_firmware_version,
 };
 
 uint8_t const DISPATCHER_INS[] = {
     RAI_INS_GET_WALLET_PUBLIC_KEY,    // rai_apdu_get_wallet_public_key,
+    RAI_INS_SIGN_BLOCK,               // rai_apdu_sign_block
     RAI_INS_GET_FIRMWARE_VERSION,     // rai_apdu_get_firmware_version,
 };
 
-uint8_t const DISPATCHER_DATA_IN[] = {
-    1, // rai_apdu_get_wallet_public_key,
-    0, // rai_apdu_get_firmware_version,
+bool const DISPATCHER_DATA_IN[] = {
+    true,  // rai_apdu_get_wallet_public_key,
+    true,  // rai_apdu_sign_block
+    false, // rai_apdu_get_firmware_version,
 };
 
 apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
     rai_apdu_get_wallet_public_key,
+    rai_apdu_sign_block,
     rai_apdu_get_firmware_version,
 };
 

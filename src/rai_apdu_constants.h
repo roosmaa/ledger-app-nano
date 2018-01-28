@@ -50,6 +50,7 @@
 #include "rai_secure_value.h"
 
 uint16_t rai_apdu_get_wallet_public_key(void);
+uint16_t rai_apdu_sign_block(void);
 uint16_t rai_apdu_get_firmware_version(void);
 
 #endif

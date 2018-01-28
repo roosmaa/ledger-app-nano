@@ -28,6 +28,7 @@ typedef uint8_t rai_signature_t[64];
 typedef uint8_t rai_balance_t[16];
 
 typedef enum {
+    RAI_UNKNOWN_BLOCK,
     RAI_OPEN_BLOCK,
     RAI_RECEIVE_BLOCK,
     RAI_SEND_BLOCK,

@@ -36,4 +36,7 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
 
 void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey);
 
+void rai_hash_block(rai_block_t *block);
+void rai_sign_block(rai_block_t *block);
+
 #endif
