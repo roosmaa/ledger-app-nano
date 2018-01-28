@@ -59,7 +59,6 @@ typedef struct {
 typedef struct {
     RAI_BLOCK_COMMON;
     rai_hash_t previousBlock;
-    rai_hash_t sourceBlock;
     rai_public_key_t destinationAccount;
     rai_balance_t balance;
 } rai_block_send_t;

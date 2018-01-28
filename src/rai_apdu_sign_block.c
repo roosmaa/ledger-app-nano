@@ -116,10 +116,6 @@ uint16_t rai_apdu_sign_block() {
         os_memmove(rai_context_D.block.send.previousBlock, inPtr, readLen);
         inPtr += readLen;
 
-        readLen = sizeof(rai_context_D.block.send.sourceBlock);
-        os_memmove(rai_context_D.block.send.sourceBlock, inPtr, readLen);
-        inPtr += readLen;
-
         readLen = *inPtr;
         if (!rai_read_account_string(
                 inPtr + 1, readLen,

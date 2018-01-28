@@ -93,7 +93,6 @@ This command returns the signature for the provided block.
 | ...                                                | 4         |
 | Last derivation index (big endian)                 | 4         |
 | Previous block hash                                | 32        |
-| Source block hash                                  | 32        |
 | Destination address length                         | 1         |
 | Destination address                                | var       |
 | New balance (big endian)                           | 16        |
