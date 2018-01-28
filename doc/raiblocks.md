@@ -6,7 +6,7 @@ This specification describes the APDU messages interface to communicate with the
 
 ## Wallet usage APDUs
 
-### Get wallet public key
+### Get address
 
 #### Description
 

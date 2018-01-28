@@ -19,22 +19,22 @@
 #include "rai_apdu_constants.h"
 
 uint8_t const DISPATCHER_CLA[] = {
-    RAI_CLA, // rai_apdu_get_wallet_public_key,
+    RAI_CLA, // rai_apdu_get_address,
     RAI_CLA, // rai_apdu_sign_block,
 };
 
 uint8_t const DISPATCHER_INS[] = {
-    RAI_INS_GET_WALLET_PUBLIC_KEY,    // rai_apdu_get_wallet_public_key,
-    RAI_INS_SIGN_BLOCK,               // rai_apdu_sign_block
+    RAI_INS_GET_ADDRESS, // rai_apdu_get_address,
+    RAI_INS_SIGN_BLOCK,  // rai_apdu_sign_block
 };
 
 bool const DISPATCHER_DATA_IN[] = {
-    true,  // rai_apdu_get_wallet_public_key,
+    true,  // rai_apdu_get_address,
     true,  // rai_apdu_sign_block
 };
 
 apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
-    rai_apdu_get_wallet_public_key,
+    rai_apdu_get_address,
     rai_apdu_sign_block,
 };
 

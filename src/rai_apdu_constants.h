@@ -23,7 +23,7 @@
 #define RAI_ADM_CLA 0xD0
 #define RAI_NFCPAYMENT_CLA 0xF0
 
-#define RAI_INS_GET_WALLET_PUBLIC_KEY 0x01
+#define RAI_INS_GET_ADDRESS 0x01
 #define RAI_INS_SIGN_BLOCK 0x02
 
 #define RAI_SW_INCORRECT_LENGTH 0x6700
@@ -48,7 +48,7 @@
 #include "os.h"
 #include "rai_secure_value.h"
 
-uint16_t rai_apdu_get_wallet_public_key(void);
+uint16_t rai_apdu_get_address(void);
 uint16_t rai_apdu_sign_block(void);
 
 #endif

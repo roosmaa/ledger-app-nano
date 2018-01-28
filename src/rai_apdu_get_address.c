@@ -37,7 +37,7 @@ void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
 
 #define P2_UNUSED 0x00
 
-uint16_t rai_apdu_get_wallet_public_key() {
+uint16_t rai_apdu_get_address() {
     uint8_t *outPtr;
     uint8_t keyLength;
     uint8_t addressLength;
