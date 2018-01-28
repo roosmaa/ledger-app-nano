@@ -42,6 +42,7 @@ uint16_t rai_apdu_sign_block() {
     uint8_t *inPtr;
     uint8_t *outPtr;
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    uint8_t readLen;
     uint8_t chainCode[32];
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
@@ -78,39 +79,74 @@ uint16_t rai_apdu_sign_block() {
     // Reset block state
     os_memset(&rai_context_D.block, 0, sizeof(rai_context_D.block));
 
+    // Parse input data
     switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
     case P1_OPEN_BLOCK:
         rai_context_D.block.open.type = RAI_OPEN_BLOCK;
 
-        // TODO: Parse input data
-        // rai_context_D.block.open.representative = ...
-        // rai_context_D.block.open.sourceBlock = ...
+        readLen = *inPtr;
+        if (!rai_read_account_string(
+                inPtr + 1, readLen,
+                rai_context_D.block.open.representative)) {
+            goto invalidData;
+        }
+        inPtr += 1 + readLen;
+
+        readLen = sizeof(rai_context_D.block.open.sourceBlock);
+        os_memmove(rai_context_D.block.open.sourceBlock, inPtr, readLen);
+        inPtr += readLen;
         break;
 
     case P1_RECEIVE_BLOCK:
         rai_context_D.block.receive.type = RAI_RECEIVE_BLOCK;
 
-        // TODO: Parse input data
-        // rai_context_D.block.receive.previousBlock = ...
-        // rai_context_D.block.receive.sourceBlock = ...
+        readLen = sizeof(rai_context_D.block.receive.previousBlock);
+        os_memmove(rai_context_D.block.receive.previousBlock, inPtr, readLen);
+        inPtr += readLen;
+
+        readLen = sizeof(rai_context_D.block.receive.sourceBlock);
+        os_memmove(rai_context_D.block.receive.sourceBlock, inPtr, readLen);
+        inPtr += readLen;
         break;
 
     case P1_SEND_BLOCK:
         rai_context_D.block.send.type = RAI_SEND_BLOCK;
 
-        // TODO: Parse input data
-        // rai_context_D.block.send.previousBlock = ...
-        // rai_context_D.block.send.sourceBlock = ...
-        // rai_context_D.block.send.destinationAccount = ...
-        // rai_context_D.block.send.balance = ...
+        readLen = sizeof(rai_context_D.block.send.previousBlock);
+        os_memmove(rai_context_D.block.send.previousBlock, inPtr, readLen);
+        inPtr += readLen;
+
+        readLen = sizeof(rai_context_D.block.send.sourceBlock);
+        os_memmove(rai_context_D.block.send.sourceBlock, inPtr, readLen);
+        inPtr += readLen;
+
+        readLen = *inPtr;
+        if (!rai_read_account_string(
+                inPtr + 1, readLen,
+                rai_context_D.block.send.destinationAccount)) {
+            goto invalidData;
+        }
+        inPtr += 1 + readLen;
+
+        readLen = sizeof(rai_context_D.block.send.balance);
+        os_memmove(rai_context_D.block.send.balance, inPtr, readLen);
+        inPtr += readLen;
         break;
 
     case P1_CHANGE_BLOCK:
         rai_context_D.block.change.type = RAI_CHANGE_BLOCK;
 
-        // TODO: Parse input data
-        // rai_context_D.block.change.previousBlock = ...
-        // rai_context_D.block.change.representative = ...
+        readLen = sizeof(rai_context_D.block.change.previousBlock);
+        os_memmove(rai_context_D.block.change.previousBlock, inPtr, readLen);
+        inPtr += readLen;
+
+        readLen = *inPtr;
+        if (!rai_read_account_string(
+                inPtr + 1, readLen,
+                rai_context_D.block.change.representative)) {
+            goto invalidData;
+        }
+        inPtr += 1 + readLen;
         break;
     }
 
@@ -136,4 +172,8 @@ uint16_t rai_apdu_sign_block() {
     rai_context_D.outLength = outPtr - G_io_apdu_buffer;
 
     return RAI_SW_OK;
+
+    invalidData:
+    os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
+    return RAI_SW_INCORRECT_DATA;
 }
