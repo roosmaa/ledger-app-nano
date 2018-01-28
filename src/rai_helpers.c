@@ -88,6 +88,88 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
     }
 }
 
+bool rai_read_account_string(uint8_t *buffer, size_t size, rai_public_key_t outKey) {
+    uint8_t k, i, c;
+    uint8_t checkInp[5];
+    uint8_t check[5];
+
+    if (size != ACCOUNT_STRING_LEN) {
+        return false;
+    }
+    if (buffer[0] != 'x' || buffer[1] != 'r' || buffer[2] != 'b'
+        || !(buffer[3] == '-' || buffer[3] == '_')) {
+        return false;
+    }
+
+    os_memset(checkInp, 0, sizeof(checkInp));
+    os_memset(check, 0, sizeof(check));
+    os_memset(outKey, 0, sizeof(rai_public_key_t));
+
+    // Helper macro to create a virtual array of checkInp and outKey variables
+    #define accPipeByte(x, v) \
+        if ((x) < sizeof(checkInp)) { \
+            checkInp[(x)] |= (v);\
+        } else if ((x) - sizeof(checkInp) < sizeof(rai_public_key_t)) { \
+            outKey[sizeof(rai_public_key_t) - 1 - ((x) - sizeof(checkInp))] |= (v);\
+        }
+    for (k = 0; k < ACCOUNT_STRING_LEN - 4; k++) {
+        i = (k / 8) * 5;
+
+        c = buffer[ACCOUNT_STRING_LEN-1-k];
+        if (c >= 0x30 && c < 0x30 + sizeof(BASE32_TABLE)) {
+            c = BASE32_TABLE[c - 0x30];
+        } else {
+            c = 0;
+        }
+
+        switch (k % 8) {
+        case 0:
+            accPipeByte(i, c & B_11111);
+            break;
+        case 1:
+            accPipeByte(i, (c & B_00111) << 5);
+            accPipeByte(i + 1, (c >> 3) & B_00011);
+            break;
+        case 2:
+            accPipeByte(i + 1, (c & B_11111) << 2);
+            break;
+        case 3:
+            accPipeByte(i + 1, (c & B_00001) << 7);
+            accPipeByte(i + 2, (c >> 1) & B_01111);
+            break;
+        case 4:
+            accPipeByte(i + 2, (c & B_01111) << 4);
+            accPipeByte(i + 3, (c >> 4) & B_00001);
+            break;
+        case 5:
+            accPipeByte(i + 3, (c & B_11111) << 1);
+            break;
+        case 6:
+            accPipeByte(i + 3, (c & B_00011) << 6);
+            accPipeByte(i + 4, (c >> 2) & B_00111);
+            break;
+        case 7:
+            accPipeByte(i + 4, (c & B_11111) << 3);
+            break;
+        }
+    }
+    #undef accPipeByte
+
+    // Verify the checksum of the address
+    blake2b_ctx hash;
+    blake2b_init(&hash, sizeof(check), NULL, 0);
+    blake2b_update(&hash, outKey, sizeof(rai_public_key_t));
+    blake2b_final(&hash, check);
+
+    for (i = 0; i < sizeof(check); i++) {
+        if (check[i] != checkInp[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey) {
     uint8_t k, i, c;
     uint8_t check[5];
@@ -98,7 +180,7 @@ void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey)
     blake2b_final(&hash, check);
 
     // Helper macro to create a virtual array of check and publicKey variables
-    #define accountData(x) (uint8_t)( \
+    #define accGetByte(x) (uint8_t)( \
         ((x) < sizeof(check)) ? check[(x)] : \
         ((x) - sizeof(check) < sizeof(rai_public_key_t)) ? publicKey[sizeof(rai_public_key_t) - 1 - ((x) - sizeof(check))] : \
         0 \
@@ -108,37 +190,37 @@ void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey)
         c = 0;
         switch (k % 8) {
         case 0:
-            c = accountData(i) & B_11111;
+            c = accGetByte(i) & B_11111;
             break;
         case 1:
-            c = (accountData(i) >> 5) & B_00111;
-            c |= (accountData(i + 1) & B_00011) << 3;
+            c = (accGetByte(i) >> 5) & B_00111;
+            c |= (accGetByte(i + 1) & B_00011) << 3;
             break;
         case 2:
-            c = (accountData(i + 1) >> 2) & B_11111;
+            c = (accGetByte(i + 1) >> 2) & B_11111;
             break;
         case 3:
-            c = (accountData(i + 1) >> 7) & B_00001;
-            c |= (accountData(i + 2) & B_01111) << 1;
+            c = (accGetByte(i + 1) >> 7) & B_00001;
+            c |= (accGetByte(i + 2) & B_01111) << 1;
             break;
         case 4:
-            c = (accountData(i + 2) >> 4) & B_01111;
-            c |= (accountData(i + 3) & B_00001) << 4;
+            c = (accGetByte(i + 2) >> 4) & B_01111;
+            c |= (accGetByte(i + 3) & B_00001) << 4;
             break;
         case 5:
-            c = (accountData(i + 3) >> 1) & B_11111;
+            c = (accGetByte(i + 3) >> 1) & B_11111;
             break;
         case 6:
-            c = (accountData(i + 3) >> 6) & B_00011;
-            c |= (accountData(i + 4) & B_00111) << 2;
+            c = (accGetByte(i + 3) >> 6) & B_00011;
+            c |= (accGetByte(i + 4) & B_00111) << 2;
             break;
         case 7:
-            c = (accountData(i + 4) >> 3) & B_11111;
+            c = (accGetByte(i + 4) >> 3) & B_11111;
             break;
         }
         buffer[ACCOUNT_STRING_LEN-1-k] = BASE32_ALPHABET[c];
     }
-    #undef accountData
+    #undef accGetByte
     buffer[0] = 'x';
     buffer[1] = 'r';
     buffer[2] = 'b';
