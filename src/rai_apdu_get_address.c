@@ -35,7 +35,8 @@ void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
 #define P1_NO_DISPLAY 0x00
 #define P1_DISPLAY 0x01
 
-#define P2_UNUSED 0x00
+#define P2_NO_CHAINCODE 0x00
+#define P2_CHAINCODE 0x01
 
 uint16_t rai_apdu_get_address() {
     uint8_t *outPtr;
@@ -44,6 +45,7 @@ uint16_t rai_apdu_get_address() {
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
     uint8_t chainCode[32];
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
+    bool returnChainCode = G_io_apdu_buffer[ISO_OFFSET_P2] == P2_CHAINCODE;
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
     case P1_NO_DISPLAY:
@@ -54,7 +56,8 @@ uint16_t rai_apdu_get_address() {
     }
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P2]) {
-    case P2_UNUSED:
+    case P2_NO_CHAINCODE:
+    case P2_CHAINCODE:
         break;
     default:
         return RAI_SW_INCORRECT_P1_P2;
@@ -88,8 +91,10 @@ uint16_t rai_apdu_get_address() {
     outPtr += 1 + addressLength;
 
     // Output chain code
-    os_memmove(outPtr, chainCode, sizeof(chainCode));
-    outPtr += sizeof(chainCode);
+    if (returnChainCode) {
+        os_memmove(outPtr, chainCode, sizeof(chainCode));
+        outPtr += sizeof(chainCode);
+    }
 
     rai_context_D.outLength = outPtr - G_io_apdu_buffer;
 
