@@ -45,7 +45,7 @@ static const uint8_t NOTIFY_USER_PRESENCE_NEEDED[] = {
     KEEPALIVE_REASON_TUP_NEEDED};
 #endif // HAVE_BLE
 
-static const uint8_t PROXY_MAGIC[] = {'X', 'R', 'B'};
+static const uint8_t PROXY_MAGIC[] = {'m', 'R', 'B'};
 
 #define INIT_U2F_VERSION 0x02
 #define INIT_DEVICE_VERSION_MAJOR 0
