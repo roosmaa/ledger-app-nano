@@ -23,8 +23,5 @@
 
 #define RAI_BAGL_COLOR_APP 0xFCB653
 
-void ui_idle(void);
-
-void ui_ticker_event(bool uxAllowed);
 
 #endif

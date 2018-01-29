@@ -40,6 +40,9 @@ uint8_t G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 ux_state_t ux;
 
+void ui_idle(void);
+void ui_ticker_event(bool uxAllowed);
+
 #ifdef HAVE_U2F
 volatile u2f_service_t u2fService;
 
