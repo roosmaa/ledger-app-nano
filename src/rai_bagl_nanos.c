@@ -310,7 +310,7 @@ const bagl_element_t ui_confirm_sign_block[] = {
 void ui_write_confirm_label_address(char *label, rai_public_key_t publicKey) {
     char account[ACCOUNT_STRING_LEN];
     rai_write_account_string((uint8_t *)account, publicKey);
-    rai_write_truncated_string(label, 20, account, sizeof(account));
+    rai_write_truncated_string(label, 13, account, sizeof(account));
 }
 
 void ui_confirm_sign_block_prepare_confirm_step(void) {
