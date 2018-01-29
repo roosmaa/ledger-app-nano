@@ -38,12 +38,12 @@ void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
 
 #define P2_UNUSED 0x00
 
+uint16_t rai_apdu_sign_block_output(void);
+
 uint16_t rai_apdu_sign_block() {
     uint8_t *inPtr;
-    uint8_t *outPtr;
-    uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    uint8_t *keyPathPtr;
     uint8_t readLen;
-    uint8_t chainCode[32];
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
     case P1_OPEN_BLOCK:
@@ -66,15 +66,17 @@ uint16_t rai_apdu_sign_block() {
         return RAI_SW_INCORRECT_LENGTH;
     }
     inPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
-    os_memmove(keyPath, inPtr, MAX_BIP32_PATH_LENGTH);
+    keyPathPtr = inPtr;
     inPtr += 1 + (*inPtr) * 4;
 
     if (!os_global_pin_is_validated()) {
         return RAI_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
-    // Derive private & public keys for signing
-    rai_private_derive_keypair(keyPath, true, chainCode);
+    // Derive public keys for hashing
+    rai_private_derive_keypair(keyPathPtr, true, rai_context_D.chainCode);
+    os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
+    os_memset(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
 
     // Reset block state
     os_memset(&rai_context_D.block, 0, sizeof(rai_context_D.block));
@@ -88,7 +90,7 @@ uint16_t rai_apdu_sign_block() {
         if (!rai_read_account_string(
                 inPtr + 1, readLen,
                 rai_context_D.block.open.representative)) {
-            goto invalidData;
+            return RAI_SW_INCORRECT_DATA;
         }
         inPtr += 1 + readLen;
 
@@ -120,7 +122,7 @@ uint16_t rai_apdu_sign_block() {
         if (!rai_read_account_string(
                 inPtr + 1, readLen,
                 rai_context_D.block.send.destinationAccount)) {
-            goto invalidData;
+            return RAI_SW_INCORRECT_DATA;
         }
         inPtr += 1 + readLen;
 
@@ -140,7 +142,7 @@ uint16_t rai_apdu_sign_block() {
         if (!rai_read_account_string(
                 inPtr + 1, readLen,
                 rai_context_D.block.change.representative)) {
-            goto invalidData;
+            return RAI_SW_INCORRECT_DATA;
         }
         inPtr += 1 + readLen;
         break;
@@ -150,12 +152,18 @@ uint16_t rai_apdu_sign_block() {
 
     // TODO: Prompt user if they wish to sign
 
+    return rai_apdu_sign_block_output();
+}
+
+uint16_t rai_apdu_sign_block_output(void) {
+    uint8_t *keyPathPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
+    uint8_t *outPtr = G_io_apdu_buffer;
+
+    // Derive key and sign the block
+    rai_private_derive_keypair(keyPathPtr, false, rai_context_D.chainCode);
+    os_memset(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
     rai_sign_block(&rai_context_D.block);
-
-    os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
-
-    // Begin returning data
-    outPtr = G_io_apdu_buffer;
+    os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D));
 
     // Output block hash
     os_memmove(outPtr, rai_context_D.block.base.hash, sizeof(rai_context_D.block.base.hash));
@@ -167,9 +175,8 @@ uint16_t rai_apdu_sign_block() {
 
     rai_context_D.outLength = outPtr - G_io_apdu_buffer;
 
-    return RAI_SW_OK;
+    // Reset the global variables
+    os_memset(rai_public_key_D, 0, sizeof(rai_public_key_D));
 
-    invalidData:
-    os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
-    return RAI_SW_INCORRECT_DATA;
+    return RAI_SW_OK;
 }

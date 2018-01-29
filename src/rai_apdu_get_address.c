@@ -30,7 +30,7 @@
 uint16_t rai_apdu_get_address_output(void);
 
 uint16_t rai_apdu_get_address() {
-    uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    uint8_t *keyPathPtr;
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
     bool returnChainCode = G_io_apdu_buffer[ISO_OFFSET_P2] == P2_CHAINCODE;
 
@@ -53,15 +53,14 @@ uint16_t rai_apdu_get_address() {
     if (G_io_apdu_buffer[ISO_OFFSET_LC] < 0x01) {
         return RAI_SW_INCORRECT_LENGTH;
     }
-    os_memmove(keyPath, G_io_apdu_buffer + ISO_OFFSET_CDATA,
-               MAX_BIP32_PATH_LENGTH);
+    keyPathPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
 
     if (!os_global_pin_is_validated()) {
         return RAI_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
     // Retrieve the public key for the path
-    rai_private_derive_keypair(keyPath, true, rai_context_D.chainCode);
+    rai_private_derive_keypair(keyPathPtr, true, rai_context_D.chainCode);
     os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
     if (!returnChainCode) {
         os_memmove(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
