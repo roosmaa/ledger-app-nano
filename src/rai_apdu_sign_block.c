@@ -150,8 +150,8 @@ uint16_t rai_apdu_sign_block() {
 
     rai_hash_block(&rai_context_D.block);
 
-    // TODO: Prompt user if they wish to sign
-    if (false) {
+    // When auto receive is enabled, skip the prompt
+    if (N_rai.autoReceive && rai_context_D.block.base.type == RAI_RECEIVE_BLOCK) {
         return rai_apdu_sign_block_output();
     } else {
         rai_context_D.ioFlags |= IO_ASYNCH_REPLY;
