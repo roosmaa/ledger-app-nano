@@ -31,13 +31,20 @@ extern ux_state_t ux;
 uint16_t ux_step;
 uint16_t ux_step_count;
 
+union {
+    struct {
+        char account[ACCOUNT_STRING_LEN+1];
+    } display_address;
+} vars;
+
 const ux_menu_entry_t menu_main[];
 const ux_menu_entry_t menu_settings[];
 const ux_menu_entry_t menu_settings_browser[];
 
 #ifdef HAVE_U2F
+
 // change the setting
-void menu_settings_browser_change(unsigned int enabled) {
+void menu_settings_browser_change(uint32_t enabled) {
     rai_set_fido_transport(enabled);
     USB_power_U2F(false, false);
     USB_power_U2F(true, N_rai.fidoTransport);
@@ -46,7 +53,7 @@ void menu_settings_browser_change(unsigned int enabled) {
 }
 
 // show the currently activated entry
-void menu_settings_browser_init(unsigned int ignored) {
+void menu_settings_browser_init(uint32_t ignored) {
     UNUSED(ignored);
     UX_MENU_DISPLAY(N_rai.fidoTransport ? 1 : 0, menu_settings_browser,
                     NULL);
@@ -98,8 +105,127 @@ void ui_ticker_event(bool uxAllowed) {
     }
 }
 
+/***
+ * Display address
+ */
+
+const bagl_element_t ui_display_address[] = {
+    {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
+      /* x */ 0, /* y */ 0, /* width */ 128, /* height */ 32,
+      /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ 0x000000, /* bgcolor */ 0xFFFFFF,
+      /* font_id */ 0, /* icon_id */ 0},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_ICON, /* userid */ 0x00,
+      /* x */ 3, /* y */ 12, /* width */ 7, /* height */ 7,
+      /* stroke */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ 0, /* icon_id */ BAGL_GLYPH_ICON_CROSS},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_ICON, /* userid */ 0x00,
+      /* x */ 117, /* y */ 13, /* width */ 8, /* height */ 6,
+      /* stroke */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ 0, /* icon_id */ BAGL_GLYPH_ICON_CHECK},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x01,
+      /* x */ 0, /* y */ 12, /* width */ 128, /* height */ 12,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "Confirm", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x01,
+      /* x */ 0, /* y */ 26, /* width */ 128, /* height */ 12,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "address", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x02,
+      /* x */ 0, /* y */ 12, /* width */ 128, /* height */ 12,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "Address", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x02,
+      /* x */ 23, /* y */ 26, /* width */ 82, /* height */ 12,
+      /* scrolldelay */ 10 | BAGL_STROKE_FLAG_ONESHOT,
+      /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 26},
+     /* text */ vars.display_address.account, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+};
+
+const bagl_element_t *ui_display_address_prepro(const bagl_element_t *element) {
+    if (element->component.userid > 0) {
+        unsigned int display = (ux_step == element->component.userid - 1);
+        if (!display) {
+            return NULL;
+        }
+
+        switch (element->component.userid) {
+        case 1:
+            UX_CALLBACK_SET_INTERVAL(2000);
+            break;
+        case 2:
+            UX_CALLBACK_SET_INTERVAL(MAX(
+                3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7)));
+            break;
+        }
+    }
+    return element;
+}
+
+uint32_t ui_display_address_button(uint32_t button_mask,
+                                   uint32_t button_mask_counter) {
+    switch (button_mask) {
+    case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+        rai_bagl_display_address_callback(false);
+        break;
+
+    case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+        rai_bagl_display_address_callback(true);
+        break;
+
+    // For other button combinations return early and do nothing
+    default:
+        return 0;
+    }
+
+    ui_idle();
+    return 0;
+}
+
 void rai_bagl_display_address(void) {
-    // TODO: Display the actual UI
+    os_memset(&vars.display_address, 0, sizeof(vars.display_address));
+    // Encode public key into an address string
+    rai_write_account_string((uint8_t *)vars.display_address.account, rai_public_key_D);
+    vars.display_address.account[ACCOUNT_STRING_LEN] = '\0';
+
+    ux_step_count = 2;
+    ux_step = 0;
+    UX_DISPLAY(ui_display_address, ui_display_address_prepro);
 }
 
 #endif // defined(TARGET_NANOS)
