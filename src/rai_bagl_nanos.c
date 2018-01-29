@@ -86,7 +86,6 @@ void menu_settings_unitformat_init(uint32_t ignored) {
 }
 
 const ux_menu_entry_t menu_settings_unitformat[] = {
-    {NULL, menu_settings_unitformat_change, RAI_AUTOMATIC_UNIT, NULL, "Automatic", NULL, 0, 0},
     {NULL, menu_settings_unitformat_change, RAI_XRB_UNIT, NULL, "xrb", NULL, 0, 0},
     {NULL, menu_settings_unitformat_change, RAI_MILLI_XRB_UNIT, NULL, "mxrb", NULL, 0, 0},
     {NULL, menu_settings_unitformat_change, RAI_MICRO_XRB_UNIT, NULL, "uxrb", NULL, 0, 0},
