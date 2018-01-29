@@ -24,7 +24,16 @@
 #include "os.h"
 #include "rai_context.h"
 
+typedef enum {
+    RAI_AUTOMATIC_UNIT,
+    RAI_XRB_UNIT,
+    RAI_MILLI_XRB_UNIT,
+    RAI_MICRO_XRB_UNIT,
+} rai_unit_format_t;
+
 typedef struct rai_storage_s {
+    rai_unit_format_t unitFormat;
+    bool autoReceive;
     bool fidoTransport;
 } rai_storage_t;
 
@@ -33,6 +42,8 @@ extern rai_storage_t N_rai_real;
 
 #define N_rai (*(rai_storage_t *)PIC(&N_rai_real))
 
+void rai_set_unit_format(rai_unit_format_t fmt);
+void rai_set_auto_receive(bool enabled);
 void rai_set_fido_transport(bool enabled);
 
 #endif

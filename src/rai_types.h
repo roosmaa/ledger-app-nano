@@ -33,10 +33,10 @@ typedef enum {
     RAI_RECEIVE_BLOCK,
     RAI_SEND_BLOCK,
     RAI_CHANGE_BLOCK,
-} block_type_t;
+} rai_block_type_t;
 
 #define RAI_BLOCK_COMMON \
-    block_type_t type; \
+    rai_block_type_t type; \
     rai_hash_t hash; \
     rai_signature_t signature
 
