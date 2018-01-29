@@ -63,7 +63,7 @@ uint16_t rai_apdu_get_address() {
     rai_private_derive_keypair(keyPathPtr, true, rai_context_D.chainCode);
     os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
     if (!returnChainCode) {
-        os_memmove(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
+        os_memset(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
     }
 
     if (display) {
