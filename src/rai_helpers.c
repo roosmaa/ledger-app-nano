@@ -64,61 +64,11 @@ void rai_write_u32_le(uint8_t *buffer, uint32_t value) {
     buffer[3] = ((value >> 24) & 0xff);
 }
 
-void rai_write_truncated_string(char *buffer, size_t bufferLen,
-                                char *source, size_t sourceLen) {
-    size_t i;
-    os_memset(buffer, 0, bufferLen);
-    bufferLen -= 1; // Leave the \0 c-string terminator
-
-    if (sourceLen <= bufferLen) {
-        os_memmove(buffer, source, sourceLen);
-        return;
-    } else if (bufferLen < 9) {
-        os_memmove(buffer, source, bufferLen);
-        return;
-    }
-
-    for (i = 0; i < bufferLen; i++) {
-        if (i < bufferLen / 2) {
-            buffer[i] = source[i];
-        } else if (i == bufferLen / 2 || i - 1 == bufferLen / 2) {
-            buffer[i] = '.';
-        } else {
-            buffer[i] = source[sourceLen - bufferLen + i];
-        }
-    }
-}
-
-void rai_write_hex_string(char *buffer, uint8_t *bytes, size_t bytesLen) {
+void rai_write_hex_string(uint8_t *buffer, uint8_t *bytes, size_t bytesLen) {
     uint32_t i;
     for (i = 0; i < bytesLen; i++) {
         buffer[2*i] = BASE16_ALPHABET[(bytes[i] >> 4) & 0xF];
         buffer[2*i+1] = BASE16_ALPHABET[bytes[i] & 0xF];
-    }
-    buffer[2*i] = '\0';
-}
-
-void rai_private_derive_keypair(uint8_t *bip32Path,
-                                bool derivePublic,
-                                uint8_t *out_chainCode) {
-    uint8_t bip32PathLength;
-    uint8_t i;
-    uint32_t bip32PathInt[MAX_BIP32_PATH];
-
-    bip32PathLength = bip32Path[0];
-    if (bip32PathLength > MAX_BIP32_PATH) {
-        THROW(INVALID_PARAMETER);
-    }
-    bip32Path++;
-    for (i = 0; i < bip32PathLength; i++) {
-        bip32PathInt[i] = rai_read_u32(bip32Path, 1, 0);
-        bip32Path += 4;
-    }
-    os_perso_derive_node_bip32(RAI_CURVE, bip32PathInt, bip32PathLength,
-                               rai_private_key_D, out_chainCode);
-
-    if (derivePublic) {
-        ed25519_publickey(rai_private_key_D, rai_public_key_D);
     }
 }
 
@@ -259,6 +209,55 @@ void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey)
     buffer[1] = 'r';
     buffer[2] = 'b';
     buffer[3] = '_';
+}
+
+void rai_truncate_string(char *dest, size_t destLen,
+                         char *src, size_t srcLen) {
+    size_t i;
+    os_memset(dest, 0, destLen);
+    destLen -= 1; // Leave the \0 c-string terminator
+
+    if (srcLen <= destLen) {
+        os_memmove(dest, src, srcLen);
+        return;
+    } else if (destLen < 9) {
+        os_memmove(dest, src, destLen);
+        return;
+    }
+
+    for (i = 0; i < destLen; i++) {
+        if (i < destLen / 2) {
+            dest[i] = src[i];
+        } else if (i == destLen / 2 || i - 1 == destLen / 2) {
+            dest[i] = '.';
+        } else {
+            dest[i] = src[srcLen - destLen + i];
+        }
+    }
+}
+
+void rai_private_derive_keypair(uint8_t *bip32Path,
+                                bool derivePublic,
+                                uint8_t *out_chainCode) {
+    uint8_t bip32PathLength;
+    uint8_t i;
+    uint32_t bip32PathInt[MAX_BIP32_PATH];
+
+    bip32PathLength = bip32Path[0];
+    if (bip32PathLength > MAX_BIP32_PATH) {
+        THROW(INVALID_PARAMETER);
+    }
+    bip32Path++;
+    for (i = 0; i < bip32PathLength; i++) {
+        bip32PathInt[i] = rai_read_u32(bip32Path, 1, 0);
+        bip32Path += 4;
+    }
+    os_perso_derive_node_bip32(RAI_CURVE, bip32PathInt, bip32PathLength,
+                               rai_private_key_D, out_chainCode);
+
+    if (derivePublic) {
+        ed25519_publickey(rai_private_key_D, rai_public_key_D);
+    }
 }
 
 void rai_hash_block(rai_block_t *block) {
