@@ -15,6 +15,8 @@
 *  limitations under the License.
 ********************************************************************************/
 
+#include <string.h>
+
 #include "os.h"
 #include "os_io_seproxyhal.h"
 
@@ -34,7 +36,12 @@ uint16_t ux_step_count;
 union {
     struct {
         char account[ACCOUNT_STRING_LEN+1];
-    } display_address;
+    } displayAddress;
+    struct {
+        char blockType[20];
+        char confirmLabel[20];
+        char confirmValue[ACCOUNT_STRING_LEN+1];
+    } confirmSignBlock;
 } vars;
 
 const ux_menu_entry_t menu_main[];
@@ -172,14 +179,14 @@ const bagl_element_t ui_display_address[] = {
       /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
       /* font_id */ BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 26},
-     /* text */ vars.display_address.account, /* touch_area_brim */ 0,
+     /* text */ vars.displayAddress.account, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
 };
 
 const bagl_element_t *ui_display_address_prepro(const bagl_element_t *element) {
     if (element->component.userid > 0) {
-        unsigned int display = (ux_step == element->component.userid - 1);
+        bool display = (ux_step == element->component.userid - 1);
         if (!display) {
             return NULL;
         }
@@ -218,14 +225,276 @@ uint32_t ui_display_address_button(uint32_t button_mask,
 }
 
 void rai_bagl_display_address(void) {
-    os_memset(&vars.display_address, 0, sizeof(vars.display_address));
+    os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
     // Encode public key into an address string
-    rai_write_account_string((uint8_t *)vars.display_address.account, rai_public_key_D);
-    vars.display_address.account[ACCOUNT_STRING_LEN] = '\0';
+    rai_write_account_string((uint8_t *)vars.displayAddress.account, rai_public_key_D);
+    vars.displayAddress.account[ACCOUNT_STRING_LEN] = '\0';
 
     ux_step_count = 2;
     ux_step = 0;
     UX_DISPLAY(ui_display_address, ui_display_address_prepro);
+}
+
+/***
+ * Confirm sign block
+ */
+
+const bagl_element_t ui_confirm_sign_block[] = {
+    {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
+      /* x */ 0, /* y */ 0, /* width */ 128, /* height */ 32,
+      /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ 0x000000, /* bgcolor */ 0xFFFFFF,
+      /* font_id */ 0, /* icon_id */ 0},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_ICON, /* userid */ 0x00,
+      /* x */ 3, /* y */ 12, /* width */ 7, /* height */ 7,
+      /* stroke */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ 0, /* icon_id */ BAGL_GLYPH_ICON_CROSS},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_ICON, /* userid */ 0x00,
+      /* x */ 117, /* y */ 13, /* width */ 8, /* height */ 6,
+      /* stroke */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ 0, /* icon_id */ BAGL_GLYPH_ICON_CHECK},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x01,
+      /* x */ 0, /* y */ 12, /* width */ 128, /* height */ 12,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "Confirm", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x01,
+      /* x */ 0, /* y */ 26, /* width */ 128, /* height */ 12,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.blockType, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x02,
+      /* x */ 0, /* y */ 12, /* width */ 128, /* height */ 12,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.confirmLabel, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x03,
+      /* x */ 23, /* y */ 26, /* width */ 82, /* height */ 12,
+      /* scrolldelay */ 10 | BAGL_STROKE_FLAG_ONESHOT,
+      /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
+      /* font_id */ BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 26},
+     /* text */ vars.confirmSignBlock.confirmValue, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+};
+
+void ui_write_confirm_label_address(char *label, rai_public_key_t publicKey) {
+    char account[ACCOUNT_STRING_LEN];
+    rai_write_account_string((uint8_t *)account, publicKey);
+    rai_write_truncated_string(label, 20, account, sizeof(account));
+}
+
+void ui_confirm_sign_block_prepare_confirm_step(void) {
+    switch (rai_context_D.block.base.type) {
+    case RAI_UNKNOWN_BLOCK:
+        switch (ux_step) {
+        default:
+        case 1:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
+            ui_write_confirm_label_address(
+                vars.confirmSignBlock.confirmValue,
+                rai_public_key_D);
+            break;
+        case 2:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
+            // TODO
+            break;
+        }
+        break;
+    case RAI_OPEN_BLOCK:
+        switch (ux_step) {
+        default:
+        case 1:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
+            ui_write_confirm_label_address(
+                vars.confirmSignBlock.confirmValue,
+                rai_public_key_D);
+            break;
+        case 2:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
+            rai_write_account_string(
+                (uint8_t *)vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.open.representative);
+            break;
+        case 3:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
+            // TODO
+            break;
+        }
+        break;
+    case RAI_RECEIVE_BLOCK:
+        switch (ux_step) {
+        default:
+        case 1:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
+            ui_write_confirm_label_address(
+                vars.confirmSignBlock.confirmValue,
+                rai_public_key_D);
+            break;
+        case 2:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
+            // TODO
+            break;
+        }
+        break;
+    case RAI_SEND_BLOCK:
+        switch (ux_step) {
+        default:
+        case 1:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
+            ui_write_confirm_label_address(
+                vars.confirmSignBlock.confirmValue,
+                rai_public_key_D);
+            break;
+        case 2:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Balance after");
+            // TODO
+            break;
+        case 3:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Send to");
+            rai_write_account_string(
+                (uint8_t *)vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.send.destinationAccount);
+            break;
+        case 4:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
+            // TODO
+            break;
+        }
+        break;
+    case RAI_CHANGE_BLOCK:
+        switch (ux_step) {
+        default:
+        case 1:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
+            ui_write_confirm_label_address(
+                vars.confirmSignBlock.confirmValue,
+                rai_public_key_D);
+            break;
+        case 2:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
+            rai_write_account_string(
+                (uint8_t *)vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.change.representative);
+            break;
+        case 3:
+            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
+            // TODO
+            break;
+        }
+        break;
+    }
+}
+
+const bagl_element_t *ui_confirm_sign_block_prepro(const bagl_element_t *element) {
+    if (element->component.userid > 0) {
+        // Determine which labels are hidden
+        if (ux_step == 0) {
+            if (element->component.userid != 0x01) {
+                return NULL;
+            }
+        } else {
+            if (element->component.userid == 0x01) {
+                return NULL;
+            }
+        }
+
+        // Use a single element (0x02) label to trigger
+        // updating the confirm label/value strings.
+        if (element->component.userid == 0x02) {
+            ui_confirm_sign_block_prepare_confirm_step();
+        }
+
+        switch (element->component.userid) {
+        case 0x01:
+            UX_CALLBACK_SET_INTERVAL(2000);
+            break;
+        case 0x03:
+            UX_CALLBACK_SET_INTERVAL(MAX(
+                3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7)));
+            break;
+        }
+    }
+    return element;
+}
+
+uint32_t ui_confirm_sign_block_button(uint32_t button_mask,
+                                      uint32_t button_mask_counter) {
+    switch (button_mask) {
+    case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+        rai_bagl_confirm_sign_block_callback(false);
+        break;
+
+    case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+        rai_bagl_confirm_sign_block_callback(true);
+        break;
+
+    // For other button combinations return early and do nothing
+    default:
+        return 0;
+    }
+
+    ui_idle();
+    return 0;
+}
+
+void rai_bagl_confirm_sign_block(void) {
+    os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
+
+    switch (rai_context_D.block.base.type) {
+    case RAI_UNKNOWN_BLOCK:
+        strcpy(vars.confirmSignBlock.blockType, "unknown block");
+        ux_step_count = 3;
+        break;
+    case RAI_OPEN_BLOCK:
+        strcpy(vars.confirmSignBlock.blockType, "open block");
+        ux_step_count = 4;
+        break;
+    case RAI_RECEIVE_BLOCK:
+        strcpy(vars.confirmSignBlock.blockType, "receive block");
+        ux_step_count = 3;
+        break;
+    case RAI_SEND_BLOCK:
+        strcpy(vars.confirmSignBlock.blockType, "send block");
+        ux_step_count = 5;
+        break;
+    case RAI_CHANGE_BLOCK:
+        strcpy(vars.confirmSignBlock.blockType, "change block");
+        ux_step_count = 4;
+        break;
+    }
+
+    ux_step = 0;
+    UX_DISPLAY(ui_confirm_sign_block, ui_confirm_sign_block_prepro);
 }
 
 #endif // defined(TARGET_NANOS)

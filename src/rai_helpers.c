@@ -64,6 +64,31 @@ void rai_write_u32_le(uint8_t *buffer, uint32_t value) {
     buffer[3] = ((value >> 24) & 0xff);
 }
 
+void rai_write_truncated_string(char *buffer, size_t bufferLen,
+                                char *source, size_t sourceLen) {
+    size_t i;
+    os_memset(buffer, 0, bufferLen);
+    bufferLen -= 1; // Leave the \0 c-string terminator
+
+    if (sourceLen <= bufferLen) {
+        os_memmove(buffer, source, sourceLen);
+        return;
+    } else if (bufferLen < 9) {
+        os_memmove(buffer, source, bufferLen);
+        return;
+    }
+
+    for (i = 0; i < bufferLen; i++) {
+        if (i < bufferLen / 2) {
+            buffer[i] = source[i];
+        } else if (i == bufferLen / 2 || i - 1 == bufferLen / 2) {
+            buffer[i] = '.';
+        } else {
+            buffer[i] = source[sourceLen - bufferLen + i];
+        }
+    }
+}
+
 void rai_private_derive_keypair(uint8_t *bip32Path,
                                 bool derivePublic,
                                 uint8_t *out_chainCode) {

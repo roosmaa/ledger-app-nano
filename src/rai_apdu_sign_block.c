@@ -151,8 +151,13 @@ uint16_t rai_apdu_sign_block() {
     rai_hash_block(&rai_context_D.block);
 
     // TODO: Prompt user if they wish to sign
-
-    return rai_apdu_sign_block_output();
+    if (false) {
+        return rai_apdu_sign_block_output();
+    } else {
+        rai_context_D.ioFlags |= IO_ASYNCH_REPLY;
+        rai_bagl_confirm_sign_block();
+        return RAI_SW_OK;
+    }
 }
 
 uint16_t rai_apdu_sign_block_output(void) {
@@ -179,4 +184,13 @@ uint16_t rai_apdu_sign_block_output(void) {
     os_memset(rai_public_key_D, 0, sizeof(rai_public_key_D));
 
     return RAI_SW_OK;
+}
+
+void rai_bagl_confirm_sign_block_callback(bool confirmed) {
+    if (confirmed) {
+        rai_context_D.sw = rai_apdu_sign_block_output();
+    } else {
+        rai_context_D.sw = RAI_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
+    }
+    app_async_response();
 }

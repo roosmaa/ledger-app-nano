@@ -26,4 +26,7 @@
 void rai_bagl_display_address(void);
 void rai_bagl_display_address_callback(bool confirmed);
 
+void rai_bagl_confirm_sign_block();
+void rai_bagl_confirm_sign_block_callback(bool confirmed);
+
 #endif
