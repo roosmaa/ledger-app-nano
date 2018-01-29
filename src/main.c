@@ -19,13 +19,11 @@
 #include "string.h"
 
 #include "os.h"
-#include "cx.h"
 #include "os_io_seproxyhal.h"
+#include "cx.h"
 
 #include "rai_internal.h"
-#include "rai_bagl_extensions.h"
-
-#include "glyphs.h"
+#include "rai_bagl.h"
 
 #ifdef HAVE_U2F
 
@@ -33,31 +31,14 @@
 #include "u2f_transport.h"
 
 volatile uint8_t u2fMessageBuffer[U2F_MAX_MESSAGE_SIZE];
-extern bool fidoActivated;
 
 #endif // HAVE_U2F
 
 extern void USB_power_U2F(bool enabled, bool fido);
 
-bagl_element_t tmp_element;
-
 uint8_t G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-#define BAGL_FONT_OPEN_SANS_LIGHT_16_22PX_AVG_WIDTH 10
-#define BAGL_FONT_OPEN_SANS_REGULAR_10_13PX_AVG_WIDTH 8
-#define MAX_CHAR_PER_LINE 25
-
-#define COLOR_BG_1 0xF9F9F9
-#define COLOR_APP 0xFCB653
-#define COLOR_APP_LIGHT 0xFEDBA9
-
-void ui_idle(void);
-
 ux_state_t ux;
-
-// display stepped screens
-uint16_t ux_step;
-uint16_t ux_step_count;
 
 #ifdef HAVE_U2F
 volatile u2f_service_t u2fService;
@@ -72,71 +53,6 @@ void u2f_proxy_response(u2f_service_t *service, uint16_t tx) {
 }
 
 #endif // HAVE_U2F
-
-#if defined(TARGET_NANOS)
-
-const ux_menu_entry_t menu_main[];
-const ux_menu_entry_t menu_settings[];
-const ux_menu_entry_t menu_settings_browser[];
-
-#ifdef HAVE_U2F
-// change the setting
-void menu_settings_browser_change(unsigned int enabled) {
-    rai_set_fido_transport(enabled);
-    USB_power_U2F(false, false);
-    USB_power_U2F(true, N_rai.fidoTransport);
-    // go back to the menu entry
-    UX_MENU_DISPLAY(0, menu_settings, NULL);
-}
-
-// show the currently activated entry
-void menu_settings_browser_init(unsigned int ignored) {
-    UNUSED(ignored);
-    UX_MENU_DISPLAY(N_rai.fidoTransport ? 1 : 0, menu_settings_browser,
-                    NULL);
-}
-
-const ux_menu_entry_t menu_settings_browser[] = {
-    {NULL, menu_settings_browser_change, 0, NULL, "No", NULL, 0, 0},
-    {NULL, menu_settings_browser_change, 1, NULL, "Yes", NULL, 0, 0},
-    UX_MENU_END};
-
-const ux_menu_entry_t menu_settings[] = {
-    {NULL, menu_settings_browser_init, 0, NULL, "Browser support", NULL, 0, 0},
-    {menu_main, NULL, 1, &C_nanos_icon_back, "Back", NULL, 61, 40},
-    UX_MENU_END};
-#endif // HAVE_U2F
-
-const ux_menu_entry_t menu_about[] = {
-    {NULL, NULL, 0, NULL, "Version", APPVERSION, 0, 0},
-#ifdef HAVE_U2F
-    {menu_main, NULL, 2, &C_nanos_icon_back, "Back", NULL, 61, 40},
-#else
-    {menu_main, NULL, 1, &C_nanos_icon_back, "Back", NULL, 61, 40},
-#endif // HAVE_U2F
-    UX_MENU_END};
-
-const ux_menu_entry_t menu_main[] = {
-    {NULL, NULL, 0, &C_nanos_badge_raiblocks, "Use wallet to",
-     "view accounts", 33, 12},
-#ifdef HAVE_U2F
-    {menu_settings, NULL, 0, NULL, "Settings", NULL, 0, 0},
-#endif // HAVE_U2F
-    {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},
-    {NULL, os_sched_exit, 0, &C_nanos_icon_dashboard, "Quit app", NULL, 50, 29},
-    UX_MENU_END};
-
-#endif // defined(TARGET_NANOS)
-
-void ui_idle(void) {
-    ux_step_count = 0;
-
-#if defined(TARGET_BLUE)
-    #error Ledger Blue UI not ready yet
-#elif defined(TARGET_NANOS)
-    UX_MENU_DISPLAY(0, menu_main, NULL);
-#endif
-}
 
 // override point, but nothing more to do
 void io_seproxyhal_display(const bagl_element_t *element) {
@@ -200,14 +116,7 @@ uint8_t io_event(uint8_t channel) {
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
         UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
-            // don't redisplay if UX not allowed (pin locked in the common bolos
-            // ux ?)
-            if (ux_step_count && UX_ALLOWED) {
-                // prepare next screen
-                ux_step = (ux_step + 1) % ux_step_count;
-                // redisplay screen
-                UX_REDISPLAY();
-            }
+            ui_ticker_event(UX_ALLOWED);
         });
         break;
     }
@@ -271,7 +180,7 @@ __attribute__((section(".boot"))) int main(void) {
 #if defined(TARGET_BLUE)
                 // setup the status bar colors (remembered after wards, even
                 // more if another app does not resetup after app switch)
-                UX_SET_STATUS_BAR_COLOR(0xFFFFFF, COLOR_APP);
+                UX_SET_STATUS_BAR_COLOR(0xFFFFFF, RAI_BAGL_COLOR_APP);
 #endif // TARGET_BLUE
 
                 ui_idle();

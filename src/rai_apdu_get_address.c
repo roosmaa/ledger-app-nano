@@ -19,7 +19,7 @@
 #include "rai_internal.h"
 #include "rai_apdu_constants.h"
 
-#include "rai_bagl_extensions.h"
+#include "rai_bagl.h"
 
 #ifdef HAVE_U2F
 
