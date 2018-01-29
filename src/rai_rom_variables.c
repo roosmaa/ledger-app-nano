@@ -38,6 +38,10 @@ apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
     rai_apdu_sign_block,
 };
 
+uint8_t const BASE16_ALPHABET[16] = {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    'A', 'B', 'C', 'D', 'E', 'F' };
+
 uint8_t const BASE32_ALPHABET[32] = {
     '1', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
     'e', 'f', 'g', 'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q',

@@ -347,7 +347,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            // TODO
+            rai_write_hex_string(vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.open.hash,
+                sizeof(rai_context_D.block.open.hash));
             break;
         }
         break;
@@ -362,7 +364,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            // TODO
+            rai_write_hex_string(vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.receive.hash,
+                sizeof(rai_context_D.block.receive.hash));
             break;
         }
         break;
@@ -387,7 +391,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 4:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            // TODO
+            rai_write_hex_string(vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.send.hash,
+                sizeof(rai_context_D.block.send.hash));
             break;
         }
         break;
@@ -408,7 +414,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            // TODO
+            rai_write_hex_string(vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.change.hash,
+                sizeof(rai_context_D.block.change.hash));
             break;
         }
         break;

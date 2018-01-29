@@ -89,6 +89,15 @@ void rai_write_truncated_string(char *buffer, size_t bufferLen,
     }
 }
 
+void rai_write_hex_string(char *buffer, uint8_t *bytes, size_t bytesLen) {
+    uint32_t i;
+    for (i = 0; i < bytesLen; i++) {
+        buffer[2*i] = BASE16_ALPHABET[(bytes[i] >> 4) & 0xF];
+        buffer[2*i+1] = BASE16_ALPHABET[bytes[i] & 0xF];
+    }
+    buffer[2*i] = '\0';
+}
+
 void rai_private_derive_keypair(uint8_t *bip32Path,
                                 bool derivePublic,
                                 uint8_t *out_chainCode) {

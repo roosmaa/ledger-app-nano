@@ -33,6 +33,8 @@ void rai_write_u32_le(uint8_t *buffer, uint32_t value);
 void rai_write_truncated_string(char *buffer, size_t bufferLen,
                                 char *source, size_t sourceLen);
 
+void rai_write_hex_string(char *buffer, uint8_t *bytes, size_t bytesLen);
+
 void rai_private_derive_keypair(uint8_t *bip32Path,
                                 bool derivePublic,
                                 uint8_t *out_chainCode);
