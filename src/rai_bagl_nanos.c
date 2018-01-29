@@ -308,9 +308,15 @@ const bagl_element_t ui_confirm_sign_block[] = {
 };
 
 void ui_write_confirm_label_address(char *label, rai_public_key_t publicKey) {
-    char account[ACCOUNT_STRING_LEN];
-    rai_write_account_string((uint8_t *)account, publicKey);
-    rai_write_truncated_string(label, 13, account, sizeof(account));
+    char buf[ACCOUNT_STRING_LEN];
+    rai_write_account_string((uint8_t *)buf, publicKey);
+    rai_truncate_string(label, 13, buf, sizeof(buf));
+}
+
+void ui_write_confirm_label_block_hash(char *label, rai_hash_t hash) {
+    char buf[2*sizeof(rai_hash_t)];
+    rai_write_hex_string((uint8_t *)buf, hash, sizeof(rai_hash_t));
+    rai_truncate_string(label, 13, buf, sizeof(buf));
 }
 
 void ui_confirm_sign_block_prepare_confirm_step(void) {
@@ -347,9 +353,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            rai_write_hex_string(vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.open.hash,
-                sizeof(rai_context_D.block.open.hash));
+            ui_write_confirm_label_block_hash(
+                vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.open.hash);
             break;
         }
         break;
@@ -364,9 +370,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            rai_write_hex_string(vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.receive.hash,
-                sizeof(rai_context_D.block.receive.hash));
+            ui_write_confirm_label_block_hash(
+                vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.receive.hash);
             break;
         }
         break;
@@ -391,9 +397,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 4:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            rai_write_hex_string(vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.send.hash,
-                sizeof(rai_context_D.block.send.hash));
+            ui_write_confirm_label_block_hash(
+                vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.send.hash);
             break;
         }
         break;
@@ -414,9 +420,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            rai_write_hex_string(vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.change.hash,
-                sizeof(rai_context_D.block.change.hash));
+            ui_write_confirm_label_block_hash(
+                vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.change.hash);
             break;
         }
         break;
