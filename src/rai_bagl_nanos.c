@@ -98,4 +98,8 @@ void ui_ticker_event(bool uxAllowed) {
     }
 }
 
+void rai_bagl_display_address(void) {
+    // TODO: Display the actual UI
+}
+
 #endif // defined(TARGET_NANOS)

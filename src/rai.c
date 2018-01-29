@@ -21,6 +21,17 @@
 #include "rai_internal.h"
 #include "rai_apdu_constants.h"
 
+#ifdef HAVE_U2F
+
+#include "u2f_service.h"
+#include "u2f_transport.h"
+
+extern bool fidoActivated;
+extern volatile u2f_service_t u2fService;
+void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
+
+#endif
+
 void app_dispatch(void) {
     uint8_t cla;
     uint8_t ins;
@@ -86,6 +97,27 @@ void app_dispatch(void) {
         FINALLY;
     }
     END_TRY;
+}
+
+void app_async_response(void) {
+    G_io_apdu_buffer[rai_context_D.outLength] =
+        (rai_context_D.sw >> 8);
+    G_io_apdu_buffer[rai_context_D.outLength + 1] =
+        (rai_context_D.sw & 0xff);
+    rai_context_D.outLength += 2;
+
+#ifdef HAVE_U2F
+    if (fidoActivated) {
+        u2f_proxy_response((u2f_service_t *)&u2fService,
+            rai_context_D.outLength);
+    } else {
+        io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
+            rai_context_D.outLength);
+    }
+#else
+    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
+        rai_context_D.outLength);
+#endif
 }
 
 void app_main(void) {

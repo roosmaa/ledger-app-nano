@@ -31,4 +31,6 @@
 
 #include "rai_secure_value.h"
 
+void app_async_response(void);
+
 #endif

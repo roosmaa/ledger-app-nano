@@ -27,6 +27,9 @@ struct rai_context_s {
     /** Flag if dongle has been halted */
     secu8 halted;
 
+    /** Chain code for the current public key **/
+    uint8_t chainCode[32];
+
     /** Currently processed block **/
     rai_block_t block;
 

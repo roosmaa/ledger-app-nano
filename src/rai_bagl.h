@@ -23,5 +23,7 @@
 
 #define RAI_BAGL_COLOR_APP 0xFCB653
 
+void rai_bagl_display_address(void);
+void rai_bagl_display_address_callback(bool confirmed);
 
 #endif

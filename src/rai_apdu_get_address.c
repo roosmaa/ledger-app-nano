@@ -21,36 +21,23 @@
 
 #include "rai_bagl.h"
 
-#ifdef HAVE_U2F
-
-#include "u2f_service.h"
-#include "u2f_transport.h"
-
-extern bool fidoActivated;
-extern volatile u2f_service_t u2fService;
-void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
-
-#endif
-
 #define P1_NO_DISPLAY 0x00
 #define P1_DISPLAY 0x01
 
 #define P2_NO_CHAINCODE 0x00
 #define P2_CHAINCODE 0x01
 
+uint16_t rai_apdu_get_address_output(void);
+
 uint16_t rai_apdu_get_address() {
-    uint8_t *outPtr;
-    uint8_t keyLength;
-    uint8_t addressLength;
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
-    uint8_t chainCode[32];
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
     bool returnChainCode = G_io_apdu_buffer[ISO_OFFSET_P2] == P2_CHAINCODE;
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
     case P1_NO_DISPLAY:
+    case P1_DISPLAY:
         break;
-    case P1_DISPLAY: // TODO: Implement support for display
     default:
         return RAI_SW_INCORRECT_P1_P2;
     }
@@ -73,34 +60,61 @@ uint16_t rai_apdu_get_address() {
         return RAI_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
-    rai_private_derive_keypair(keyPath, true, chainCode);
+    // Retrieve the public key for the path
+    rai_private_derive_keypair(keyPath, true, rai_context_D.chainCode);
     os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
+    if (!returnChainCode) {
+        os_memmove(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
+    }
 
-    outPtr = G_io_apdu_buffer;
+    if (display) {
+        rai_context_D.ioFlags |= IO_ASYNCH_REPLY;
+        rai_bagl_display_address();
+        return RAI_SW_OK;
+    } else {
+        return rai_apdu_get_address_output();
+    }
+}
+
+uint16_t rai_apdu_get_address_output(void) {
+    uint8_t length;
+    bool returnChainCode = G_io_apdu_buffer[ISO_OFFSET_P2] == P2_CHAINCODE;
+    uint8_t *outPtr = G_io_apdu_buffer;
 
     // Output raw public key
-    keyLength = sizeof(rai_public_key_D);
-    *outPtr = keyLength;
-    os_memmove(outPtr + 1, rai_public_key_D, keyLength);
-    outPtr += 1 + keyLength;
+    length = sizeof(rai_public_key_D);
+    *outPtr = length;
+    os_memmove(outPtr + 1, rai_public_key_D, length);
+    outPtr += 1 + length;
 
     // Encode & output account address
-    addressLength = ACCOUNT_STRING_LEN;
-    *outPtr = addressLength;
+    length = ACCOUNT_STRING_LEN;
+    *outPtr = length;
     rai_write_account_string(outPtr + 1, rai_public_key_D);
-    outPtr += 1 + addressLength;
+    outPtr += 1 + length;
 
     // Output chain code
     if (returnChainCode) {
-        os_memmove(outPtr, chainCode, sizeof(chainCode));
-        outPtr += sizeof(chainCode);
+        os_memmove(outPtr, rai_context_D.chainCode, sizeof(rai_context_D.chainCode));
+        outPtr += sizeof(rai_context_D.chainCode);
     }
 
     rai_context_D.outLength = outPtr - G_io_apdu_buffer;
 
-    if (display) {
-        // TODO: implement display
+    // Reset the global variables
+    os_memset(rai_public_key_D, 0, sizeof(rai_public_key_D));
+    if (returnChainCode) {
+        os_memset(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
     }
 
     return RAI_SW_OK;
+}
+
+void rai_bagl_display_address_callback(bool confirmed) {
+    if (confirmed) {
+        rai_context_D.sw = rai_apdu_get_address_output();
+    } else {
+        rai_context_D.sw = RAI_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
+    }
+    app_async_response();
 }
