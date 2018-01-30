@@ -175,18 +175,18 @@ APDU Response payloads are encoded as follows:
 
 Messages are exchanged with the dongle over HID endpoints over interrupt transfers, with each chunk being 64 bytes long. The HID Report ID is ignored.
 
-## Status Words 
+## Status words 
 
 The following standard Status Words are returned for all APDUs - some specific Status Words can be used for specific commands and are mentioned in the command description.
 
-**Status Words**
+**Status words**
 
 |   *SW*   | *Description*                                                              |
 |----------|----------------------------------------------------------------------------|
 |   6700   | Incorrect length                                                           |
 |   6982   | Security status not satisfied (dongle is locked or invalid access rights)  |
-|   6A80   | Invalid data                                                               |
-|   6A82   | File not found                                                             |
+|   6A80   | Invalid input data                                                         |
+|   6A85   | User declined the request                                                  |
 |   6B00   | Incorrect parameter P1 or P2                                               |
 |   6Fxx   | Technical problem (Internal error, please report)                          |
 |   9000   | Normal ending of the command                                               |
