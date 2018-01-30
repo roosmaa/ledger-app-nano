@@ -62,9 +62,32 @@ uint16_t rai_apdu_sign_block() {
         return RAI_SW_INCORRECT_P1_P2;
     }
 
-    if (G_io_apdu_buffer[ISO_OFFSET_LC] < 0x01) {
+    // Verify the minimum size
+    switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
+    case P1_OPEN_BLOCK:
+        if (G_io_apdu_buffer[ISO_OFFSET_LC] < 34) {
+            return RAI_SW_INCORRECT_LENGTH;
+        }
+        break;
+    case P1_RECEIVE_BLOCK:
+        if (G_io_apdu_buffer[ISO_OFFSET_LC] < 65) {
+            return RAI_SW_INCORRECT_LENGTH;
+        }
+        break;
+    case P1_SEND_BLOCK:
+        if (G_io_apdu_buffer[ISO_OFFSET_LC] < 50) {
+            return RAI_SW_INCORRECT_LENGTH;
+        }
+        break;
+    case P1_CHANGE_BLOCK:
+        if (G_io_apdu_buffer[ISO_OFFSET_LC] < 34) {
+            return RAI_SW_INCORRECT_LENGTH;
+        }
+        break;
+    default:
         return RAI_SW_INCORRECT_LENGTH;
     }
+
     inPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
     keyPathPtr = inPtr;
     inPtr += 1 + (*inPtr) * 4;
