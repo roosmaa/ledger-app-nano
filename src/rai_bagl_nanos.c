@@ -368,7 +368,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            // TODO
+            ui_write_confirm_label_block_hash(
+                vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.base.hash);
             break;
         }
         break;
