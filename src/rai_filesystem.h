@@ -25,6 +25,8 @@
 #include "rai_context.h"
 
 typedef enum {
+    RAI_MEGA_XRB_UNIT,
+    RAI_KILO_XRB_UNIT,
     RAI_XRB_UNIT,
     RAI_MILLI_XRB_UNIT,
     RAI_MICRO_XRB_UNIT,
