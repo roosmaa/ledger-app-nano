@@ -38,6 +38,10 @@ void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey)
 void rai_truncate_string(char *dest, size_t destLen,
                          char *src, size_t srcLen);
 
+void rai_format_balance(char *dest, size_t destLen,
+                        rai_unit_format_t unitFormat,
+                        rai_balance_t balance);
+
 void rai_private_derive_keypair(uint8_t *bip32Path,
                                 bool derivePublic,
                                 uint8_t *out_chainCode);

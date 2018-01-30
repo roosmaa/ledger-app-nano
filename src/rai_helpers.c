@@ -236,6 +236,138 @@ void rai_truncate_string(char *dest, size_t destLen,
     }
 }
 
+void rai_format_balance(char *dest, size_t destLen,
+                        rai_unit_format_t unitFormat,
+                        rai_balance_t balance) {
+    // log10(x) = log2(x) / log2(10) ~= log2(x) / 3.322
+    char buf[128 / 3 + 1 + 2];
+    os_memset(buf, 0, sizeof(buf));
+    rai_balance_t num;
+    os_memmove(num, balance, sizeof(num));
+
+    size_t end = sizeof(buf) - 1;
+    size_t start = end;
+
+    // Convert the balance into a string by dividing by 10 until
+    // zero is reached
+    uint16_t r;
+    uint16_t d;
+    do {
+        r = num[0];
+        d = r / 10; r = ((r - d * 10) << 8) + num[1]; num[0] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[2]; num[1] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[3]; num[2] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[4]; num[3] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[5]; num[4] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[6]; num[5] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[7]; num[6] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[8]; num[7] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[9]; num[8] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[10]; num[9] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[11]; num[10] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[12]; num[11] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[13]; num[12] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[14]; num[13] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + num[15]; num[14] = d;
+        d = r / 10; r = r - d * 10; num[15] = d;
+        buf[--start] = '0' + r;
+    } while (num[0]  || num[1]  || num[2]  || num[3]  ||
+             num[4]  || num[5]  || num[6]  || num[7]  ||
+             num[8]  || num[9]  || num[10] || num[11] ||
+             num[12] || num[13] || num[14] || num[15]);
+
+    // Determine the location of the decimal point
+    size_t point = end;
+    switch (unitFormat) {
+    case RAI_MEGA_XRB_UNIT:  point = end - 1 - 30; break;
+    case RAI_KILO_XRB_UNIT:  point = end - 1 - 27; break;
+    case RAI_XRB_UNIT:       point = end - 1 - 24; break;
+    case RAI_MILLI_XRB_UNIT: point = end - 1 - 21; break;
+    case RAI_MICRO_XRB_UNIT: point = end - 1 - 18; break;
+    }
+    // Make sure that the number is zero padded until the point location
+    while (start > point) {
+        buf[--start] = '0';
+    }
+    // Move digits before the point one place to the left
+    for (size_t i = start; i <= point; i++) {
+        buf[i-1] = buf[i];
+    }
+    start -= 1;
+    // It's safe to write out the point now
+    if (point != end) {
+        buf[point] = '.';
+    }
+
+    // Remove as many zeros from the fractional part as possible
+    while (end > point && (buf[end-1] == '0' || buf[end-1] == '.')) {
+        end -= 1;
+    }
+    buf[end] = '\0';
+
+    // In case there is still many digits after the decimal point,
+    // round it up to 6 digits after the decimal point
+    if (end > point + 6 + 1) {
+        end = point + 7;
+        if (buf[end] >= '5') {
+            uint8_t c = 10;
+            for (size_t i = end - 1; i >= start; i--) {
+                if (buf[i] == '.') continue;
+                c = (buf[i] - '0') + c / 10;
+                buf[i] = (c % 10) + '0';
+                if (c < 10) break;
+            }
+        }
+        buf[end] = '\0';
+    }
+
+    // Append the unit
+    switch (unitFormat) {
+    case RAI_MEGA_XRB_UNIT:
+        buf[end++] = ' ';
+        buf[end++] = 'M';
+        buf[end++] = 'x';
+        buf[end++] = 'r';
+        buf[end++] = 'b';
+        buf[end] = '\0';
+        break;
+    case RAI_KILO_XRB_UNIT:
+        buf[end++] = ' ';
+        buf[end++] = 'k';
+        buf[end++] = 'x';
+        buf[end++] = 'r';
+        buf[end++] = 'b';
+        buf[end] = '\0';
+        break;
+    case RAI_XRB_UNIT:
+        buf[end++] = ' ';
+        buf[end++] = 'x';
+        buf[end++] = 'r';
+        buf[end++] = 'b';
+        buf[end] = '\0';
+        break;
+    case RAI_MILLI_XRB_UNIT:
+        buf[end++] = ' ';
+        buf[end++] = 'm';
+        buf[end++] = 'x';
+        buf[end++] = 'r';
+        buf[end++] = 'b';
+        buf[end] = '\0';
+        break;
+    case RAI_MICRO_XRB_UNIT:
+        buf[end++] = ' ';
+        buf[end++] = 'u';
+        buf[end++] = 'x';
+        buf[end++] = 'r';
+        buf[end++] = 'b';
+        buf[end] = '\0';
+        break;
+    }
+
+    // Copy the result to the destination buffer
+    os_memmove(dest, buf + start, MIN(destLen, end - start + 1));
+}
+
 void rai_private_derive_keypair(uint8_t *bip32Path,
                                 bool derivePublic,
                                 uint8_t *out_chainCode) {

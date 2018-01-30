@@ -425,7 +425,11 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Balance after");
-            // TODO
+            rai_format_balance(
+                vars.confirmSignBlock.confirmValue,
+                sizeof(vars.confirmSignBlock.confirmValue),
+                N_rai.unitFormat,
+                rai_context_D.block.send.balance);
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Send to");
