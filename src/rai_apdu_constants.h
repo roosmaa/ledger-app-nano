@@ -23,6 +23,7 @@
 #define RAI_ADM_CLA 0xD0
 #define RAI_NFCPAYMENT_CLA 0xF0
 
+#define RAI_INS_GET_APP_CONF 0x01
 #define RAI_INS_GET_ADDRESS 0x02
 #define RAI_INS_SIGN_BLOCK 0x03
 
@@ -48,6 +49,7 @@
 #include "os.h"
 #include "rai_secure_value.h"
 
+uint16_t rai_apdu_get_app_conf(void);
 uint16_t rai_apdu_get_address(void);
 uint16_t rai_apdu_sign_block(void);
 

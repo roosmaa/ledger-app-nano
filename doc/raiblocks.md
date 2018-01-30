@@ -118,6 +118,36 @@ This command returns the signature for the provided block.
 | Block hash                                         | 32        |
 | Signature                                          | 64        |
 
+
+## Test and utility APDUs
+
+### Get app configuration
+
+#### Description
+
+This command returns the application configuration.
+
+#### Coding
+
+**Command**
+
+| *CLA* | *INS*  | *P1*                 | *P2* | *Lc* | *Le* |
+|-------|--------|----------------------|------|------|------|
+|   A1  |   01   |  00                  |  00  |  00  |      |
+
+**Input data **
+
+*None*
+
+**Output data**
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Major app version                                  | 1         |
+| Minor app version                                  | 1         |
+| Patch app version                                  | 1         |
+
+
 ## Transport protocol
 
 ### General transport description

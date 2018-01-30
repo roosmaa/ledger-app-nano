@@ -19,21 +19,25 @@
 #include "rai_apdu_constants.h"
 
 uint8_t const DISPATCHER_CLA[] = {
+    RAI_CLA, // rai_apdu_get_app_conf
     RAI_CLA, // rai_apdu_get_address,
     RAI_CLA, // rai_apdu_sign_block,
 };
 
 uint8_t const DISPATCHER_INS[] = {
-    RAI_INS_GET_ADDRESS, // rai_apdu_get_address,
-    RAI_INS_SIGN_BLOCK,  // rai_apdu_sign_block
+    RAI_INS_GET_APP_CONF, // rai_apdu_get_app_conf
+    RAI_INS_GET_ADDRESS,  // rai_apdu_get_address,
+    RAI_INS_SIGN_BLOCK,   // rai_apdu_sign_block
 };
 
 bool const DISPATCHER_DATA_IN[] = {
+    false, // rai_apdu_get_app_conf
     true,  // rai_apdu_get_address,
     true,  // rai_apdu_sign_block
 };
 
 apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
+    rai_apdu_get_app_conf,
     rai_apdu_get_address,
     rai_apdu_sign_block,
 };
