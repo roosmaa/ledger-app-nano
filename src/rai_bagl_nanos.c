@@ -132,7 +132,7 @@ const ux_menu_entry_t menu_about[] = {
     UX_MENU_END};
 
 const ux_menu_entry_t menu_main[] = {
-    {NULL, NULL, 0, &C_nanos_badge_raiblocks, "Use wallet to",
+    {NULL, NULL, 0, &C_nanos_badge_nano, "Use wallet to",
      "view accounts", 33, 12},
     {menu_settings, NULL, 0, NULL, "Settings", NULL, 0, 0},
     {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},

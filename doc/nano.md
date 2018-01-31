@@ -1,8 +1,8 @@
-# RaiBlocks application : Common Technical Specifications
+# $NANO application : Common Technical Specifications
 
 ## About
 
-This specification describes the APDU messages interface to communicate with the RaiBlocks application.
+This specification describes the APDU messages interface to communicate with the $NANO application.
 
 ## Wallet usage APDUs
 

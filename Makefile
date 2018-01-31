@@ -20,7 +20,7 @@ $(error Environment variable BOLOS_SDK is not set)
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
-APPNAME ="RaiBlocks"
+APPNAME ="Nano"
 APP_LOAD_PARAMS=--appFlags 0x50 --path "44'/165'" --curve ed25519 $(COMMON_LOAD_PARAMS)
 
 APPVERSION_M=0
