@@ -272,7 +272,6 @@ void rai_truncate_string(char *dest, size_t destLen,
 }
 
 void rai_format_balance(char *dest, size_t destLen,
-                        rai_unit_format_t unitFormat,
                         rai_balance_t balance) {
     // log10(x) = log2(x) / log2(10) ~= log2(x) / 3.322
     char buf[128 / 3 + 1 + 2];
@@ -311,15 +310,8 @@ void rai_format_balance(char *dest, size_t destLen,
              num[8]  || num[9]  || num[10] || num[11] ||
              num[12] || num[13] || num[14] || num[15]);
 
-    // Determine the location of the decimal point
-    size_t point = end;
-    switch (unitFormat) {
-    case RAI_MEGA_XRB_UNIT:  point = end - 1 - 30; break;
-    case RAI_KILO_XRB_UNIT:  point = end - 1 - 27; break;
-    case RAI_XRB_UNIT:       point = end - 1 - 24; break;
-    case RAI_MILLI_XRB_UNIT: point = end - 1 - 21; break;
-    case RAI_MICRO_XRB_UNIT: point = end - 1 - 18; break;
-    }
+    // Assign the location for the decimal point
+    size_t point = end - 1 - 30;
     // Make sure that the number is zero padded until the point location
     while (start > point) {
         buf[--start] = '0';
@@ -357,47 +349,12 @@ void rai_format_balance(char *dest, size_t destLen,
     }
 
     // Append the unit
-    switch (unitFormat) {
-    case RAI_MEGA_XRB_UNIT:
-        buf[end++] = ' ';
-        buf[end++] = 'M';
-        buf[end++] = 'x';
-        buf[end++] = 'r';
-        buf[end++] = 'b';
-        buf[end] = '\0';
-        break;
-    case RAI_KILO_XRB_UNIT:
-        buf[end++] = ' ';
-        buf[end++] = 'k';
-        buf[end++] = 'x';
-        buf[end++] = 'r';
-        buf[end++] = 'b';
-        buf[end] = '\0';
-        break;
-    case RAI_XRB_UNIT:
-        buf[end++] = ' ';
-        buf[end++] = 'x';
-        buf[end++] = 'r';
-        buf[end++] = 'b';
-        buf[end] = '\0';
-        break;
-    case RAI_MILLI_XRB_UNIT:
-        buf[end++] = ' ';
-        buf[end++] = 'm';
-        buf[end++] = 'x';
-        buf[end++] = 'r';
-        buf[end++] = 'b';
-        buf[end] = '\0';
-        break;
-    case RAI_MICRO_XRB_UNIT:
-        buf[end++] = ' ';
-        buf[end++] = 'u';
-        buf[end++] = 'x';
-        buf[end++] = 'r';
-        buf[end++] = 'b';
-        buf[end] = '\0';
-        break;
-    }
+    buf[end++] = ' ';
+    buf[end++] = 'N';
+    buf[end++] = 'a';
+    buf[end++] = 'n';
+    buf[end++] = 'o';
+    buf[end] = '\0';
 
     // Copy the result to the destination buffer
     os_memmove(dest, buf + start, MIN(destLen, end - start + 1));

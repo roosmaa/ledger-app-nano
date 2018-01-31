@@ -74,7 +74,6 @@ void ui_write_address_full(char *label, rai_address_prefix_t prefix, rai_public_
 
 const ux_menu_entry_t menu_main[];
 const ux_menu_entry_t menu_settings[];
-const ux_menu_entry_t menu_settings_unitformat[];
 const ux_menu_entry_t menu_settings_autoreceive[];
 const ux_menu_entry_t menu_settings_browser[];
 
@@ -86,7 +85,7 @@ void menu_settings_browser_change(uint32_t enabled) {
     USB_power_U2F(false, false);
     USB_power_U2F(true, N_rai.fidoTransport);
     // go back to the menu entry
-    UX_MENU_DISPLAY(2, menu_settings, NULL);
+    UX_MENU_DISPLAY(1, menu_settings, NULL);
 }
 
 // show the currently activated entry
@@ -102,29 +101,10 @@ const ux_menu_entry_t menu_settings_browser[] = {
     UX_MENU_END};
 #endif // HAVE_U2F
 
-void menu_settings_unitformat_change(uint32_t fmt) {
-    rai_set_unit_format(fmt);
-    // go back to the menu entry
-    UX_MENU_DISPLAY(0, menu_settings, NULL);
-}
-
-void menu_settings_unitformat_init(uint32_t ignored) {
-    UNUSED(ignored);
-    UX_MENU_DISPLAY(N_rai.unitFormat, menu_settings_unitformat, NULL);
-}
-
-const ux_menu_entry_t menu_settings_unitformat[] = {
-    {NULL, menu_settings_unitformat_change, RAI_MEGA_XRB_UNIT, NULL, "Mxrb", NULL, 0, 0},
-    {NULL, menu_settings_unitformat_change, RAI_KILO_XRB_UNIT, NULL, "kxrb", NULL, 0, 0},
-    {NULL, menu_settings_unitformat_change, RAI_XRB_UNIT, NULL, "xrb", NULL, 0, 0},
-    {NULL, menu_settings_unitformat_change, RAI_MILLI_XRB_UNIT, NULL, "mxrb", NULL, 0, 0},
-    {NULL, menu_settings_unitformat_change, RAI_MICRO_XRB_UNIT, NULL, "uxrb", NULL, 0, 0},
-    UX_MENU_END};
-
 void menu_settings_autoreceive_change(uint32_t enabled) {
     rai_set_auto_receive(enabled);
     // go back to the menu entry
-    UX_MENU_DISPLAY(1, menu_settings, NULL);
+    UX_MENU_DISPLAY(0, menu_settings, NULL);
 }
 
 void menu_settings_autoreceive_init(uint32_t ignored) {
@@ -139,7 +119,6 @@ const ux_menu_entry_t menu_settings_autoreceive[] = {
     UX_MENU_END};
 
 const ux_menu_entry_t menu_settings[] = {
-    {NULL, menu_settings_unitformat_init, 0, NULL, "Unit format", NULL, 0, 0},
     {NULL, menu_settings_autoreceive_init, 0, NULL, "Auto-receive", NULL, 0, 0},
 #ifdef HAVE_U2F
     {NULL, menu_settings_browser_init, 0, NULL, "Browser support", NULL, 0, 0},
@@ -457,7 +436,6 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             rai_format_balance(
                 vars.confirmSignBlock.confirmValue,
                 sizeof(vars.confirmSignBlock.confirmValue),
-                N_rai.unitFormat,
                 rai_context_D.block.send.balance);
             break;
         case 3:

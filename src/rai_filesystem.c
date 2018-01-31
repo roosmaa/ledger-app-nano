@@ -19,11 +19,6 @@
 
 #include "rai_public_ram_variables.h"
 
-void rai_set_unit_format(rai_unit_format_t fmt) {
-    nvm_write((void *)&N_rai.unitFormat, &fmt,
-              sizeof(fmt));
-}
-
 void rai_set_auto_receive(bool enabled) {
     nvm_write((void *)&N_rai.autoReceive, &enabled,
               sizeof(enabled));
