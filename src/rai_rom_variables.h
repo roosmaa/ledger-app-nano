@@ -26,7 +26,7 @@ extern uint8_t const DISPATCHER_INS[DISPATCHER_APDUS];
 extern bool const DISPATCHER_DATA_IN[DISPATCHER_APDUS];
 extern apduProcessingFunction const DISPATCHER_FUNCTIONS[DISPATCHER_APDUS];
 
-#define ACCOUNT_STRING_LEN 64
+#define RAI_ACCOUNT_STRING_BASE_LEN 60
 
 extern uint8_t const BASE16_ALPHABET[16];
 

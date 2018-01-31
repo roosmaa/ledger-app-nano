@@ -72,16 +72,36 @@ void rai_write_hex_string(uint8_t *buffer, uint8_t *bytes, size_t bytesLen) {
     }
 }
 
-bool rai_read_account_string(uint8_t *buffer, size_t size, rai_public_key_t outKey) {
+bool rai_read_account_string(uint8_t *buffer, size_t size,
+                             rai_address_prefix_t *outPrefix,
+                             rai_public_key_t outKey) {
     uint8_t k, i, c;
     uint8_t checkInp[5];
     uint8_t check[5];
 
-    if (size != ACCOUNT_STRING_LEN) {
-        return false;
-    }
-    if (buffer[0] != 'x' || buffer[1] != 'r' || buffer[2] != 'b'
-        || !(buffer[3] == '-' || buffer[3] == '_')) {
+    // Check prefix and exclude it from the buffer
+    if ((buffer[0] == 'n' || buffer[0] == 'N') &&
+        (buffer[1] == 'a' || buffer[1] == 'A') &&
+        (buffer[2] == 'n' || buffer[2] == 'N') &&
+        (buffer[3] == 'o' || buffer[3] == 'O') &&
+        (buffer[4] == '-' || buffer[4] == '_')) {
+        if (size != RAI_ACCOUNT_STRING_BASE_LEN + RAI_DEFAULT_PREFIX_LEN) {
+            return false;
+        }
+        size -= 5;
+        buffer += 5;
+        *outPrefix = RAI_DEFAULT_PREFIX;
+    } else if ((buffer[0] == 'x' || buffer[0] == 'X') &&
+               (buffer[1] == 'r' || buffer[1] == 'R') &&
+               (buffer[2] == 'b' || buffer[2] == 'B') &&
+               (buffer[3] == '-' || buffer[3] == '_')) {
+        if (size != RAI_ACCOUNT_STRING_BASE_LEN + RAI_XRB_PREFIX_LEN) {
+            return false;
+        }
+        size -= 4;
+        buffer += 4;
+        *outPrefix = RAI_XRB_PREFIX;
+    } else {
         return false;
     }
 
@@ -96,10 +116,10 @@ bool rai_read_account_string(uint8_t *buffer, size_t size, rai_public_key_t outK
         } else if ((x) - sizeof(checkInp) < sizeof(rai_public_key_t)) { \
             outKey[sizeof(rai_public_key_t) - 1 - ((x) - sizeof(checkInp))] |= (v);\
         }
-    for (k = 0; k < ACCOUNT_STRING_LEN - 4; k++) {
+    for (k = 0; k < size; k++) {
         i = (k / 8) * 5;
 
-        c = buffer[ACCOUNT_STRING_LEN-1-k];
+        c = buffer[size-1-k];
         if (c >= 0x30 && c < 0x30 + sizeof(BASE32_TABLE)) {
             c = BASE32_TABLE[c - 0x30];
         } else {
@@ -154,7 +174,8 @@ bool rai_read_account_string(uint8_t *buffer, size_t size, rai_public_key_t outK
     return true;
 }
 
-void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey) {
+void rai_write_account_string(uint8_t *buffer, rai_address_prefix_t prefix,
+                              const rai_public_key_t publicKey) {
     uint8_t k, i, c;
     uint8_t check[5];
 
@@ -163,13 +184,31 @@ void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey)
     blake2b_update(&hash, publicKey, sizeof(rai_public_key_t));
     blake2b_final(&hash, check);
 
+    switch (prefix) {
+    case RAI_DEFAULT_PREFIX:
+        buffer[0] = 'n';
+        buffer[1] = 'a';
+        buffer[2] = 'n';
+        buffer[3] = 'o';
+        buffer[4] = '_';
+        buffer += RAI_DEFAULT_PREFIX_LEN;
+        break;
+    case RAI_XRB_PREFIX:
+        buffer[0] = 'x';
+        buffer[1] = 'r';
+        buffer[2] = 'b';
+        buffer[3] = '_';
+        buffer += RAI_XRB_PREFIX_LEN;
+        break;
+    }
+
     // Helper macro to create a virtual array of check and publicKey variables
     #define accGetByte(x) (uint8_t)( \
         ((x) < sizeof(check)) ? check[(x)] : \
         ((x) - sizeof(check) < sizeof(rai_public_key_t)) ? publicKey[sizeof(rai_public_key_t) - 1 - ((x) - sizeof(check))] : \
         0 \
     )
-    for (k = 0; k < ACCOUNT_STRING_LEN - 4; k++) {
+    for (k = 0; k < RAI_ACCOUNT_STRING_BASE_LEN; k++) {
         i = (k / 8) * 5;
         c = 0;
         switch (k % 8) {
@@ -202,13 +241,9 @@ void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey)
             c = (accGetByte(i + 4) >> 3) & B_11111;
             break;
         }
-        buffer[ACCOUNT_STRING_LEN-1-k] = BASE32_ALPHABET[c];
+        buffer[RAI_ACCOUNT_STRING_BASE_LEN-1-k] = BASE32_ALPHABET[c];
     }
     #undef accGetByte
-    buffer[0] = 'x';
-    buffer[1] = 'r';
-    buffer[2] = 'b';
-    buffer[3] = '_';
 }
 
 void rai_truncate_string(char *dest, size_t destLen,

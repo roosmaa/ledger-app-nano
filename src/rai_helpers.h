@@ -32,8 +32,11 @@ void rai_write_u32_le(uint8_t *buffer, uint32_t value);
 
 void rai_write_hex_string(uint8_t *buffer, uint8_t *bytes, size_t bytesLen);
 
-bool rai_read_account_string(uint8_t *buffer, size_t size, rai_public_key_t outKey);
-void rai_write_account_string(uint8_t *buffer, const rai_public_key_t publicKey);
+bool rai_read_account_string(uint8_t *buffer, size_t size,
+                             rai_address_prefix_t *outPrefix,
+                             rai_public_key_t outKey);
+void rai_write_account_string(uint8_t *buffer, rai_address_prefix_t prefix,
+                              const rai_public_key_t publicKey);
 
 void rai_truncate_string(char *dest, size_t destLen,
                          char *src, size_t srcLen);

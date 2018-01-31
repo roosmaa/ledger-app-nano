@@ -35,6 +35,15 @@ typedef enum {
     RAI_CHANGE_BLOCK,
 } rai_block_type_t;
 
+#define RAI_DEFAULT_PREFIX_LEN 5 // len("nano_")
+#define RAI_XRB_PREFIX_LEN 4 // len("xrb_")
+#define RAI_PREFIX_MAX_LEN 5
+
+typedef enum {
+    RAI_DEFAULT_PREFIX, // nano_
+    RAI_XRB_PREFIX, // xrb_
+} rai_address_prefix_t;
+
 #define RAI_BLOCK_COMMON \
     rai_block_type_t type; \
     rai_hash_t hash; \
@@ -47,6 +56,7 @@ typedef struct {
 typedef struct {
     RAI_BLOCK_COMMON;
     rai_public_key_t representative;
+    rai_address_prefix_t representativePrefix;
     rai_hash_t sourceBlock;
 } rai_block_open_t;
 
@@ -60,6 +70,7 @@ typedef struct {
     RAI_BLOCK_COMMON;
     rai_hash_t previousBlock;
     rai_public_key_t destinationAccount;
+    rai_address_prefix_t destinationAccountPrefix;
     rai_balance_t balance;
 } rai_block_send_t;
 
@@ -67,6 +78,7 @@ typedef struct {
     RAI_BLOCK_COMMON;
     rai_hash_t previousBlock;
     rai_public_key_t representative;
+    rai_address_prefix_t representativePrefix;
 } rai_block_change_t;
 
 #undef RAI_BLOCK_COMMON

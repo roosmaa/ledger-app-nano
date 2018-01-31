@@ -87,9 +87,9 @@ uint16_t rai_apdu_get_address_output(void) {
     outPtr += 1 + length;
 
     // Encode & output account address
-    length = ACCOUNT_STRING_LEN;
+    length = RAI_ACCOUNT_STRING_BASE_LEN + RAI_DEFAULT_PREFIX_LEN;
     *outPtr = length;
-    rai_write_account_string(outPtr + 1, rai_public_key_D);
+    rai_write_account_string(outPtr + 1, RAI_DEFAULT_PREFIX, rai_public_key_D);
     outPtr += 1 + length;
 
     // Output chain code

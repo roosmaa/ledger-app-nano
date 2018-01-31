@@ -112,6 +112,7 @@ uint16_t rai_apdu_sign_block() {
         readLen = *inPtr;
         if (!rai_read_account_string(
                 inPtr + 1, readLen,
+                &rai_context_D.block.open.representativePrefix,
                 rai_context_D.block.open.representative)) {
             return RAI_SW_INCORRECT_DATA;
         }
@@ -144,6 +145,7 @@ uint16_t rai_apdu_sign_block() {
         readLen = *inPtr;
         if (!rai_read_account_string(
                 inPtr + 1, readLen,
+                &rai_context_D.block.send.destinationAccountPrefix,
                 rai_context_D.block.send.destinationAccount)) {
             return RAI_SW_INCORRECT_DATA;
         }
@@ -164,6 +166,7 @@ uint16_t rai_apdu_sign_block() {
         readLen = *inPtr;
         if (!rai_read_account_string(
                 inPtr + 1, readLen,
+                &rai_context_D.block.change.representativePrefix,
                 rai_context_D.block.change.representative)) {
             return RAI_SW_INCORRECT_DATA;
         }

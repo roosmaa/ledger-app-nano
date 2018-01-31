@@ -35,14 +35,42 @@ uint16_t ux_step_count;
 
 union {
     struct {
-        char account[ACCOUNT_STRING_LEN+1];
+        char account[RAI_ACCOUNT_STRING_BASE_LEN+RAI_PREFIX_MAX_LEN+1];
     } displayAddress;
     struct {
         char blockType[20];
         char confirmLabel[20];
-        char confirmValue[ACCOUNT_STRING_LEN+1];
+        char confirmValue[RAI_ACCOUNT_STRING_BASE_LEN+RAI_PREFIX_MAX_LEN+1];
     } confirmSignBlock;
 } vars;
+
+void ui_write_address_truncated(char *label, rai_address_prefix_t prefix, rai_public_key_t publicKey) {
+    char buf[RAI_ACCOUNT_STRING_BASE_LEN+RAI_PREFIX_MAX_LEN];
+    rai_write_account_string((uint8_t *)buf, prefix, publicKey);
+
+    size_t addressSize;
+    switch (prefix) {
+    case RAI_DEFAULT_PREFIX:
+      addressSize = RAI_ACCOUNT_STRING_BASE_LEN + RAI_DEFAULT_PREFIX_LEN;
+      break;
+    case RAI_XRB_PREFIX:
+      addressSize = RAI_ACCOUNT_STRING_BASE_LEN + RAI_XRB_PREFIX_LEN;
+      break;
+    }
+    rai_truncate_string(label, 13, buf, addressSize);
+}
+
+void ui_write_address_full(char *label, rai_address_prefix_t prefix, rai_public_key_t publicKey) {
+    rai_write_account_string((uint8_t *)label, prefix, publicKey);
+    switch (prefix) {
+    case RAI_DEFAULT_PREFIX:
+      label[RAI_ACCOUNT_STRING_BASE_LEN+RAI_DEFAULT_PREFIX_LEN] = '\0';
+      break;
+    case RAI_XRB_PREFIX:
+      label[RAI_ACCOUNT_STRING_BASE_LEN+RAI_XRB_PREFIX_LEN] = '\0';
+      break;
+    }
+}
 
 const ux_menu_entry_t menu_main[];
 const ux_menu_entry_t menu_settings[];
@@ -263,8 +291,10 @@ uint32_t ui_display_address_button(uint32_t button_mask,
 void rai_bagl_display_address(void) {
     os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
     // Encode public key into an address string
-    rai_write_account_string((uint8_t *)vars.displayAddress.account, rai_public_key_D);
-    vars.displayAddress.account[ACCOUNT_STRING_LEN] = '\0';
+    ui_write_address_full(
+      vars.displayAddress.account,
+      RAI_DEFAULT_PREFIX,
+      rai_public_key_D);
 
     ux_step_count = 2;
     ux_step = 0;
@@ -343,12 +373,6 @@ const bagl_element_t ui_confirm_sign_block[] = {
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
 };
 
-void ui_write_confirm_label_address(char *label, rai_public_key_t publicKey) {
-    char buf[ACCOUNT_STRING_LEN];
-    rai_write_account_string((uint8_t *)buf, publicKey);
-    rai_truncate_string(label, 13, buf, sizeof(buf));
-}
-
 void ui_write_confirm_label_block_hash(char *label, rai_hash_t hash) {
     char buf[2*sizeof(rai_hash_t)];
     rai_write_hex_string((uint8_t *)buf, hash, sizeof(rai_hash_t));
@@ -362,8 +386,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_confirm_label_address(
+            ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
+                RAI_DEFAULT_PREFIX,
                 rai_public_key_D);
             break;
         case 2:
@@ -379,14 +404,16 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_confirm_label_address(
+            ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
+                RAI_DEFAULT_PREFIX,
                 rai_public_key_D);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
-            rai_write_account_string(
-                (uint8_t *)vars.confirmSignBlock.confirmValue,
+            ui_write_address_full(
+                vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.open.representativePrefix,
                 rai_context_D.block.open.representative);
             break;
         case 3:
@@ -402,8 +429,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_confirm_label_address(
+            ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
+                RAI_DEFAULT_PREFIX,
                 rai_public_key_D);
             break;
         case 2:
@@ -419,8 +447,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_confirm_label_address(
+            ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
+                RAI_DEFAULT_PREFIX,
                 rai_public_key_D);
             break;
         case 2:
@@ -433,8 +462,9 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Send to");
-            rai_write_account_string(
-                (uint8_t *)vars.confirmSignBlock.confirmValue,
+            ui_write_address_full(
+                vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.send.destinationAccountPrefix,
                 rai_context_D.block.send.destinationAccount);
             break;
         case 4:
@@ -450,14 +480,16 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_confirm_label_address(
+            ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
+                RAI_DEFAULT_PREFIX,
                 rai_public_key_D);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
-            rai_write_account_string(
-                (uint8_t *)vars.confirmSignBlock.confirmValue,
+            ui_write_address_full(
+                vars.confirmSignBlock.confirmValue,
+                rai_context_D.block.change.representativePrefix,
                 rai_context_D.block.change.representative);
             break;
         case 3:
