@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,8 @@
 #include "os_io_seproxyhal.h"
 
 #include "glyphs.h"
-#include "rai_internal.h"
-#include "rai_bagl.h"
+#include "nano_internal.h"
+#include "nano_bagl.h"
 
 #if defined(TARGET_NANOS)
 
@@ -35,39 +35,39 @@ uint16_t ux_step_count;
 
 union {
     struct {
-        char account[RAI_ACCOUNT_STRING_BASE_LEN+RAI_PREFIX_MAX_LEN+1];
+        char account[NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN+1];
     } displayAddress;
     struct {
         char blockType[20];
         char confirmLabel[20];
-        char confirmValue[RAI_ACCOUNT_STRING_BASE_LEN+RAI_PREFIX_MAX_LEN+1];
+        char confirmValue[NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN+1];
     } confirmSignBlock;
 } vars;
 
-void ui_write_address_truncated(char *label, rai_address_prefix_t prefix, rai_public_key_t publicKey) {
-    char buf[RAI_ACCOUNT_STRING_BASE_LEN+RAI_PREFIX_MAX_LEN];
-    rai_write_account_string((uint8_t *)buf, prefix, publicKey);
+void ui_write_address_truncated(char *label, nano_address_prefix_t prefix, nano_public_key_t publicKey) {
+    char buf[NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN];
+    nano_write_account_string((uint8_t *)buf, prefix, publicKey);
 
     size_t addressSize;
     switch (prefix) {
-    case RAI_DEFAULT_PREFIX:
-      addressSize = RAI_ACCOUNT_STRING_BASE_LEN + RAI_DEFAULT_PREFIX_LEN;
+    case NANO_DEFAULT_PREFIX:
+      addressSize = NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN;
       break;
-    case RAI_XRB_PREFIX:
-      addressSize = RAI_ACCOUNT_STRING_BASE_LEN + RAI_XRB_PREFIX_LEN;
+    case NANO_XRB_PREFIX:
+      addressSize = NANO_ACCOUNT_STRING_BASE_LEN + NANO_XRB_PREFIX_LEN;
       break;
     }
-    rai_truncate_string(label, 13, buf, addressSize);
+    nano_truncate_string(label, 13, buf, addressSize);
 }
 
-void ui_write_address_full(char *label, rai_address_prefix_t prefix, rai_public_key_t publicKey) {
-    rai_write_account_string((uint8_t *)label, prefix, publicKey);
+void ui_write_address_full(char *label, nano_address_prefix_t prefix, nano_public_key_t publicKey) {
+    nano_write_account_string((uint8_t *)label, prefix, publicKey);
     switch (prefix) {
-    case RAI_DEFAULT_PREFIX:
-      label[RAI_ACCOUNT_STRING_BASE_LEN+RAI_DEFAULT_PREFIX_LEN] = '\0';
+    case NANO_DEFAULT_PREFIX:
+      label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_DEFAULT_PREFIX_LEN] = '\0';
       break;
-    case RAI_XRB_PREFIX:
-      label[RAI_ACCOUNT_STRING_BASE_LEN+RAI_XRB_PREFIX_LEN] = '\0';
+    case NANO_XRB_PREFIX:
+      label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_XRB_PREFIX_LEN] = '\0';
       break;
     }
 }
@@ -81,9 +81,9 @@ const ux_menu_entry_t menu_settings_browser[];
 
 // change the setting
 void menu_settings_browser_change(uint32_t enabled) {
-    rai_set_fido_transport(enabled);
+    nano_set_fido_transport(enabled);
     USB_power_U2F(false, false);
-    USB_power_U2F(true, N_rai.fidoTransport);
+    USB_power_U2F(true, N_nano.fidoTransport);
     // go back to the menu entry
     UX_MENU_DISPLAY(1, menu_settings, NULL);
 }
@@ -91,7 +91,7 @@ void menu_settings_browser_change(uint32_t enabled) {
 // show the currently activated entry
 void menu_settings_browser_init(uint32_t ignored) {
     UNUSED(ignored);
-    UX_MENU_DISPLAY(N_rai.fidoTransport ? 1 : 0,
+    UX_MENU_DISPLAY(N_nano.fidoTransport ? 1 : 0,
                     menu_settings_browser, NULL);
 }
 
@@ -102,14 +102,14 @@ const ux_menu_entry_t menu_settings_browser[] = {
 #endif // HAVE_U2F
 
 void menu_settings_autoreceive_change(uint32_t enabled) {
-    rai_set_auto_receive(enabled);
+    nano_set_auto_receive(enabled);
     // go back to the menu entry
     UX_MENU_DISPLAY(0, menu_settings, NULL);
 }
 
 void menu_settings_autoreceive_init(uint32_t ignored) {
     UNUSED(ignored);
-    UX_MENU_DISPLAY(N_rai.autoReceive ? 1 : 0,
+    UX_MENU_DISPLAY(N_nano.autoReceive ? 1 : 0,
                     menu_settings_autoreceive, NULL);
 }
 
@@ -251,11 +251,11 @@ uint32_t ui_display_address_button(uint32_t button_mask,
                                    uint32_t button_mask_counter) {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-        rai_bagl_display_address_callback(false);
+        nano_bagl_display_address_callback(false);
         break;
 
     case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-        rai_bagl_display_address_callback(true);
+        nano_bagl_display_address_callback(true);
         break;
 
     // For other button combinations return early and do nothing
@@ -267,13 +267,13 @@ uint32_t ui_display_address_button(uint32_t button_mask,
     return 0;
 }
 
-void rai_bagl_display_address(void) {
+void nano_bagl_display_address(void) {
     os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
     // Encode public key into an address string
     ui_write_address_full(
       vars.displayAddress.account,
-      RAI_DEFAULT_PREFIX,
-      rai_public_key_D);
+      NANO_DEFAULT_PREFIX,
+      nano_public_key_D);
 
     ux_step_count = 2;
     ux_step = 0;
@@ -352,129 +352,129 @@ const bagl_element_t ui_confirm_sign_block[] = {
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
 };
 
-void ui_write_confirm_label_block_hash(char *label, rai_hash_t hash) {
-    char buf[2*sizeof(rai_hash_t)];
-    rai_write_hex_string((uint8_t *)buf, hash, sizeof(rai_hash_t));
-    rai_truncate_string(label, 13, buf, sizeof(buf));
+void ui_write_confirm_label_block_hash(char *label, nano_hash_t hash) {
+    char buf[2*sizeof(nano_hash_t)];
+    nano_write_hex_string((uint8_t *)buf, hash, sizeof(nano_hash_t));
+    nano_truncate_string(label, 13, buf, sizeof(buf));
 }
 
 void ui_confirm_sign_block_prepare_confirm_step(void) {
-    switch (rai_context_D.block.base.type) {
-    case RAI_UNKNOWN_BLOCK:
+    switch (nano_context_D.block.base.type) {
+    case NANO_UNKNOWN_BLOCK:
         switch (ux_step) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
-                RAI_DEFAULT_PREFIX,
-                rai_public_key_D);
+                NANO_DEFAULT_PREFIX,
+                nano_public_key_D);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.base.hash);
+                nano_context_D.block.base.hash);
             break;
         }
         break;
-    case RAI_OPEN_BLOCK:
+    case NANO_OPEN_BLOCK:
         switch (ux_step) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
-                RAI_DEFAULT_PREFIX,
-                rai_public_key_D);
+                NANO_DEFAULT_PREFIX,
+                nano_public_key_D);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.open.representativePrefix,
-                rai_context_D.block.open.representative);
+                nano_context_D.block.open.representativePrefix,
+                nano_context_D.block.open.representative);
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.open.hash);
+                nano_context_D.block.open.hash);
             break;
         }
         break;
-    case RAI_RECEIVE_BLOCK:
+    case NANO_RECEIVE_BLOCK:
         switch (ux_step) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
-                RAI_DEFAULT_PREFIX,
-                rai_public_key_D);
+                NANO_DEFAULT_PREFIX,
+                nano_public_key_D);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.receive.hash);
+                nano_context_D.block.receive.hash);
             break;
         }
         break;
-    case RAI_SEND_BLOCK:
+    case NANO_SEND_BLOCK:
         switch (ux_step) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
-                RAI_DEFAULT_PREFIX,
-                rai_public_key_D);
+                NANO_DEFAULT_PREFIX,
+                nano_public_key_D);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Balance after");
-            rai_format_balance(
+            nano_format_balance(
                 vars.confirmSignBlock.confirmValue,
                 sizeof(vars.confirmSignBlock.confirmValue),
-                rai_context_D.block.send.balance);
+                nano_context_D.block.send.balance);
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Send to");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.send.destinationAccountPrefix,
-                rai_context_D.block.send.destinationAccount);
+                nano_context_D.block.send.destinationAccountPrefix,
+                nano_context_D.block.send.destinationAccount);
             break;
         case 4:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.send.hash);
+                nano_context_D.block.send.hash);
             break;
         }
         break;
-    case RAI_CHANGE_BLOCK:
+    case NANO_CHANGE_BLOCK:
         switch (ux_step) {
         default:
         case 1:
             strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
-                RAI_DEFAULT_PREFIX,
-                rai_public_key_D);
+                NANO_DEFAULT_PREFIX,
+                nano_public_key_D);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.change.representativePrefix,
-                rai_context_D.block.change.representative);
+                nano_context_D.block.change.representativePrefix,
+                nano_context_D.block.change.representative);
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                rai_context_D.block.change.hash);
+                nano_context_D.block.change.hash);
             break;
         }
         break;
@@ -517,11 +517,11 @@ uint32_t ui_confirm_sign_block_button(uint32_t button_mask,
                                       uint32_t button_mask_counter) {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-        rai_bagl_confirm_sign_block_callback(false);
+        nano_bagl_confirm_sign_block_callback(false);
         break;
 
     case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-        rai_bagl_confirm_sign_block_callback(true);
+        nano_bagl_confirm_sign_block_callback(true);
         break;
 
     // For other button combinations return early and do nothing
@@ -533,27 +533,27 @@ uint32_t ui_confirm_sign_block_button(uint32_t button_mask,
     return 0;
 }
 
-void rai_bagl_confirm_sign_block(void) {
+void nano_bagl_confirm_sign_block(void) {
     os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
 
-    switch (rai_context_D.block.base.type) {
-    case RAI_UNKNOWN_BLOCK:
+    switch (nano_context_D.block.base.type) {
+    case NANO_UNKNOWN_BLOCK:
         strcpy(vars.confirmSignBlock.blockType, "unknown block");
         ux_step_count = 3;
         break;
-    case RAI_OPEN_BLOCK:
+    case NANO_OPEN_BLOCK:
         strcpy(vars.confirmSignBlock.blockType, "open block");
         ux_step_count = 4;
         break;
-    case RAI_RECEIVE_BLOCK:
+    case NANO_RECEIVE_BLOCK:
         strcpy(vars.confirmSignBlock.blockType, "receive block");
         ux_step_count = 3;
         break;
-    case RAI_SEND_BLOCK:
+    case NANO_SEND_BLOCK:
         strcpy(vars.confirmSignBlock.blockType, "send block");
         ux_step_count = 5;
         break;
-    case RAI_CHANGE_BLOCK:
+    case NANO_CHANGE_BLOCK:
         strcpy(vars.confirmSignBlock.blockType, "change block");
         ux_step_count = 4;
         break;

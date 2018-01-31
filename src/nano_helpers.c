@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "rai_internal.h"
-#include "rai_apdu_constants.h"
+#include "nano_internal.h"
+#include "nano_apdu_constants.h"
 #include "ed25519.h"
 #include "blake2b.h"
 
-#define RAI_CURVE CX_CURVE_Ed25519
+#define NANO_CURVE CX_CURVE_Ed25519
 
 // Define some binary "literals" for the massive bit manipulation operation
 // when converting public key to account string.
@@ -30,8 +30,8 @@
 #define B_00011  3
 #define B_00001  1
 
-uint32_t rai_read_u32(uint8_t *buffer, bool be,
-                      bool skipSign) {
+uint32_t nano_read_u32(uint8_t *buffer, bool be,
+                       bool skipSign) {
     uint8_t i;
     uint32_t result = 0;
     uint8_t shiftValue = (be ? 24 : 0);
@@ -50,21 +50,21 @@ uint32_t rai_read_u32(uint8_t *buffer, bool be,
     return result;
 }
 
-void rai_write_u32_be(uint8_t *buffer, uint32_t value) {
+void nano_write_u32_be(uint8_t *buffer, uint32_t value) {
     buffer[0] = ((value >> 24) & 0xff);
     buffer[1] = ((value >> 16) & 0xff);
     buffer[2] = ((value >> 8) & 0xff);
     buffer[3] = (value & 0xff);
 }
 
-void rai_write_u32_le(uint8_t *buffer, uint32_t value) {
+void nano_write_u32_le(uint8_t *buffer, uint32_t value) {
     buffer[0] = (value & 0xff);
     buffer[1] = ((value >> 8) & 0xff);
     buffer[2] = ((value >> 16) & 0xff);
     buffer[3] = ((value >> 24) & 0xff);
 }
 
-void rai_write_hex_string(uint8_t *buffer, uint8_t *bytes, size_t bytesLen) {
+void nano_write_hex_string(uint8_t *buffer, uint8_t *bytes, size_t bytesLen) {
     uint32_t i;
     for (i = 0; i < bytesLen; i++) {
         buffer[2*i] = BASE16_ALPHABET[(bytes[i] >> 4) & 0xF];
@@ -72,9 +72,9 @@ void rai_write_hex_string(uint8_t *buffer, uint8_t *bytes, size_t bytesLen) {
     }
 }
 
-bool rai_read_account_string(uint8_t *buffer, size_t size,
-                             rai_address_prefix_t *outPrefix,
-                             rai_public_key_t outKey) {
+bool nano_read_account_string(uint8_t *buffer, size_t size,
+                              nano_address_prefix_t *outPrefix,
+                              nano_public_key_t outKey) {
     uint8_t k, i, c;
     uint8_t checkInp[5];
     uint8_t check[5];
@@ -85,36 +85,36 @@ bool rai_read_account_string(uint8_t *buffer, size_t size,
         (buffer[2] == 'n' || buffer[2] == 'N') &&
         (buffer[3] == 'o' || buffer[3] == 'O') &&
         (buffer[4] == '-' || buffer[4] == '_')) {
-        if (size != RAI_ACCOUNT_STRING_BASE_LEN + RAI_DEFAULT_PREFIX_LEN) {
+        if (size != NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN) {
             return false;
         }
         size -= 5;
         buffer += 5;
-        *outPrefix = RAI_DEFAULT_PREFIX;
+        *outPrefix = NANO_DEFAULT_PREFIX;
     } else if ((buffer[0] == 'x' || buffer[0] == 'X') &&
                (buffer[1] == 'r' || buffer[1] == 'R') &&
                (buffer[2] == 'b' || buffer[2] == 'B') &&
                (buffer[3] == '-' || buffer[3] == '_')) {
-        if (size != RAI_ACCOUNT_STRING_BASE_LEN + RAI_XRB_PREFIX_LEN) {
+        if (size != NANO_ACCOUNT_STRING_BASE_LEN + NANO_XRB_PREFIX_LEN) {
             return false;
         }
         size -= 4;
         buffer += 4;
-        *outPrefix = RAI_XRB_PREFIX;
+        *outPrefix = NANO_XRB_PREFIX;
     } else {
         return false;
     }
 
     os_memset(checkInp, 0, sizeof(checkInp));
     os_memset(check, 0, sizeof(check));
-    os_memset(outKey, 0, sizeof(rai_public_key_t));
+    os_memset(outKey, 0, sizeof(nano_public_key_t));
 
     // Helper macro to create a virtual array of checkInp and outKey variables
     #define accPipeByte(x, v) \
         if ((x) < sizeof(checkInp)) { \
             checkInp[(x)] |= (v);\
-        } else if ((x) - sizeof(checkInp) < sizeof(rai_public_key_t)) { \
-            outKey[sizeof(rai_public_key_t) - 1 - ((x) - sizeof(checkInp))] |= (v);\
+        } else if ((x) - sizeof(checkInp) < sizeof(nano_public_key_t)) { \
+            outKey[sizeof(nano_public_key_t) - 1 - ((x) - sizeof(checkInp))] |= (v);\
         }
     for (k = 0; k < size; k++) {
         i = (k / 8) * 5;
@@ -162,7 +162,7 @@ bool rai_read_account_string(uint8_t *buffer, size_t size,
     // Verify the checksum of the address
     blake2b_ctx hash;
     blake2b_init(&hash, sizeof(check), NULL, 0);
-    blake2b_update(&hash, outKey, sizeof(rai_public_key_t));
+    blake2b_update(&hash, outKey, sizeof(nano_public_key_t));
     blake2b_final(&hash, check);
 
     for (i = 0; i < sizeof(check); i++) {
@@ -174,41 +174,41 @@ bool rai_read_account_string(uint8_t *buffer, size_t size,
     return true;
 }
 
-void rai_write_account_string(uint8_t *buffer, rai_address_prefix_t prefix,
-                              const rai_public_key_t publicKey) {
+void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
+                               const nano_public_key_t publicKey) {
     uint8_t k, i, c;
     uint8_t check[5];
 
     blake2b_ctx hash;
     blake2b_init(&hash, sizeof(check), NULL, 0);
-    blake2b_update(&hash, publicKey, sizeof(rai_public_key_t));
+    blake2b_update(&hash, publicKey, sizeof(nano_public_key_t));
     blake2b_final(&hash, check);
 
     switch (prefix) {
-    case RAI_DEFAULT_PREFIX:
+    case NANO_DEFAULT_PREFIX:
         buffer[0] = 'n';
         buffer[1] = 'a';
         buffer[2] = 'n';
         buffer[3] = 'o';
         buffer[4] = '_';
-        buffer += RAI_DEFAULT_PREFIX_LEN;
+        buffer += NANO_DEFAULT_PREFIX_LEN;
         break;
-    case RAI_XRB_PREFIX:
+    case NANO_XRB_PREFIX:
         buffer[0] = 'x';
         buffer[1] = 'r';
         buffer[2] = 'b';
         buffer[3] = '_';
-        buffer += RAI_XRB_PREFIX_LEN;
+        buffer += NANO_XRB_PREFIX_LEN;
         break;
     }
 
     // Helper macro to create a virtual array of check and publicKey variables
     #define accGetByte(x) (uint8_t)( \
         ((x) < sizeof(check)) ? check[(x)] : \
-        ((x) - sizeof(check) < sizeof(rai_public_key_t)) ? publicKey[sizeof(rai_public_key_t) - 1 - ((x) - sizeof(check))] : \
+        ((x) - sizeof(check) < sizeof(nano_public_key_t)) ? publicKey[sizeof(nano_public_key_t) - 1 - ((x) - sizeof(check))] : \
         0 \
     )
-    for (k = 0; k < RAI_ACCOUNT_STRING_BASE_LEN; k++) {
+    for (k = 0; k < NANO_ACCOUNT_STRING_BASE_LEN; k++) {
         i = (k / 8) * 5;
         c = 0;
         switch (k % 8) {
@@ -241,13 +241,13 @@ void rai_write_account_string(uint8_t *buffer, rai_address_prefix_t prefix,
             c = (accGetByte(i + 4) >> 3) & B_11111;
             break;
         }
-        buffer[RAI_ACCOUNT_STRING_BASE_LEN-1-k] = BASE32_ALPHABET[c];
+        buffer[NANO_ACCOUNT_STRING_BASE_LEN-1-k] = BASE32_ALPHABET[c];
     }
     #undef accGetByte
 }
 
-void rai_truncate_string(char *dest, size_t destLen,
-                         char *src, size_t srcLen) {
+void nano_truncate_string(char *dest, size_t destLen,
+                          char *src, size_t srcLen) {
     size_t i;
     os_memset(dest, 0, destLen);
     destLen -= 1; // Leave the \0 c-string terminator
@@ -271,12 +271,12 @@ void rai_truncate_string(char *dest, size_t destLen,
     }
 }
 
-void rai_format_balance(char *dest, size_t destLen,
-                        rai_balance_t balance) {
+void nano_format_balance(char *dest, size_t destLen,
+                         nano_balance_t balance) {
     // log10(x) = log2(x) / log2(10) ~= log2(x) / 3.322
     char buf[128 / 3 + 1 + 2];
     os_memset(buf, 0, sizeof(buf));
-    rai_balance_t num;
+    nano_balance_t num;
     os_memmove(num, balance, sizeof(num));
 
     size_t end = sizeof(buf) - 1;
@@ -360,9 +360,9 @@ void rai_format_balance(char *dest, size_t destLen,
     os_memmove(dest, buf + start, MIN(destLen, end - start + 1));
 }
 
-void rai_private_derive_keypair(uint8_t *bip32Path,
-                                bool derivePublic,
-                                uint8_t *out_chainCode) {
+void nano_private_derive_keypair(uint8_t *bip32Path,
+                                 bool derivePublic,
+                                 uint8_t *out_chainCode) {
     uint8_t bip32PathLength;
     uint8_t i;
     uint32_t bip32PathInt[MAX_BIP32_PATH];
@@ -373,38 +373,38 @@ void rai_private_derive_keypair(uint8_t *bip32Path,
     }
     bip32Path++;
     for (i = 0; i < bip32PathLength; i++) {
-        bip32PathInt[i] = rai_read_u32(bip32Path, 1, 0);
+        bip32PathInt[i] = nano_read_u32(bip32Path, 1, 0);
         bip32Path += 4;
     }
-    os_perso_derive_node_bip32(RAI_CURVE, bip32PathInt, bip32PathLength,
-                               rai_private_key_D, out_chainCode);
+    os_perso_derive_node_bip32(NANO_CURVE, bip32PathInt, bip32PathLength,
+                               nano_private_key_D, out_chainCode);
 
     if (derivePublic) {
-        ed25519_publickey(rai_private_key_D, rai_public_key_D);
+        ed25519_publickey(nano_private_key_D, nano_public_key_D);
     }
 }
 
-void rai_hash_block(rai_block_t *block) {
+void nano_hash_block(nano_block_t *block) {
     blake2b_ctx hash;
     blake2b_init(&hash, sizeof(block->base.hash), NULL, 0);
 
     switch (block->base.type) {
-    case RAI_UNKNOWN_BLOCK: break;
-    case RAI_OPEN_BLOCK:
+    case NANO_UNKNOWN_BLOCK: break;
+    case NANO_OPEN_BLOCK:
         blake2b_update(&hash, block->open.sourceBlock,
             sizeof(block->open.sourceBlock));
         blake2b_update(&hash, block->open.representative,
             sizeof(block->open.representative));
-        blake2b_update(&hash, rai_public_key_D,
-            sizeof(rai_public_key_D));
+        blake2b_update(&hash, nano_public_key_D,
+            sizeof(nano_public_key_D));
         break;
-    case RAI_RECEIVE_BLOCK:
+    case NANO_RECEIVE_BLOCK:
         blake2b_update(&hash, block->receive.previousBlock,
             sizeof(block->receive.previousBlock));
         blake2b_update(&hash, block->receive.sourceBlock,
             sizeof(block->receive.sourceBlock));
         break;
-    case RAI_SEND_BLOCK:
+    case NANO_SEND_BLOCK:
         blake2b_update(&hash, block->send.previousBlock,
             sizeof(block->send.previousBlock));
         blake2b_update(&hash, block->send.destinationAccount,
@@ -412,7 +412,7 @@ void rai_hash_block(rai_block_t *block) {
         blake2b_update(&hash, block->send.balance,
             sizeof(block->send.balance));
         break;
-    case RAI_CHANGE_BLOCK:
+    case NANO_CHANGE_BLOCK:
         blake2b_update(&hash, block->change.previousBlock,
             sizeof(block->change.previousBlock));
         blake2b_update(&hash, block->change.representative,
@@ -423,9 +423,9 @@ void rai_hash_block(rai_block_t *block) {
     blake2b_final(&hash, block->base.hash);
 }
 
-void rai_sign_block(rai_block_t *block) {
+void nano_sign_block(nano_block_t *block) {
     ed25519_sign(
         block->base.hash, sizeof(block->base.hash),
-        rai_private_key_D, rai_public_key_D,
+        nano_private_key_D, nano_public_key_D,
         block->base.signature);
 }

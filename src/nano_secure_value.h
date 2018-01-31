@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +15,30 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "rai_internal.h"
+#ifndef NANO_SECURE_VALUE_H
 
-void sbSet(secu8 *target, uint8_t source) {
-    *target = (((uint16_t)~source) << 8) + source;
-}
+#define NANO_SECURE_VALUE_H
 
-void sbCheck(secu8 source) {
-    if (((source >> 8) & 0xff) != (uint8_t)(~(source & 0xff))) {
-        reset();
-    }
-}
+#include "os.h"
 
-void ssSet(secu16 *target, uint16_t source) {
-    *target = (((uint32_t)~source) << 16) + source;
-}
+typedef uint16_t secu8;
+typedef uint32_t secu16;
 
-void ssCheck(secu16 source) {
-    if (((source >> 16) & 0xffff) != (uint16_t)(~(source & 0xffff))) {
-        reset();
-    }
-}
+void sbSet(secu8 *target, uint8_t source);
+void sbCheck(secu8 source);
+void ssSet(secu16 *target, uint16_t source);
+void ssCheck(secu16 source);
+
+#define SB_GET(x) ((uint8_t)x)
+
+#define SB_SET(x, y) sbSet(&x, y);
+
+#define SB_CHECK(x) sbCheck(x);
+
+#define SS_GET(x) ((uint16_t)x)
+
+#define SS_SET(x, y) ssSet(&x, y);
+
+#define SS_CHECK(x) ssCheck(x);
+
+#endif

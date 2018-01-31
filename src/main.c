@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2018 Mart Roosmaa
 *   (c) 2016 Ledger
 *
@@ -22,8 +22,8 @@
 #include "os_io_seproxyhal.h"
 #include "cx.h"
 
-#include "rai_internal.h"
-#include "rai_bagl.h"
+#include "nano_internal.h"
+#include "nano_bagl.h"
 
 #ifdef HAVE_U2F
 
@@ -157,7 +157,7 @@ __attribute__((section(".boot"))) int main(void) {
             TRY {
                 io_seproxyhal_init();
 
-                rai_context_init();
+                nano_context_init();
 
                 // deactivate usb before activating
                 USB_power_U2F(false, false);
@@ -170,7 +170,7 @@ __attribute__((section(".boot"))) int main(void) {
                 u2fService.messageBufferSize = U2F_MAX_MESSAGE_SIZE;
                 u2f_initialize_service((u2f_service_t *)&u2fService);
 
-                USB_power_U2F(true, N_rai.fidoTransport);
+                USB_power_U2F(true, N_nano.fidoTransport);
 #else
                 USB_power_U2F(true, false);
 #endif
@@ -183,7 +183,7 @@ __attribute__((section(".boot"))) int main(void) {
 #if defined(TARGET_BLUE)
                 // setup the status bar colors (remembered after wards, even
                 // more if another app does not resetup after app switch)
-                UX_SET_STATUS_BAR_COLOR(0xFFFFFF, RAI_BAGL_COLOR_APP);
+                UX_SET_STATUS_BAR_COLOR(0xFFFFFF, NANO_BAGL_COLOR_APP);
 #endif // TARGET_BLUE
 
                 ui_idle();

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,31 +15,31 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "rai_internal.h"
-#include "rai_apdu_constants.h"
+#include "nano_internal.h"
+#include "nano_apdu_constants.h"
 
 uint8_t const DISPATCHER_CLA[] = {
-    RAI_CLA, // rai_apdu_get_app_conf
-    RAI_CLA, // rai_apdu_get_address,
-    RAI_CLA, // rai_apdu_sign_block,
+    NANO_CLA, // nano_apdu_get_app_conf
+    NANO_CLA, // nano_apdu_get_address,
+    NANO_CLA, // nano_apdu_sign_block,
 };
 
 uint8_t const DISPATCHER_INS[] = {
-    RAI_INS_GET_APP_CONF, // rai_apdu_get_app_conf
-    RAI_INS_GET_ADDRESS,  // rai_apdu_get_address,
-    RAI_INS_SIGN_BLOCK,   // rai_apdu_sign_block
+    NANO_INS_GET_APP_CONF, // nano_apdu_get_app_conf
+    NANO_INS_GET_ADDRESS,  // nano_apdu_get_address,
+    NANO_INS_SIGN_BLOCK,   // nano_apdu_sign_block
 };
 
 bool const DISPATCHER_DATA_IN[] = {
-    false, // rai_apdu_get_app_conf
-    true,  // rai_apdu_get_address,
-    true,  // rai_apdu_sign_block
+    false, // nano_apdu_get_app_conf
+    true,  // nano_apdu_get_address,
+    true,  // nano_apdu_sign_block
 };
 
 apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
-    rai_apdu_get_app_conf,
-    rai_apdu_get_address,
-    rai_apdu_sign_block,
+    nano_apdu_get_app_conf,
+    nano_apdu_get_address,
+    nano_apdu_sign_block,
 };
 
 uint8_t const BASE16_ALPHABET[16] = {

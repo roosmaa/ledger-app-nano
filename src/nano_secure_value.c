@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,24 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "rai_internal.h"
+#include "nano_internal.h"
 
-/**
- * Initialize the application context on boot
- */
-void rai_context_init() {
-    L_DEBUG_APP(("Context init\n"));
-    os_memset(&rai_context_D, 0, sizeof(rai_context_D));
-    SB_SET(rai_context_D.halted, 0);
+void sbSet(secu8 *target, uint8_t source) {
+    *target = (((uint16_t)~source) << 8) + source;
+}
+
+void sbCheck(secu8 source) {
+    if (((source >> 8) & 0xff) != (uint8_t)(~(source & 0xff))) {
+        reset();
+    }
+}
+
+void ssSet(secu16 *target, uint16_t source) {
+    *target = (((uint32_t)~source) << 16) + source;
+}
+
+void ssCheck(secu16 source) {
+    if (((source >> 16) & 0xffff) != (uint16_t)(~(source & 0xffff))) {
+        reset();
+    }
 }

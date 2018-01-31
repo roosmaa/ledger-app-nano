@@ -26,7 +26,7 @@
 #include "u2f_transport.h"
 #include "u2f_processing.h"
 
-#include "rai_internal.h"
+#include "nano_internal.h"
 
 void app_dispatch(void);
 void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
@@ -117,8 +117,8 @@ void u2f_handle_sign(u2f_service_t *service, uint8_t p1, uint8_t p2,
     // Check that it looks like an APDU
     os_memmove(G_io_apdu_buffer, buffer + 65, keyHandleLength);
     app_dispatch();
-    if ((rai_context_D.ioFlags & IO_ASYNCH_REPLY) == 0) {
-        u2f_proxy_response(service, rai_context_D.outLength);
+    if ((nano_context_D.ioFlags & IO_ASYNCH_REPLY) == 0) {
+        u2f_proxy_response(service, nano_context_D.outLength);
     }
 }
 

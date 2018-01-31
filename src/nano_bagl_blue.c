@@ -1,6 +1,6 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
-*   (c) 2016 Ledger
+*   $NANO Wallet for Ledger Nano S & Blue
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,30 +15,8 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef RAI_SECURE_VALUE_H
+#if defined(TARGET_BLUE)
 
-#define RAI_SECURE_VALUE_H
-
-#include "os.h"
-
-typedef uint16_t secu8;
-typedef uint32_t secu16;
-
-void sbSet(secu8 *target, uint8_t source);
-void sbCheck(secu8 source);
-void ssSet(secu16 *target, uint16_t source);
-void ssCheck(secu16 source);
-
-#define SB_GET(x) ((uint8_t)x)
-
-#define SB_SET(x, y) sbSet(&x, y);
-
-#define SB_CHECK(x) sbCheck(x);
-
-#define SS_GET(x) ((uint16_t)x)
-
-#define SS_SET(x, y) ssSet(&x, y);
-
-#define SS_CHECK(x) ssCheck(x);
+#error Ledger Blue UI not ready yet
 
 #endif

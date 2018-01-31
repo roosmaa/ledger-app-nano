@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,37 +15,20 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef RAI_CONTEXT_H
+#include "nano_internal.h"
 
-#define RAI_CONTEXT_H
+#define DISPATCHER_APDUS 3
 
-#include "os.h"
-#include "rai_types.h"
-#include "rai_secure_value.h"
+typedef uint16_t (*apduProcessingFunction)(void);
 
-struct rai_context_s {
-    /** Flag if dongle has been halted */
-    secu8 halted;
+extern uint8_t const DISPATCHER_CLA[DISPATCHER_APDUS];
+extern uint8_t const DISPATCHER_INS[DISPATCHER_APDUS];
+extern bool const DISPATCHER_DATA_IN[DISPATCHER_APDUS];
+extern apduProcessingFunction const DISPATCHER_FUNCTIONS[DISPATCHER_APDUS];
 
-    /** Chain code for the current public key **/
-    uint8_t chainCode[32];
+#define NANO_ACCOUNT_STRING_BASE_LEN 60
 
-    /** Currently processed block **/
-    rai_block_t block;
+extern uint8_t const BASE16_ALPHABET[16];
 
-    /** Length of the incoming command */
-    uint16_t inLength;
-    /** Length of the outgoing command */
-    uint16_t outLength;
-
-    /** IO flags to reply with at the end of an APDU handler */
-    uint8_t ioFlags;
-
-    /** Status Word of the response */
-    uint16_t sw;
-};
-typedef struct rai_context_s rai_context_t;
-
-void rai_context_init(void);
-
-#endif
+extern uint8_t const BASE32_ALPHABET[32];
+extern uint8_t const BASE32_TABLE[75];

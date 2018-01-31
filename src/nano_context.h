@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +15,37 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef RAI_PUBLIC_RAM_KEY_VARIABLES_H
+#ifndef NANO_CONTEXT_H
 
-#define RAI_PUBLIC_RAM_KEY_VARIABLES_H
+#define NANO_CONTEXT_H
 
-#include "rai_types.h"
+#include "os.h"
+#include "nano_types.h"
+#include "nano_secure_value.h"
 
-extern rai_public_key_t rai_public_key_D;
-extern rai_private_key_t rai_private_key_D;
+struct nano_context_s {
+    /** Flag if dongle has been halted */
+    secu8 halted;
+
+    /** Chain code for the current public key **/
+    uint8_t chainCode[32];
+
+    /** Currently processed block **/
+    nano_block_t block;
+
+    /** Length of the incoming command */
+    uint16_t inLength;
+    /** Length of the outgoing command */
+    uint16_t outLength;
+
+    /** IO flags to reply with at the end of an APDU handler */
+    uint8_t ioFlags;
+
+    /** Status Word of the response */
+    uint16_t sw;
+};
+typedef struct nano_context_s nano_context_t;
+
+void nano_context_init(void);
 
 #endif

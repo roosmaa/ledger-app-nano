@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,16 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "rai_internal.h"
+#include "nano_internal.h"
 
-#include "rai_public_ram_variables.h"
+#include "nano_public_ram_variables.h"
 
-rai_storage_t N_rai_real;
+void nano_set_auto_receive(bool enabled) {
+    nvm_write((void *)&N_nano.autoReceive, &enabled,
+              sizeof(enabled));
+}
+
+void nano_set_fido_transport(bool enabled) {
+    nvm_write((void *)&N_nano.fidoTransport, &enabled,
+              sizeof(enabled));
+}

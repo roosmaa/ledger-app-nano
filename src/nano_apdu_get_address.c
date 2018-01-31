@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2018 Mart Roosmaa
 *   (c) 2016 Ledger
 *
@@ -16,10 +16,10 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "rai_internal.h"
-#include "rai_apdu_constants.h"
+#include "nano_internal.h"
+#include "nano_apdu_constants.h"
 
-#include "rai_bagl.h"
+#include "nano_bagl.h"
 
 #define P1_NO_DISPLAY 0x00
 #define P1_DISPLAY 0x01
@@ -27,9 +27,9 @@
 #define P2_NO_CHAINCODE 0x00
 #define P2_CHAINCODE 0x01
 
-uint16_t rai_apdu_get_address_output(void);
+uint16_t nano_apdu_get_address_output(void);
 
-uint16_t rai_apdu_get_address() {
+uint16_t nano_apdu_get_address() {
     uint8_t *keyPathPtr;
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
     bool returnChainCode = G_io_apdu_buffer[ISO_OFFSET_P2] == P2_CHAINCODE;
@@ -39,7 +39,7 @@ uint16_t rai_apdu_get_address() {
     case P1_DISPLAY:
         break;
     default:
-        return RAI_SW_INCORRECT_P1_P2;
+        return NANO_SW_INCORRECT_P1_P2;
     }
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P2]) {
@@ -47,73 +47,73 @@ uint16_t rai_apdu_get_address() {
     case P2_CHAINCODE:
         break;
     default:
-        return RAI_SW_INCORRECT_P1_P2;
+        return NANO_SW_INCORRECT_P1_P2;
     }
 
     if (G_io_apdu_buffer[ISO_OFFSET_LC] < 0x01) {
-        return RAI_SW_INCORRECT_LENGTH;
+        return NANO_SW_INCORRECT_LENGTH;
     }
     keyPathPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
 
     if (!os_global_pin_is_validated()) {
-        return RAI_SW_SECURITY_STATUS_NOT_SATISFIED;
+        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
     // Retrieve the public key for the path
-    rai_private_derive_keypair(keyPathPtr, true, rai_context_D.chainCode);
-    os_memset(rai_private_key_D, 0, sizeof(rai_private_key_D)); // sanitise private key
+    nano_private_derive_keypair(keyPathPtr, true, nano_context_D.chainCode);
+    os_memset(nano_private_key_D, 0, sizeof(nano_private_key_D)); // sanitise private key
     if (!returnChainCode) {
-        os_memset(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
+        os_memset(nano_context_D.chainCode, 0, sizeof(nano_context_D.chainCode));
     }
 
     if (display) {
-        rai_context_D.ioFlags |= IO_ASYNCH_REPLY;
-        rai_bagl_display_address();
-        return RAI_SW_OK;
+        nano_context_D.ioFlags |= IO_ASYNCH_REPLY;
+        nano_bagl_display_address();
+        return NANO_SW_OK;
     } else {
-        return rai_apdu_get_address_output();
+        return nano_apdu_get_address_output();
     }
 }
 
-uint16_t rai_apdu_get_address_output(void) {
+uint16_t nano_apdu_get_address_output(void) {
     uint8_t length;
     bool returnChainCode = G_io_apdu_buffer[ISO_OFFSET_P2] == P2_CHAINCODE;
     uint8_t *outPtr = G_io_apdu_buffer;
 
     // Output raw public key
-    length = sizeof(rai_public_key_D);
+    length = sizeof(nano_public_key_D);
     *outPtr = length;
-    os_memmove(outPtr + 1, rai_public_key_D, length);
+    os_memmove(outPtr + 1, nano_public_key_D, length);
     outPtr += 1 + length;
 
     // Encode & output account address
-    length = RAI_ACCOUNT_STRING_BASE_LEN + RAI_DEFAULT_PREFIX_LEN;
+    length = NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN;
     *outPtr = length;
-    rai_write_account_string(outPtr + 1, RAI_DEFAULT_PREFIX, rai_public_key_D);
+    nano_write_account_string(outPtr + 1, NANO_DEFAULT_PREFIX, nano_public_key_D);
     outPtr += 1 + length;
 
     // Output chain code
     if (returnChainCode) {
-        os_memmove(outPtr, rai_context_D.chainCode, sizeof(rai_context_D.chainCode));
-        outPtr += sizeof(rai_context_D.chainCode);
+        os_memmove(outPtr, nano_context_D.chainCode, sizeof(nano_context_D.chainCode));
+        outPtr += sizeof(nano_context_D.chainCode);
     }
 
-    rai_context_D.outLength = outPtr - G_io_apdu_buffer;
+    nano_context_D.outLength = outPtr - G_io_apdu_buffer;
 
     // Reset the global variables
-    os_memset(rai_public_key_D, 0, sizeof(rai_public_key_D));
+    os_memset(nano_public_key_D, 0, sizeof(nano_public_key_D));
     if (returnChainCode) {
-        os_memset(rai_context_D.chainCode, 0, sizeof(rai_context_D.chainCode));
+        os_memset(nano_context_D.chainCode, 0, sizeof(nano_context_D.chainCode));
     }
 
-    return RAI_SW_OK;
+    return NANO_SW_OK;
 }
 
-void rai_bagl_display_address_callback(bool confirmed) {
+void nano_bagl_display_address_callback(bool confirmed) {
     if (confirmed) {
-        rai_context_D.sw = rai_apdu_get_address_output();
+        nano_context_D.sw = nano_apdu_get_address_output();
     } else {
-        rai_context_D.sw = RAI_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
+        nano_context_D.sw = NANO_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
     }
     app_async_response();
 }

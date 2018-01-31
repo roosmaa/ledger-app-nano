@@ -1,6 +1,6 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
-*   (c) 2016 Ledger
+*   $NANO Wallet for Ledger Nano S & Blue
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,6 +15,18 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "rai_public_ram_variables.h"
+#ifndef __NANO_BAGL_H__
 
-rai_context_t rai_context_D;
+#define __NANO_BAGL_H__
+
+#include "nano.h"
+
+#define NANO_BAGL_COLOR_APP 0xFCB653
+
+void nano_bagl_display_address(void);
+void nano_bagl_display_address_callback(bool confirmed);
+
+void nano_bagl_confirm_sign_block();
+void nano_bagl_confirm_sign_block_callback(bool confirmed);
+
+#endif

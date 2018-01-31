@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,20 +15,26 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "rai_internal.h"
+#ifndef NANO_FS_H
 
-#define DISPATCHER_APDUS 3
+#define NANO_FS_H
 
-typedef uint16_t (*apduProcessingFunction)(void);
+#include <stdbool.h>
 
-extern uint8_t const DISPATCHER_CLA[DISPATCHER_APDUS];
-extern uint8_t const DISPATCHER_INS[DISPATCHER_APDUS];
-extern bool const DISPATCHER_DATA_IN[DISPATCHER_APDUS];
-extern apduProcessingFunction const DISPATCHER_FUNCTIONS[DISPATCHER_APDUS];
+#include "os.h"
+#include "nano_context.h"
 
-#define RAI_ACCOUNT_STRING_BASE_LEN 60
+typedef struct nano_storage_s {
+    bool autoReceive;
+    bool fidoTransport;
+} nano_storage_t;
 
-extern uint8_t const BASE16_ALPHABET[16];
+// the global nvram memory variable
+extern nano_storage_t N_nano_real;
 
-extern uint8_t const BASE32_ALPHABET[32];
-extern uint8_t const BASE32_TABLE[75];
+#define N_nano (*(nano_storage_t *)PIC(&N_nano_real))
+
+void nano_set_auto_receive(bool enabled);
+void nano_set_fido_transport(bool enabled);
+
+#endif

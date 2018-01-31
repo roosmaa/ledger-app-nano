@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   RaiBlock Wallet for Ledger Nano S & Blue
+*   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +18,8 @@
 #include "os.h"
 #include "os_io_seproxyhal.h"
 
-#include "rai_internal.h"
-#include "rai_apdu_constants.h"
+#include "nano_internal.h"
+#include "nano_apdu_constants.h"
 
 #ifdef HAVE_U2F
 
@@ -38,15 +38,15 @@ void app_dispatch(void) {
     uint8_t dispatched;
 
     // nothing to reply for now
-    rai_context_D.outLength = 0;
-    rai_context_D.ioFlags = 0;
+    nano_context_D.outLength = 0;
+    nano_context_D.ioFlags = 0;
 
     BEGIN_TRY {
         TRY {
             // If halted, then notify
-            SB_CHECK(rai_context_D.halted);
-            if (SB_GET(rai_context_D.halted)) {
-                rai_context_D.sw = RAI_SW_HALTED;
+            SB_CHECK(nano_context_D.halted);
+            if (SB_GET(nano_context_D.halted)) {
+                nano_context_D.sw = NANO_SW_HALTED;
                 goto sendSW;
             }
 
@@ -59,29 +59,29 @@ void app_dispatch(void) {
                 }
             }
             if (dispatched == DISPATCHER_APDUS) {
-                rai_context_D.sw = RAI_SW_INS_NOT_SUPPORTED;
+                nano_context_D.sw = NANO_SW_INS_NOT_SUPPORTED;
                 goto sendSW;
             }
             if (DISPATCHER_DATA_IN[dispatched]) {
                 if (G_io_apdu_buffer[ISO_OFFSET_LC] == 0x00 ||
-                    rai_context_D.inLength - 5 == 0) {
-                    rai_context_D.sw = RAI_SW_INCORRECT_LENGTH;
+                    nano_context_D.inLength - 5 == 0) {
+                    nano_context_D.sw = NANO_SW_INCORRECT_LENGTH;
                     goto sendSW;
                 }
                 // notify we need to receive data
                 // io_exchange(CHANNEL_APDU | IO_RECEIVE_DATA, 0);
             }
             // call the apdu handler
-            rai_context_D.sw = ((apduProcessingFunction)PIC(
+            nano_context_D.sw = ((apduProcessingFunction)PIC(
                 DISPATCHER_FUNCTIONS[dispatched]))();
 
         sendSW:
             // prepare SW after replied data
-            G_io_apdu_buffer[rai_context_D.outLength] =
-                (rai_context_D.sw >> 8);
-            G_io_apdu_buffer[rai_context_D.outLength + 1] =
-                (rai_context_D.sw & 0xff);
-            rai_context_D.outLength += 2;
+            G_io_apdu_buffer[nano_context_D.outLength] =
+                (nano_context_D.sw >> 8);
+            G_io_apdu_buffer[nano_context_D.outLength + 1] =
+                (nano_context_D.sw & 0xff);
+            nano_context_D.outLength += 2;
         }
         CATCH(EXCEPTION_IO_RESET) {
             THROW(EXCEPTION_IO_RESET);
@@ -89,10 +89,10 @@ void app_dispatch(void) {
         CATCH_OTHER(e) {
             // uncaught exception detected
             G_io_apdu_buffer[0] = 0x6F;
-            rai_context_D.outLength = 2;
+            nano_context_D.outLength = 2;
             G_io_apdu_buffer[1] = e;
             // we caught something suspicious
-            SB_SET(rai_context_D.halted, 1);
+            SB_SET(nano_context_D.halted, 1);
         }
         FINALLY;
     }
@@ -100,23 +100,23 @@ void app_dispatch(void) {
 }
 
 void app_async_response(void) {
-    G_io_apdu_buffer[rai_context_D.outLength] =
-        (rai_context_D.sw >> 8);
-    G_io_apdu_buffer[rai_context_D.outLength + 1] =
-        (rai_context_D.sw & 0xff);
-    rai_context_D.outLength += 2;
+    G_io_apdu_buffer[nano_context_D.outLength] =
+        (nano_context_D.sw >> 8);
+    G_io_apdu_buffer[nano_context_D.outLength + 1] =
+        (nano_context_D.sw & 0xff);
+    nano_context_D.outLength += 2;
 
 #ifdef HAVE_U2F
     if (fidoActivated) {
         u2f_proxy_response((u2f_service_t *)&u2fService,
-            rai_context_D.outLength);
+            nano_context_D.outLength);
     } else {
         io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
-            rai_context_D.outLength);
+            nano_context_D.outLength);
     }
 #else
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
-        rai_context_D.outLength);
+        nano_context_D.outLength);
 #endif
 }
 
@@ -126,18 +126,18 @@ void app_main(void) {
     // Process the incoming APDUs
 
     // first exchange, no out length :) only wait the apdu
-    rai_context_D.outLength = 0;
-    rai_context_D.ioFlags = 0;
+    nano_context_D.outLength = 0;
+    nano_context_D.ioFlags = 0;
     for (;;) {
         L_DEBUG_APP(("Main Loop\n"));
 
         // os_memset(G_io_apdu_buffer, 0, 255); // paranoia
 
         // receive the whole apdu using the 7 bytes headers (ledger transport)
-        rai_context_D.inLength =
-            io_exchange(CHANNEL_APDU | rai_context_D.ioFlags,
+        nano_context_D.inLength =
+            io_exchange(CHANNEL_APDU | nano_context_D.ioFlags,
                         // use the previous outlength as the reply
-                        rai_context_D.outLength);
+                        nano_context_D.outLength);
 
         app_dispatch();
 
