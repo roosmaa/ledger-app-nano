@@ -215,8 +215,8 @@ The following standard Status Words are returned for all APDUs - some specific S
 |----------|----------------------------------------------------------------------------|
 |   6700   | Incorrect length                                                           |
 |   6982   | Security status not satisfied (dongle is locked or invalid access rights)  |
+|   6985   | User declined the request                                                  |
 |   6A80   | Invalid input data                                                         |
-|   6A85   | User declined the request                                                  |
 |   6B00   | Incorrect parameter P1 or P2                                               |
 |   6Fxx   | Technical problem (Internal error, please report)                          |
 |   9000   | Normal ending of the command                                               |
