@@ -110,6 +110,9 @@ uint16_t nano_apdu_get_address_output(void) {
 }
 
 void nano_bagl_display_address_callback(bool confirmed) {
+    nano_context_D.outLength = 0;
+    nano_context_D.ioFlags = 0;
+
     if (confirmed) {
         nano_context_D.sw = nano_apdu_get_address_output();
     } else {
