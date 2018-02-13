@@ -97,9 +97,8 @@ uint16_t nano_apdu_sign_block() {
     }
 
     // Derive public keys for hashing
-    nano_private_derive_keypair(keyPathPtr, true, nano_context_D.chainCode);
+    nano_private_derive_keypair(keyPathPtr, true);
     os_memset(nano_private_key_D, 0, sizeof(nano_private_key_D)); // sanitise private key
-    os_memset(nano_context_D.chainCode, 0, sizeof(nano_context_D.chainCode));
 
     // Reset block state
     os_memset(&nano_context_D.block, 0, sizeof(nano_context_D.block));
@@ -191,8 +190,7 @@ uint16_t nano_apdu_sign_block_output(void) {
     uint8_t *outPtr = G_io_apdu_buffer;
 
     // Derive key and sign the block
-    nano_private_derive_keypair(keyPathPtr, false, nano_context_D.chainCode);
-    os_memset(nano_context_D.chainCode, 0, sizeof(nano_context_D.chainCode));
+    nano_private_derive_keypair(keyPathPtr, false);
     nano_sign_block(&nano_context_D.block);
     os_memset(nano_private_key_D, 0, sizeof(nano_private_key_D));
 

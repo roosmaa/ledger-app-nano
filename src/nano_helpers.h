@@ -45,8 +45,7 @@ void nano_format_balance(char *dest, size_t destLen,
                          nano_balance_t balance);
 
 void nano_private_derive_keypair(uint8_t *bip32Path,
-                                 bool derivePublic,
-                                 uint8_t *out_chainCode);
+                                 bool derivePublic);
 
 void nano_hash_block(nano_block_t *block);
 void nano_sign_block(nano_block_t *block);

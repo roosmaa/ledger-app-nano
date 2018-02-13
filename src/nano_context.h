@@ -27,9 +27,6 @@ struct nano_context_s {
     /** Flag if dongle has been halted */
     secu8 halted;
 
-    /** Chain code for the current public key **/
-    uint8_t chainCode[32];
-
     /** Currently processed block **/
     nano_block_t block;
 

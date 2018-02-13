@@ -16,10 +16,10 @@ This command returns the public key and the encoded address for the given BIP 32
 
 **Command**
 
-| *CLA* | *INS*  | *P1*                             | *P2*                      | *Lc* | *Le* |
-|-------|--------|----------------------------------|---------------------------|------|------|
-|   A1  |   02   |  00 : do not display the address |  00 : without chain code  |      |      |
-|       |        |  01 : display the address        |  01 : with chain code     |      |      |
+| *CLA* | *INS*  | *P1*                             | *P2* | *Lc* | *Le* |
+|-------|--------|----------------------------------|------|------|------|
+|   A1  |   02   |  00 : do not display the address |      |      |      |
+|       |        |  01 : display the address        |      |      |      |
 
 **Input data**
 
@@ -38,7 +38,6 @@ This command returns the public key and the encoded address for the given BIP 32
 | Public key                                        | var       |
 | Account address length                            | 1         |
 | Account address                                   | var       |
-| BIP32 chain code (optional)                       | 0 / 32    |
 
 
 ### Sign block

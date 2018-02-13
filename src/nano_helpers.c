@@ -361,11 +361,11 @@ void nano_format_balance(char *dest, size_t destLen,
 }
 
 void nano_private_derive_keypair(uint8_t *bip32Path,
-                                 bool derivePublic,
-                                 uint8_t *out_chainCode) {
+                                 bool derivePublic) {
     uint8_t bip32PathLength;
     uint8_t i;
     uint32_t bip32PathInt[MAX_BIP32_PATH];
+    uint8_t chainCode[32];
 
     bip32PathLength = bip32Path[0];
     if (bip32PathLength > MAX_BIP32_PATH) {
@@ -377,7 +377,8 @@ void nano_private_derive_keypair(uint8_t *bip32Path,
         bip32Path += 4;
     }
     os_perso_derive_node_bip32(NANO_CURVE, bip32PathInt, bip32PathLength,
-                               nano_private_key_D, out_chainCode);
+                               nano_private_key_D, chainCode);
+    os_memset(chainCode, 0, sizeof(chainCode));
 
     if (derivePublic) {
         ed25519_publickey(nano_private_key_D, nano_public_key_D);
