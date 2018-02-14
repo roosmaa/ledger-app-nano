@@ -133,6 +133,7 @@ void u2f_handle_sign(u2f_service_t *service, uint8_t p1, uint8_t p2,
     }
 
     // Attempt to execute the APDU
+    nano_context_D.inLength = keyHandleLength;
     os_memmove(G_io_apdu_buffer, buffer + 65, keyHandleLength);
     app_dispatch();
 
