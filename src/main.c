@@ -30,22 +30,14 @@
 #include "u2f_service.h"
 #include "u2f_transport.h"
 
-volatile uint8_t u2fMessageBuffer[U2F_MAX_MESSAGE_SIZE];
-
 #endif // HAVE_U2F
 
 extern void USB_power_U2F(bool enabled, bool fido);
-
-uint8_t G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
-
-ux_state_t ux;
 
 void ui_idle(void);
 void ui_ticker_event(bool uxAllowed);
 
 #ifdef HAVE_U2F
-volatile u2f_service_t u2fService;
-
 void u2f_proxy_response(u2f_service_t *service, uint16_t tx) {
     nano_context_D.u2fConnected = false;
     nano_context_D.u2fTimeout = 0;
@@ -143,7 +135,7 @@ uint8_t io_event(uint8_t channel) {
         if (nano_context_D.u2fTimeout > 0) {
             nano_context_D.u2fTimeout -= MIN(100, nano_context_D.u2fTimeout);
             if (nano_context_D.u2fTimeout == 0) {
-                u2f_proxy_timeout((u2f_service_t *)&u2fService);
+                u2f_proxy_timeout(&u2f_service_D);
                 break;
             }
         }
@@ -194,12 +186,12 @@ __attribute__((section(".boot"))) int main(void) {
                 USB_power_U2F(false, false);
 
 #ifdef HAVE_U2F
-                os_memset((uint8_t *)&u2fService, 0, sizeof(u2fService));
-                u2fService.inputBuffer = G_io_apdu_buffer;
-                u2fService.outputBuffer = G_io_apdu_buffer;
-                u2fService.messageBuffer = (uint8_t *)u2fMessageBuffer;
-                u2fService.messageBufferSize = U2F_MAX_MESSAGE_SIZE;
-                u2f_initialize_service((u2f_service_t *)&u2fService);
+                os_memset(&u2f_service_D, 0, sizeof(u2f_service_D));
+                u2f_service_D.inputBuffer = G_io_apdu_buffer;
+                u2f_service_D.outputBuffer = G_io_apdu_buffer;
+                u2f_service_D.messageBuffer = u2f_message_buffer_D;
+                u2f_service_D.messageBufferSize = sizeof(u2f_message_buffer_D);
+                u2f_initialize_service(&u2f_service_D);
 
                 USB_power_U2F(true, N_nano.fidoTransport);
 #else

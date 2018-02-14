@@ -62,6 +62,8 @@
 #include "u2f_service.h"
 #include "u2f_transport.h"
 
+#include "nano_ram_variables.h"
+
 /** @togroup STM32_USB_DEVICE_LIBRARY
   * @{
   */
@@ -200,7 +202,6 @@ const uint8_t const HID_ReportDesc[] = {
 #define PAGE_GENERIC 0xFFA0
 
 uint8_t HID_DynReportDesc[sizeof(HID_ReportDesc)];
-bool fidoActivated;
 
 /* USB HID device Configuration Descriptor */
 __ALIGN_BEGIN const uint8_t const USBD_HID_CfgDesc[] __ALIGN_END = {
@@ -455,9 +456,9 @@ uint8_t USBD_HID_DataOut_impl(USBD_HandleTypeDef *pdev, uint8_t epnum,
     // prepare receiving the next chunk (masked time)
     USBD_LL_PrepareReceive(pdev, HID_EPOUT_ADDR, HID_EPOUT_SIZE);
 
-    if (fidoActivated) {
+    if (u2f_activated_D) {
 #ifdef HAVE_U2F
-        u2f_transport_handle((u2f_service_t *)&u2fService, buffer,
+        u2f_transport_handle(&u2f_service_D, buffer,
                              io_seproxyhal_get_ep_rx_size(HID_EPOUT_ADDR),
                              U2F_MEDIA_USB);
 #endif
@@ -518,7 +519,7 @@ void USB_power_U2F(bool enabled, bool fido) {
     os_memmove(HID_DynReportDesc, HID_ReportDesc, sizeof(HID_ReportDesc));
     HID_DynReportDesc[1] = (page & 0xff);
     HID_DynReportDesc[2] = ((page >> 8) & 0xff);
-    fidoActivated = (fido ? true : false);
+    u2f_activated_D = (fido ? true : false);
 
     os_memset(&USBD_Device, 0, sizeof(USBD_Device));
 

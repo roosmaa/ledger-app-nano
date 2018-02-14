@@ -35,9 +35,6 @@ typedef struct {
     /** Primary response for synchronous APDUs **/
     nano_apdu_response_t response;
 
-    /** Buffer used for asynchronous response data **/
-    uint8_t asyncBuffer[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
-
     /** State determines the application state (UX displayed, etc).
         This is also used to enforce only single confirmation
         prompt. **/

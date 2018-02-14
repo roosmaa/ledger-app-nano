@@ -106,7 +106,4 @@ void u2f_confirm_user_presence(u2f_service_t *service, bool userPresence,
 void u2f_continue_sending_fragmented_response(u2f_service_t *service);
 void u2f_reset(u2f_service_t *service, bool keepUserPresence);
 
-// export global
-extern volatile u2f_service_t u2fService;
-
 #endif

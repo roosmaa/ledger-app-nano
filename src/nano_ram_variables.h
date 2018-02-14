@@ -1,6 +1,7 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -19,9 +20,20 @@
 
 #define NANO_PUBLIC_RAM_VARIABLES_H
 
-#include "nano_secure_value.h"
 #include "nano_context.h"
 
+#ifdef HAVE_U2F
+#include "u2f_service.h"
+#endif // HAVE_U2F
+
+/** Buffer used for asynchronous response data **/
+extern uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 extern nano_context_t nano_context_D;
 
-#endif
+#ifdef HAVE_U2F
+extern u2f_service_t u2f_service_D;
+extern uint8_t u2f_message_buffer_D[U2F_MAX_MESSAGE_SIZE];
+extern bool u2f_activated_D;
+#endif // HAVE_U2F
+
+#endif // NANO_PUBLIC_RAM_VARIABLES_H

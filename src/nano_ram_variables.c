@@ -1,6 +1,7 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2016 Ledger
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,6 +16,18 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_public_ram_variables.h"
+#include "nano_ram_variables.h"
+#include "os_io_seproxyhal.h"
 
+// Bolos SDK variables
+uint8_t G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
+ux_state_t ux;
+
+uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 nano_context_t nano_context_D;
+
+#ifdef HAVE_U2F
+u2f_service_t u2f_service_D;
+uint8_t u2f_message_buffer_D[U2F_MAX_MESSAGE_SIZE];
+bool u2f_activated_D;
+#endif // HAVE_U2F

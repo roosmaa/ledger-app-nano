@@ -25,8 +25,6 @@
 #include "u2f_service.h"
 #include "u2f_transport.h"
 
-extern bool fidoActivated;
-extern volatile u2f_service_t u2fService;
 void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
 
 #endif
@@ -224,7 +222,7 @@ void nano_bagl_confirm_sign_block_callback(bool confirmed) {
 
     uint16_t statusWord;
     nano_apdu_response_t resp;
-    resp.buffer = nano_context_D.asyncBuffer;
+    resp.buffer = nano_async_buffer_D;
     resp.outLength = 0;
     resp.ioFlags = 0;
 

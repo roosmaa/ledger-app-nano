@@ -27,8 +27,6 @@
 #include "u2f_service.h"
 #include "u2f_transport.h"
 
-extern bool fidoActivated;
-extern volatile u2f_service_t u2fService;
 void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
 
 #endif
@@ -113,7 +111,7 @@ void app_async_response(nano_apdu_response_t *resp, uint16_t statusWord) {
 
 bool app_send_async_response(nano_apdu_response_t *resp) {
 #ifdef HAVE_U2F
-    if (fidoActivated && !nano_context_D.u2fConnected) {
+    if (u2f_activated_D && !nano_context_D.u2fConnected) {
         return false;
     }
 #endif
@@ -122,8 +120,8 @@ bool app_send_async_response(nano_apdu_response_t *resp) {
     nano_context_move_async_response();
 
 #ifdef HAVE_U2F
-    if (fidoActivated) {
-        u2f_proxy_response((u2f_service_t *)&u2fService,
+    if (u2f_activated_D) {
+        u2f_proxy_response(&u2f_service_D,
             nano_context_D.response.outLength);
     } else {
         io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,

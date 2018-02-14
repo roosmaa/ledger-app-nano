@@ -17,6 +17,4 @@
 
 #include "nano_internal.h"
 
-#include "nano_public_ram_variables.h"
-
 nano_storage_t N_nano_real;

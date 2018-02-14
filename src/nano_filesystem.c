@@ -17,7 +17,7 @@
 
 #include "nano_internal.h"
 
-#include "nano_public_ram_variables.h"
+#include "nano_ram_variables.h"
 
 void nano_set_auto_receive(bool enabled) {
     nvm_write((void *)&N_nano.autoReceive, &enabled,

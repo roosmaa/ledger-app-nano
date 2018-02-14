@@ -108,7 +108,7 @@ void nano_bagl_display_address_callback(bool confirmed) {
 
     uint16_t statusWord;
     nano_apdu_response_t resp;
-    resp.buffer = nano_context_D.asyncBuffer;
+    resp.buffer = nano_async_buffer_D;
     resp.outLength = 0;
     resp.ioFlags = 0;
 
