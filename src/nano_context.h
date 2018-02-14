@@ -51,8 +51,21 @@ typedef struct {
         nano_apdu_sign_block_request signBlockRequest;
     } stateData;
 
+#ifdef HAVE_U2F
+    /** U2F async request hash that is used to keep track and hook back
+        into an async operation. **/
+    uint32_t u2fRequestHash;
+    /** U2F timeout tracker, once zero the active connection is dropped
+        appropriate status code. **/
+    uint16_t u2fTimeout;
+    /** U2F indicator whether the host is connected to the ongoing
+        async operation. **/
+    bool u2fConnected;
+#endif // HAVE_U2F
+
 } nano_context_t;
 
 void nano_context_init(void);
+void nano_context_move_async_response(void);
 
 #endif

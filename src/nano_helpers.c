@@ -386,6 +386,14 @@ void nano_private_derive_keypair(uint8_t *bip32Path,
     }
 }
 
+uint32_t nano_simple_hash(uint8_t *data, size_t dataLen) {
+    uint32_t result = 5;
+    for (size_t i = 0; i < dataLen; i++) {
+        result = 29 * result + data[i];
+    }
+    return result;
+}
+
 void nano_hash_block(nano_block_t *block, nano_public_key_t publicKey) {
     blake2b_ctx hash;
     blake2b_init(&hash, sizeof(block->base.hash), NULL, 0);

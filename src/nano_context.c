@@ -26,3 +26,23 @@ void nano_context_init() {
     SB_SET(nano_context_D.halted, 0);
     nano_context_D.response.buffer = G_io_apdu_buffer;
 }
+
+void nano_context_move_async_response(void) {
+    nano_apdu_response_t *resp = &nano_context_D.stateData.asyncResponse;
+
+    if (nano_context_D.state != NANO_STATE_READY) {
+        return;
+    }
+    if (resp->outLength == 0) {
+        return;
+    }
+
+    // Move the async result data to sync buffer
+    nano_context_D.response.outLength = resp->outLength;
+    nano_context_D.response.ioFlags = resp->ioFlags;
+    os_memmove(nano_context_D.response.buffer, resp->buffer, resp->outLength);
+
+    // Reset the asyncResponse
+    resp->ioFlags = 0;
+    resp->outLength = 0;
+}

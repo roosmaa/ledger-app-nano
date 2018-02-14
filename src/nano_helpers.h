@@ -48,6 +48,9 @@ void nano_private_derive_keypair(uint8_t *bip32Path,
                                  nano_private_key_t out_privateKey,
                                  nano_public_key_t out_publicKey);
 
+/** Implement Java hashCode() equivalent hashing of data **/
+uint32_t nano_simple_hash(uint8_t *data, size_t dataLen);
+
 void nano_hash_block(nano_block_t *block, nano_public_key_t publicKey);
 void nano_sign_block(nano_block_t *block,
                      nano_private_key_t privateKey,

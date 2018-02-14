@@ -112,14 +112,14 @@ void app_async_response(nano_apdu_response_t *resp, uint16_t statusWord) {
 }
 
 bool app_send_async_response(nano_apdu_response_t *resp) {
-    // Move the async result data to sync buffer
-    nano_context_D.response.outLength = resp->outLength;
-    nano_context_D.response.ioFlags = resp->ioFlags;
-    os_memmove(nano_context_D.response.buffer, resp->buffer, resp->outLength);
+#ifdef HAVE_U2F
+    if (fidoActivated && !nano_context_D.u2fConnected) {
+        return false;
+    }
+#endif
 
-    // Reset the asyncResponse
-    resp->ioFlags = 0;
-    resp->outLength = 0;
+    // Move the async result data to sync buffer
+    nano_context_move_async_response();
 
 #ifdef HAVE_U2F
     if (fidoActivated) {

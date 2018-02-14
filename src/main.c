@@ -47,12 +47,26 @@ void ui_ticker_event(bool uxAllowed);
 volatile u2f_service_t u2fService;
 
 void u2f_proxy_response(u2f_service_t *service, uint16_t tx) {
+    nano_context_D.u2fConnected = false;
+    nano_context_D.u2fTimeout = 0;
+
     os_memset(service->messageBuffer, 0, 5);
     os_memmove(service->messageBuffer + 5, G_io_apdu_buffer, tx);
     service->messageBuffer[tx + 5] = 0x90;
     service->messageBuffer[tx + 6] = 0x00;
     u2f_send_fragmented_response(service, U2F_CMD_MSG, service->messageBuffer,
                                  tx + 7, true);
+}
+
+void u2f_proxy_timeout(u2f_service_t *service) {
+    nano_context_D.u2fConnected = false;
+    nano_context_D.u2fTimeout = 0;
+
+    service->messageBuffer[0] = 0x69;
+    service->messageBuffer[1] = 0x85;
+    u2f_send_fragmented_response(service, U2F_CMD_MSG,
+                                 service->messageBuffer, 2,
+                                 true);
 }
 
 #endif // HAVE_U2F
@@ -124,6 +138,16 @@ uint8_t io_event(uint8_t channel) {
             // Apply caused changed, nothing else to do this cycle
             break;
         }
+
+#ifdef HAVE_U2F
+        if (nano_context_D.u2fTimeout > 0) {
+            nano_context_D.u2fTimeout -= MIN(100, nano_context_D.u2fTimeout);
+            if (nano_context_D.u2fTimeout == 0) {
+                u2f_proxy_timeout((u2f_service_t *)&u2fService);
+                break;
+            }
+        }
+#endif // HAVE_U2F
 
         UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
             ui_ticker_event(UX_ALLOWED);

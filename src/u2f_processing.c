@@ -39,7 +39,6 @@ static const uint8_t SW_UNKNOWN_INSTRUCTION[] = {0x6d, 0x00};
 static const uint8_t SW_UNKNOWN_CLASS[] = {0x6e, 0x00};
 static const uint8_t SW_WRONG_LENGTH[] = {0x67, 0x00};
 static const uint8_t SW_INTERNAL[] = {0x6F, 0x00};
-// static const uint8_t SW_CONDITIONS_NOT_SATISFIED[] = {0x69, 0x85};
 
 #ifdef HAVE_BLE
 static const uint8_t NOTIFY_USER_PRESENCE_NEEDED[] = {
@@ -92,6 +91,7 @@ void u2f_handle_sign(u2f_service_t *service, uint8_t p1, uint8_t p2,
     (void)length;
     uint8_t keyHandleLength;
     uint8_t i;
+    uint32_t apduHash;
 
     if (length < 32 + 32 + 1) {
         u2f_send_fragmented_response(service, U2F_CMD_MSG,
@@ -115,13 +115,35 @@ void u2f_handle_sign(u2f_service_t *service, uint8_t p1, uint8_t p2,
                                      (uint8_t *)SW_BAD_KEY_HANDLE,
                                      sizeof(SW_BAD_KEY_HANDLE), true);
     }
-    // Check that it looks like an APDU
-    os_memmove(G_io_apdu_buffer, buffer + 65, keyHandleLength);
-    app_dispatch();
-    if ((nano_context_D.response.ioFlags & IO_ASYNCH_REPLY) == 0) {
-        u2f_proxy_response(service, nano_context_D.response.outLength);
+
+    apduHash = nano_simple_hash(buffer + 65, keyHandleLength);
+    if (apduHash == nano_context_D.u2fRequestHash) {
+        if (nano_context_D.state != NANO_STATE_READY) {
+            // Request ongoing, setup a timeout
+            nano_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
+            nano_context_D.u2fConnected = true;
+            return;
+
+        } else if (nano_context_D.stateData.asyncResponse.outLength > 0) {
+            // Immediately return the previous response to this request
+            nano_context_move_async_response();
+            u2f_proxy_response(service, nano_context_D.response.outLength);
+            return;
+        }
     }
 
+    // Attempt to execute the APDU
+    os_memmove(G_io_apdu_buffer, buffer + 65, keyHandleLength);
+    app_dispatch();
+
+    if ((nano_context_D.response.ioFlags & IO_ASYNCH_REPLY) == 0) {
+        u2f_proxy_response(service, nano_context_D.response.outLength);
+    } else {
+        // Setup the timeout and request details
+        nano_context_D.u2fRequestHash = apduHash;
+        nano_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
+        nano_context_D.u2fConnected = true;
+    }
 }
 
 void u2f_handle_get_version(u2f_service_t *service, uint8_t p1, uint8_t p2,
