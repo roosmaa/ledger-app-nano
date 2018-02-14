@@ -26,7 +26,7 @@ typedef struct {
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
     nano_public_key_t publicKey;
     nano_block_t block;
-} nano_apdu_sign_block_request;
+} nano_apdu_sign_block_request_t;
 
 uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp);
 

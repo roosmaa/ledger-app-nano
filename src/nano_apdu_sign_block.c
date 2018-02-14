@@ -36,10 +36,10 @@ void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
 
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request *req);
+uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request_t *req);
 
 uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
-    nano_apdu_sign_block_request req;
+    nano_apdu_sign_block_request_t req;
     nano_private_key_t privateKey;
     uint8_t *inPtr;
     uint8_t readLen;
@@ -195,7 +195,7 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     }
 }
 
-uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request *req) {
+uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request_t *req) {
     nano_private_key_t privateKey;
     uint8_t *outPtr = resp->buffer;
 
@@ -218,7 +218,7 @@ uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_
 }
 
 void nano_bagl_confirm_sign_block_callback(bool confirmed) {
-    nano_apdu_sign_block_request *req = &nano_context_D.stateData.signBlockRequest;
+    nano_apdu_sign_block_request_t *req = &nano_context_D.stateData.signBlockRequest;
 
     uint16_t statusWord;
     nano_apdu_response_t resp;

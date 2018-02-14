@@ -27,10 +27,10 @@
 
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request *req);
+uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request_t *req);
 
 uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
-    nano_apdu_get_address_request req;
+    nano_apdu_get_address_request_t req;
     nano_private_key_t privateKey;
     uint8_t *keyPathPtr;
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
@@ -82,7 +82,7 @@ uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
     }
 }
 
-uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request *req) {
+uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request_t *req) {
     uint8_t length;
     uint8_t *outPtr = resp->buffer;
 
@@ -104,7 +104,7 @@ uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_
 }
 
 void nano_bagl_display_address_callback(bool confirmed) {
-    nano_apdu_get_address_request *req = &nano_context_D.stateData.getAddressRequest;
+    nano_apdu_get_address_request_t *req = &nano_context_D.stateData.getAddressRequest;
 
     uint16_t statusWord;
     nano_apdu_response_t resp;

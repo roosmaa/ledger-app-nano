@@ -273,7 +273,7 @@ void nano_bagl_display_address(void) {
     if (nano_context_D.state != NANO_STATE_CONFIRM_ADDRESS) {
         return;
     }
-    nano_apdu_get_address_request *req = &nano_context_D.stateData.getAddressRequest;
+    nano_apdu_get_address_request_t *req = &nano_context_D.stateData.getAddressRequest;
 
     os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
     // Encode public key into an address string
@@ -370,7 +370,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
     if (nano_context_D.state != NANO_STATE_CONFIRM_SIGNATURE) {
         return;
     }
-    nano_apdu_sign_block_request *req = &nano_context_D.stateData.signBlockRequest;
+    nano_apdu_sign_block_request_t *req = &nano_context_D.stateData.signBlockRequest;
 
     switch (req->block.base.type) {
     case NANO_UNKNOWN_BLOCK:
@@ -550,7 +550,7 @@ void nano_bagl_confirm_sign_block(void) {
     if (nano_context_D.state != NANO_STATE_CONFIRM_SIGNATURE) {
         return;
     }
-    nano_apdu_sign_block_request *req = &nano_context_D.stateData.signBlockRequest;
+    nano_apdu_sign_block_request_t *req = &nano_context_D.stateData.signBlockRequest;
 
     os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
 

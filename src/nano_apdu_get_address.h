@@ -23,7 +23,7 @@
 
 typedef struct {
     nano_public_key_t publicKey;
-} nano_apdu_get_address_request;
+} nano_apdu_get_address_request_t;
 
 uint16_t nano_apdu_get_address(nano_apdu_response_t *resp);
 

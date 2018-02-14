@@ -43,9 +43,9 @@ typedef struct {
         // when NANO_STATE_READY
         nano_apdu_response_t asyncResponse;
         // when NANO_STATE_CONFIRM_ADDRESS
-        nano_apdu_get_address_request getAddressRequest;
+        nano_apdu_get_address_request_t getAddressRequest;
         // when NANO_STATE_CONFIRM_SIGNATURE
-        nano_apdu_sign_block_request signBlockRequest;
+        nano_apdu_sign_block_request_t signBlockRequest;
     } stateData;
 
 #ifdef HAVE_U2F
