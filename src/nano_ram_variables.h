@@ -23,8 +23,7 @@
 #include "blake2b.h"
 
 #include "nano_context.h"
-#include "nano_apdu_get_address.h"
-#include "nano_apdu_sign_block.h"
+#include "nano_heap.h"
 
 #ifdef HAVE_U2F
 #include "u2f_service.h"
@@ -33,7 +32,6 @@
 /** Buffer used for asynchronous response data **/
 extern uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 extern nano_context_t nano_context_D;
-extern blake2b_ctx nano_blake2b_D;
 
 /* U2F message buffer and APDU heaps are mutually exclusive,
    so can be mapped to a shared memory space. */
@@ -45,6 +43,14 @@ typedef union {
     nano_apdu_sign_block_heap_t nano_apdu_sign_block_heap;
 } nano_memory_space_a_t;
 extern nano_memory_space_a_t nano_memory_space_a_D;
+
+/* This memory mapping has data that is accessed for only a
+   short while and never at the same time. */
+typedef union {
+    blake2b_ctx blake2b_ctx;
+    nano_format_balance_heap_t nano_format_balance_heap;
+} nano_memory_space_b_t;
+extern nano_memory_space_b_t nano_memory_space_b_D;
 
 #ifdef HAVE_U2F
 extern u2f_service_t u2f_service_D;

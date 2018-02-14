@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
-*   (c) 2016 Ledger
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,16 +15,28 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_INTERNAL_H
-#define NANO_INTERNAL_H
+#ifndef NANO_HEAP_H
 
-#include "nano.h"
+#define NANO_HEAP_H
+
 #include "nano_types.h"
-#include "nano_context.h"
-#include "nano_heap.h"
-#include "nano_ram_variables.h"
-#include "nano_rom_variables.h"
-#include "nano_filesystem.h"
-#include "nano_helpers.h"
+#include "nano_apdu_get_address.h"
+#include "nano_apdu_sign_block.h"
 
-#endif
+typedef struct {
+    nano_apdu_get_address_request_t req;
+    nano_private_key_t privateKey;
+} nano_apdu_get_address_heap_t;
+
+typedef struct {
+    nano_apdu_sign_block_request_t req;
+    nano_private_key_t privateKey;
+} nano_apdu_sign_block_heap_t;
+
+typedef struct {
+    // log10(x) = log2(x) / log2(10) ~= log2(x) / 3.322
+    char buf[128 / 3 + 1 + 2];
+    nano_balance_t num;
+} nano_format_balance_heap_t;
+
+#endif // NANO_HEAP_H

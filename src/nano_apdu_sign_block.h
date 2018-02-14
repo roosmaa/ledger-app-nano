@@ -28,11 +28,6 @@ typedef struct {
     nano_block_t block;
 } nano_apdu_sign_block_request_t;
 
-typedef struct {
-    nano_apdu_sign_block_request_t req;
-    nano_private_key_t privateKey;
-} nano_apdu_sign_block_heap_t;
-
 uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp);
 
 #endif // NANO_APDU_SIGN_BLOCK_H

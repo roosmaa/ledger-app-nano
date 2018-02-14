@@ -9,21 +9,24 @@ void ed25519_randombytes_unsafe(void *out, size_t outlen) {
 }
 
 /* Due to the fact that ed25519-donna uses only one hash at a time,
-   we can re-use the nano_blake2b_D memory area for it. */
+   we can re-use the blake2b context in shared memory area. */
 
 void ed25519_hash_init(ed25519_hash_context *ctx) {
     UNUSED(ctx);
-    blake2b_init(&nano_blake2b_D, 64, NULL, 0);
+    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_init(hash, 64, NULL, 0);
 }
 
 void ed25519_hash_update(ed25519_hash_context *ctx, uint8_t const *in, size_t inlen) {
     UNUSED(ctx);
-    blake2b_update(&nano_blake2b_D, in, inlen);
+    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_update(hash, in, inlen);
 }
 
 void ed25519_hash_final(ed25519_hash_context *ctx, uint8_t *out) {
     UNUSED(ctx);
-    blake2b_final(&nano_blake2b_D, out);
+    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_final(hash, out);
 }
 
 void ed25519_hash (uint8_t *out, uint8_t const *in, size_t inlen) {

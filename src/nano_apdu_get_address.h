@@ -25,11 +25,6 @@ typedef struct {
     nano_public_key_t publicKey;
 } nano_apdu_get_address_request_t;
 
-typedef struct {
-    nano_apdu_get_address_request_t req;
-    nano_private_key_t privateKey;
-} nano_apdu_get_address_heap_t;
-
 uint16_t nano_apdu_get_address(nano_apdu_response_t *resp);
 
 #endif // NANO_APDU_GET_ADDRESS_H

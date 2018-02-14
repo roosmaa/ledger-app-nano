@@ -160,9 +160,10 @@ bool nano_read_account_string(uint8_t *buffer, size_t size,
     #undef accPipeByte
 
     // Verify the checksum of the address
-    blake2b_init(&nano_blake2b_D, sizeof(check), NULL, 0);
-    blake2b_update(&nano_blake2b_D, outKey, sizeof(nano_public_key_t));
-    blake2b_final(&nano_blake2b_D, check);
+    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_init(hash, sizeof(check), NULL, 0);
+    blake2b_update(hash, outKey, sizeof(nano_public_key_t));
+    blake2b_final(hash, check);
 
     for (i = 0; i < sizeof(check); i++) {
         if (check[i] != checkInp[i]) {
@@ -178,9 +179,10 @@ void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
     uint8_t k, i, c;
     uint8_t check[5];
 
-    blake2b_init(&nano_blake2b_D, sizeof(check), NULL, 0);
-    blake2b_update(&nano_blake2b_D, publicKey, sizeof(nano_public_key_t));
-    blake2b_final(&nano_blake2b_D, check);
+    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_init(hash, sizeof(check), NULL, 0);
+    blake2b_update(hash, publicKey, sizeof(nano_public_key_t));
+    blake2b_final(hash, check);
 
     switch (prefix) {
     case NANO_DEFAULT_PREFIX:
@@ -271,13 +273,11 @@ void nano_truncate_string(char *dest, size_t destLen,
 
 void nano_format_balance(char *dest, size_t destLen,
                          nano_balance_t balance) {
-    // log10(x) = log2(x) / log2(10) ~= log2(x) / 3.322
-    char buf[128 / 3 + 1 + 2];
-    os_memset(buf, 0, sizeof(buf));
-    nano_balance_t num;
-    os_memmove(num, balance, sizeof(num));
+    nano_format_balance_heap_t *h = &nano_memory_space_b_D.nano_format_balance_heap;
+    os_memset(h->buf, 0, sizeof(h->buf));
+    os_memmove(h->num, balance, sizeof(h->num));
 
-    size_t end = sizeof(buf) - 1;
+    size_t end = sizeof(h->buf) - 1;
     size_t start = end;
 
     // Convert the balance into a string by dividing by 10 until
@@ -285,77 +285,77 @@ void nano_format_balance(char *dest, size_t destLen,
     uint16_t r;
     uint16_t d;
     do {
-        r = num[0];
-        d = r / 10; r = ((r - d * 10) << 8) + num[1]; num[0] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[2]; num[1] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[3]; num[2] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[4]; num[3] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[5]; num[4] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[6]; num[5] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[7]; num[6] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[8]; num[7] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[9]; num[8] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[10]; num[9] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[11]; num[10] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[12]; num[11] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[13]; num[12] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[14]; num[13] = d;
-        d = r / 10; r = ((r - d * 10) << 8) + num[15]; num[14] = d;
-        d = r / 10; r = r - d * 10; num[15] = d;
-        buf[--start] = '0' + r;
-    } while (num[0]  || num[1]  || num[2]  || num[3]  ||
-             num[4]  || num[5]  || num[6]  || num[7]  ||
-             num[8]  || num[9]  || num[10] || num[11] ||
-             num[12] || num[13] || num[14] || num[15]);
+        r = h->num[0];
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[1]; h->num[0] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[2]; h->num[1] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[3]; h->num[2] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[4]; h->num[3] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[5]; h->num[4] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[6]; h->num[5] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[7]; h->num[6] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[8]; h->num[7] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[9]; h->num[8] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[10]; h->num[9] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[11]; h->num[10] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[12]; h->num[11] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[13]; h->num[12] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[14]; h->num[13] = d;
+        d = r / 10; r = ((r - d * 10) << 8) + h->num[15]; h->num[14] = d;
+        d = r / 10; r = r - d * 10; h->num[15] = d;
+        h->buf[--start] = '0' + r;
+    } while (h->num[0]  || h->num[1]  || h->num[2]  || h->num[3]  ||
+             h->num[4]  || h->num[5]  || h->num[6]  || h->num[7]  ||
+             h->num[8]  || h->num[9]  || h->num[10] || h->num[11] ||
+             h->num[12] || h->num[13] || h->num[14] || h->num[15]);
 
     // Assign the location for the decimal point
     size_t point = end - 1 - 30;
     // Make sure that the number is zero padded until the point location
     while (start > point) {
-        buf[--start] = '0';
+        h->buf[--start] = '0';
     }
     // Move digits before the point one place to the left
     for (size_t i = start; i <= point; i++) {
-        buf[i-1] = buf[i];
+        h->buf[i-1] = h->buf[i];
     }
     start -= 1;
     // It's safe to write out the point now
     if (point != end) {
-        buf[point] = '.';
+        h->buf[point] = '.';
     }
 
     // Remove as many zeros from the fractional part as possible
-    while (end > point && (buf[end-1] == '0' || buf[end-1] == '.')) {
+    while (end > point && (h->buf[end-1] == '0' || h->buf[end-1] == '.')) {
         end -= 1;
     }
-    buf[end] = '\0';
+    h->buf[end] = '\0';
 
     // In case there is still many digits after the decimal point,
     // round it up to 6 digits after the decimal point
     if (end > point + 6 + 1) {
         end = point + 7;
-        if (buf[end] >= '5') {
+        if (h->buf[end] >= '5') {
             uint8_t c = 10;
             for (size_t i = end - 1; i >= start; i--) {
-                if (buf[i] == '.') continue;
-                c = (buf[i] - '0') + c / 10;
-                buf[i] = (c % 10) + '0';
+                if (h->buf[i] == '.') continue;
+                c = (h->buf[i] - '0') + c / 10;
+                h->buf[i] = (c % 10) + '0';
                 if (c < 10) break;
             }
         }
-        buf[end] = '\0';
+        h->buf[end] = '\0';
     }
 
     // Append the unit
-    buf[end++] = ' ';
-    buf[end++] = 'N';
-    buf[end++] = 'a';
-    buf[end++] = 'n';
-    buf[end++] = 'o';
-    buf[end] = '\0';
+    h->buf[end++] = ' ';
+    h->buf[end++] = 'N';
+    h->buf[end++] = 'a';
+    h->buf[end++] = 'n';
+    h->buf[end++] = 'o';
+    h->buf[end] = '\0';
 
     // Copy the result to the destination buffer
-    os_memmove(dest, buf + start, MIN(destLen, end - start + 1));
+    os_memmove(dest, h->buf + start, MIN(destLen, end - start + 1));
 }
 
 void nano_private_derive_keypair(uint8_t *bip32Path,
@@ -393,41 +393,42 @@ uint32_t nano_simple_hash(uint8_t *data, size_t dataLen) {
 }
 
 void nano_hash_block(nano_block_t *block, nano_public_key_t publicKey) {
-    blake2b_init(&nano_blake2b_D, sizeof(block->base.hash), NULL, 0);
+    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_init(hash, sizeof(block->base.hash), NULL, 0);
 
     switch (block->base.type) {
     case NANO_UNKNOWN_BLOCK: break;
     case NANO_OPEN_BLOCK:
-        blake2b_update(&nano_blake2b_D, block->open.sourceBlock,
+        blake2b_update(hash, block->open.sourceBlock,
             sizeof(block->open.sourceBlock));
-        blake2b_update(&nano_blake2b_D, block->open.representative,
+        blake2b_update(hash, block->open.representative,
             sizeof(block->open.representative));
-        blake2b_update(&nano_blake2b_D, publicKey,
+        blake2b_update(hash, publicKey,
             sizeof(nano_public_key_t));
         break;
     case NANO_RECEIVE_BLOCK:
-        blake2b_update(&nano_blake2b_D, block->receive.previousBlock,
+        blake2b_update(hash, block->receive.previousBlock,
             sizeof(block->receive.previousBlock));
-        blake2b_update(&nano_blake2b_D, block->receive.sourceBlock,
+        blake2b_update(hash, block->receive.sourceBlock,
             sizeof(block->receive.sourceBlock));
         break;
     case NANO_SEND_BLOCK:
-        blake2b_update(&nano_blake2b_D, block->send.previousBlock,
+        blake2b_update(hash, block->send.previousBlock,
             sizeof(block->send.previousBlock));
-        blake2b_update(&nano_blake2b_D, block->send.destinationAccount,
+        blake2b_update(hash, block->send.destinationAccount,
             sizeof(block->send.destinationAccount));
-        blake2b_update(&nano_blake2b_D, block->send.balance,
+        blake2b_update(hash, block->send.balance,
             sizeof(block->send.balance));
         break;
     case NANO_CHANGE_BLOCK:
-        blake2b_update(&nano_blake2b_D, block->change.previousBlock,
+        blake2b_update(hash, block->change.previousBlock,
             sizeof(block->change.previousBlock));
-        blake2b_update(&nano_blake2b_D, block->change.representative,
+        blake2b_update(hash, block->change.representative,
             sizeof(block->change.representative));
         break;
     }
 
-    blake2b_final(&nano_blake2b_D, block->base.hash);
+    blake2b_final(hash, block->base.hash);
 }
 
 void nano_sign_block(nano_block_t *block,
