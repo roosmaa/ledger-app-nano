@@ -26,8 +26,9 @@ ux_state_t ux;
 uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 nano_context_t nano_context_D;
 
+nano_memory_space_a_t nano_memory_space_a_D;
+
 #ifdef HAVE_U2F
 u2f_service_t u2f_service_D;
-uint8_t u2f_message_buffer_D[U2F_MAX_MESSAGE_SIZE];
 bool u2f_activated_D;
 #endif // HAVE_U2F

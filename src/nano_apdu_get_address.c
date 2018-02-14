@@ -30,8 +30,7 @@
 uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request_t *req);
 
 uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
-    nano_apdu_get_address_request_t req;
-    nano_private_key_t privateKey;
+    nano_apdu_get_address_heap_t *h = &nano_memory_space_a_D.nano_apdu_get_address_heap;
     uint8_t *keyPathPtr;
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
 
@@ -64,20 +63,21 @@ uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
     }
 
     // Retrieve the public key for the path
-    nano_private_derive_keypair(keyPathPtr, privateKey, req.publicKey);
-    os_memset(privateKey, 0, sizeof(privateKey)); // sanitise private key
+    nano_private_derive_keypair(keyPathPtr, h->privateKey, h->req.publicKey);
+    os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
 
     if (display) {
         // Update app state to confirm the address
         nano_context_D.state = NANO_STATE_CONFIRM_ADDRESS;
-        os_memmove(&nano_context_D.stateData.getAddressRequest, &req, sizeof(req));
+        os_memmove(&nano_context_D.stateData.getAddressRequest, &h->req, sizeof(h->req));
+        os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
         app_apply_state();
 
         resp->ioFlags |= IO_ASYNCH_REPLY;
         return NANO_SW_OK;
     } else {
-        uint16_t statusWord = nano_apdu_get_address_output(resp, &req);
-        os_memset(&req, 0, sizeof(req)); // sanitise request data
+        uint16_t statusWord = nano_apdu_get_address_output(resp, &h->req);
+        os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
         return statusWord;
     }
 }
