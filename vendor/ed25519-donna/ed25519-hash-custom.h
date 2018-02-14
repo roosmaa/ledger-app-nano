@@ -9,9 +9,7 @@
 	void ed25519_hash(uint8_t *hash, const uint8_t *in, size_t inlen);
 */
 
-#include "blake2b.h"
-
-typedef blake2b_ctx ed25519_hash_context;
+typedef struct{} ed25519_hash_context;
 
 void ed25519_hash_init(ed25519_hash_context *ctx);
 void ed25519_hash_update(ed25519_hash_context *ctx, const uint8_t *in, size_t inlen);
