@@ -97,6 +97,10 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     if (!os_global_pin_is_validated()) {
         return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
+    // Make sure that we're not about to interrupt another operation
+    if (nano_context_D.state != NANO_STATE_READY) {
+        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+    }
 
     // Derive public keys for hashing
     nano_private_derive_keypair(req.keyPath, privateKey, req.publicKey);

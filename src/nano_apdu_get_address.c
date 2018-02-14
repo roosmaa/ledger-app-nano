@@ -58,6 +58,10 @@ uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
     if (!os_global_pin_is_validated()) {
         return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
+    // Make sure that we're not about to interrupt another operation
+    if (display && nano_context_D.state != NANO_STATE_READY) {
+        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+    }
 
     // Retrieve the public key for the path
     nano_private_derive_keypair(keyPathPtr, privateKey, req.publicKey);
