@@ -49,8 +49,4 @@
 #include "os.h"
 #include "nano_secure_value.h"
 
-uint16_t nano_apdu_get_app_conf(void);
-uint16_t nano_apdu_get_address(void);
-uint16_t nano_apdu_sign_block(void);
-
 #endif

@@ -20,6 +20,7 @@
 
 #include "nano_internal.h"
 #include "nano_apdu_constants.h"
+#include "nano_bagl.h"
 
 #ifdef HAVE_U2F
 
@@ -36,17 +37,19 @@ void app_dispatch(void) {
     uint8_t cla;
     uint8_t ins;
     uint8_t dispatched;
+    uint16_t statusWord;
+    nano_apdu_response_t *resp = &nano_context_D.response;
 
     // nothing to reply for now
-    nano_context_D.outLength = 0;
-    nano_context_D.ioFlags = 0;
+    resp->outLength = 0;
+    resp->ioFlags = 0;
 
     BEGIN_TRY {
         TRY {
             // If halted, then notify
             SB_CHECK(nano_context_D.halted);
             if (SB_GET(nano_context_D.halted)) {
-                nano_context_D.sw = NANO_SW_HALTED;
+                statusWord = NANO_SW_HALTED;
                 goto sendSW;
             }
 
@@ -59,38 +62,36 @@ void app_dispatch(void) {
                 }
             }
             if (dispatched == DISPATCHER_APDUS) {
-                nano_context_D.sw = NANO_SW_INS_NOT_SUPPORTED;
+                statusWord = NANO_SW_INS_NOT_SUPPORTED;
                 goto sendSW;
             }
             if (DISPATCHER_DATA_IN[dispatched]) {
                 if (G_io_apdu_buffer[ISO_OFFSET_LC] == 0x00 ||
                     nano_context_D.inLength - 5 == 0) {
-                    nano_context_D.sw = NANO_SW_INCORRECT_LENGTH;
+                    statusWord = NANO_SW_INCORRECT_LENGTH;
                     goto sendSW;
                 }
                 // notify we need to receive data
                 // io_exchange(CHANNEL_APDU | IO_RECEIVE_DATA, 0);
             }
             // call the apdu handler
-            nano_context_D.sw = ((apduProcessingFunction)PIC(
-                DISPATCHER_FUNCTIONS[dispatched]))();
+            statusWord = ((apduProcessingFunction)PIC(
+                DISPATCHER_FUNCTIONS[dispatched]))(resp);
 
         sendSW:
             // prepare SW after replied data
-            G_io_apdu_buffer[nano_context_D.outLength] =
-                (nano_context_D.sw >> 8);
-            G_io_apdu_buffer[nano_context_D.outLength + 1] =
-                (nano_context_D.sw & 0xff);
-            nano_context_D.outLength += 2;
+            resp->buffer[resp->outLength] = (statusWord >> 8);
+            resp->buffer[resp->outLength + 1] = (statusWord & 0xff);
+            resp->outLength += 2;
         }
         CATCH(EXCEPTION_IO_RESET) {
             THROW(EXCEPTION_IO_RESET);
         }
         CATCH_OTHER(e) {
             // uncaught exception detected
-            G_io_apdu_buffer[0] = 0x6F;
-            nano_context_D.outLength = 2;
-            G_io_apdu_buffer[1] = e;
+            resp->outLength = 2;
+            resp->buffer[0] = 0x6F;
+            resp->buffer[1] = e;
             // we caught something suspicious
             SB_SET(nano_context_D.halted, 1);
         }
@@ -99,35 +100,74 @@ void app_dispatch(void) {
     END_TRY;
 }
 
-void app_async_response(void) {
-    G_io_apdu_buffer[nano_context_D.outLength] =
-        (nano_context_D.sw >> 8);
-    G_io_apdu_buffer[nano_context_D.outLength + 1] =
-        (nano_context_D.sw & 0xff);
-    nano_context_D.outLength += 2;
+void app_async_response(nano_apdu_response_t *resp, uint16_t statusWord) {
+    resp->buffer[resp->outLength] = (statusWord >> 8);
+    resp->buffer[resp->outLength + 1] = (statusWord & 0xff);
+    resp->outLength += 2;
+
+    // Queue up the response to be sent when convenient
+    nano_context_D.state = NANO_STATE_READY;
+    os_memmove(&nano_context_D.stateData.asyncResponse, resp, sizeof(nano_apdu_response_t));
+    app_apply_state();
+}
+
+bool app_send_async_response(nano_apdu_response_t *resp) {
+    // Move the async result data to sync buffer
+    nano_context_D.response.outLength = resp->outLength;
+    nano_context_D.response.ioFlags = resp->ioFlags;
+    os_memmove(nano_context_D.response.buffer, resp->buffer, resp->outLength);
+
+    // Reset the asyncResponse
+    resp->ioFlags = 0;
+    resp->outLength = 0;
 
 #ifdef HAVE_U2F
     if (fidoActivated) {
         u2f_proxy_response((u2f_service_t *)&u2fService,
-            nano_context_D.outLength);
+            nano_context_D.response.outLength);
     } else {
         io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
-            nano_context_D.outLength);
+            nano_context_D.response.outLength);
     }
 #else
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
-        nano_context_D.outLength);
+        nano_context_D.response.outLength);
 #endif
+    return true;
+}
+
+bool app_apply_state(void) {
+    if (!UX_DISPLAYED() || io_seproxyhal_spi_is_status_sent()) {
+        return false;
+    }
+
+    // First make sure that the UI displays the correct state
+    bool uxChanged = nano_bagl_apply_state();
+    if (uxChanged) {
+        return true;
+    }
+
+    // In READY state, try to return the queued asyncResponse
+    if (nano_context_D.state == NANO_STATE_READY &&
+        nano_context_D.stateData.asyncResponse.outLength > 0) {
+        bool responseSent = app_send_async_response(&nano_context_D.stateData.asyncResponse);
+        if (responseSent) {
+            return true;
+        }
+    }
+
+    // Everything seems to be in sync
+    return false;
 }
 
 void app_main(void) {
-    os_memset(G_io_apdu_buffer, 0, 255); // paranoia
+    os_memset(nano_context_D.response.buffer, 0, 255); // paranoia
 
     // Process the incoming APDUs
 
     // first exchange, no out length :) only wait the apdu
-    nano_context_D.outLength = 0;
-    nano_context_D.ioFlags = 0;
+    nano_context_D.response.outLength = 0;
+    nano_context_D.response.ioFlags = 0;
     for (;;) {
         L_DEBUG_APP(("Main Loop\n"));
 
@@ -135,9 +175,9 @@ void app_main(void) {
 
         // receive the whole apdu using the 7 bytes headers (ledger transport)
         nano_context_D.inLength =
-            io_exchange(CHANNEL_APDU | nano_context_D.ioFlags,
+            io_exchange(CHANNEL_APDU | nano_context_D.response.ioFlags,
                         // use the previous outlength as the reply
-                        nano_context_D.outLength);
+                        nano_context_D.response.outLength);
 
         app_dispatch();
 

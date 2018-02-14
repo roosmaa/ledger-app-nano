@@ -30,6 +30,7 @@ extern void USB_power_U2F(bool enabled, bool fido);
 extern ux_state_t ux;
 
 // display stepped screens
+nano_state_t bagl_state;
 uint16_t ux_step;
 uint16_t ux_step_count;
 
@@ -51,11 +52,11 @@ void ui_write_address_truncated(char *label, nano_address_prefix_t prefix, nano_
     size_t addressSize;
     switch (prefix) {
     case NANO_DEFAULT_PREFIX:
-      addressSize = NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN;
-      break;
+        addressSize = NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN;
+        break;
     case NANO_XRB_PREFIX:
-      addressSize = NANO_ACCOUNT_STRING_BASE_LEN + NANO_XRB_PREFIX_LEN;
-      break;
+        addressSize = NANO_ACCOUNT_STRING_BASE_LEN + NANO_XRB_PREFIX_LEN;
+        break;
     }
     nano_truncate_string(label, 13, buf, addressSize);
 }
@@ -64,11 +65,11 @@ void ui_write_address_full(char *label, nano_address_prefix_t prefix, nano_publi
     nano_write_account_string((uint8_t *)label, prefix, publicKey);
     switch (prefix) {
     case NANO_DEFAULT_PREFIX:
-      label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_DEFAULT_PREFIX_LEN] = '\0';
-      break;
+        label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_DEFAULT_PREFIX_LEN] = '\0';
+        break;
     case NANO_XRB_PREFIX:
-      label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_XRB_PREFIX_LEN] = '\0';
-      break;
+        label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_XRB_PREFIX_LEN] = '\0';
+        break;
     }
 }
 
@@ -140,6 +141,7 @@ const ux_menu_entry_t menu_main[] = {
     UX_MENU_END};
 
 void ui_idle(void) {
+    bagl_state = NANO_STATE_READY;
     ux_step_count = 0;
     UX_MENU_DISPLAY(0, menu_main, NULL);
 }
@@ -268,13 +270,16 @@ uint32_t ui_display_address_button(uint32_t button_mask,
 }
 
 void nano_bagl_display_address(void) {
+    nano_apdu_get_address_request *req = &nano_context_D.stateData.getAddressRequest;
+
     os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
     // Encode public key into an address string
     ui_write_address_full(
       vars.displayAddress.account,
       NANO_DEFAULT_PREFIX,
-      nano_public_key_D);
+      req->publicKey);
 
+    bagl_state = NANO_STATE_CONFIRM_ADDRESS;
     ux_step_count = 2;
     ux_step = 0;
     UX_DISPLAY(ui_display_address, ui_display_address_prepro);
@@ -359,7 +364,9 @@ void ui_write_confirm_label_block_hash(char *label, nano_hash_t hash) {
 }
 
 void ui_confirm_sign_block_prepare_confirm_step(void) {
-    switch (nano_context_D.block.base.type) {
+    nano_apdu_sign_block_request *req = &nano_context_D.stateData.signBlockRequest;
+
+    switch (req->block.base.type) {
     case NANO_UNKNOWN_BLOCK:
         switch (ux_step) {
         default:
@@ -368,13 +375,13 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
                 NANO_DEFAULT_PREFIX,
-                nano_public_key_D);
+                req->publicKey);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                nano_context_D.block.base.hash);
+                req->block.base.hash);
             break;
         }
         break;
@@ -386,20 +393,20 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
                 NANO_DEFAULT_PREFIX,
-                nano_public_key_D);
+                req->publicKey);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
-                nano_context_D.block.open.representativePrefix,
-                nano_context_D.block.open.representative);
+                req->block.open.representativePrefix,
+                req->block.open.representative);
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                nano_context_D.block.open.hash);
+                req->block.open.hash);
             break;
         }
         break;
@@ -411,13 +418,13 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
                 NANO_DEFAULT_PREFIX,
-                nano_public_key_D);
+                req->publicKey);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                nano_context_D.block.receive.hash);
+                req->block.receive.hash);
             break;
         }
         break;
@@ -429,27 +436,27 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
                 NANO_DEFAULT_PREFIX,
-                nano_public_key_D);
+                req->publicKey);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Balance after");
             nano_format_balance(
                 vars.confirmSignBlock.confirmValue,
                 sizeof(vars.confirmSignBlock.confirmValue),
-                nano_context_D.block.send.balance);
+                req->block.send.balance);
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Send to");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
-                nano_context_D.block.send.destinationAccountPrefix,
-                nano_context_D.block.send.destinationAccount);
+                req->block.send.destinationAccountPrefix,
+                req->block.send.destinationAccount);
             break;
         case 4:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                nano_context_D.block.send.hash);
+                req->block.send.hash);
             break;
         }
         break;
@@ -461,20 +468,20 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             ui_write_address_truncated(
                 vars.confirmSignBlock.confirmValue,
                 NANO_DEFAULT_PREFIX,
-                nano_public_key_D);
+                req->publicKey);
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
-                nano_context_D.block.change.representativePrefix,
-                nano_context_D.block.change.representative);
+                req->block.change.representativePrefix,
+                req->block.change.representative);
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
             ui_write_confirm_label_block_hash(
                 vars.confirmSignBlock.confirmValue,
-                nano_context_D.block.change.hash);
+                req->block.change.hash);
             break;
         }
         break;
@@ -534,9 +541,11 @@ uint32_t ui_confirm_sign_block_button(uint32_t button_mask,
 }
 
 void nano_bagl_confirm_sign_block(void) {
+    nano_apdu_sign_block_request *req = &nano_context_D.stateData.signBlockRequest;
+
     os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
 
-    switch (nano_context_D.block.base.type) {
+    switch (req->block.base.type) {
     case NANO_UNKNOWN_BLOCK:
         strcpy(vars.confirmSignBlock.blockType, "unknown block");
         ux_step_count = 3;
@@ -559,8 +568,38 @@ void nano_bagl_confirm_sign_block(void) {
         break;
     }
 
+    bagl_state = NANO_STATE_CONFIRM_SIGNATURE;
     ux_step = 0;
     UX_DISPLAY(ui_confirm_sign_block, ui_confirm_sign_block_prepro);
+}
+
+bool nano_bagl_apply_state() {
+    if (!UX_DISPLAYED()) {
+        return false;
+    }
+
+    switch (nano_context_D.state) {
+    case NANO_STATE_READY:
+        if (bagl_state != NANO_STATE_READY) {
+            ui_idle();
+            return true;
+        }
+        break;
+    case NANO_STATE_CONFIRM_ADDRESS:
+        if (bagl_state != NANO_STATE_CONFIRM_ADDRESS) {
+            nano_bagl_display_address();
+            return true;
+        }
+        break;
+    case NANO_STATE_CONFIRM_SIGNATURE:
+        if (bagl_state != NANO_STATE_CONFIRM_SIGNATURE) {
+            nano_bagl_confirm_sign_block();
+            return true;
+        }
+        break;
+    }
+
+    return false;
 }
 
 #endif // defined(TARGET_NANOS)

@@ -39,6 +39,7 @@ static const uint8_t SW_UNKNOWN_INSTRUCTION[] = {0x6d, 0x00};
 static const uint8_t SW_UNKNOWN_CLASS[] = {0x6e, 0x00};
 static const uint8_t SW_WRONG_LENGTH[] = {0x67, 0x00};
 static const uint8_t SW_INTERNAL[] = {0x6F, 0x00};
+// static const uint8_t SW_CONDITIONS_NOT_SATISFIED[] = {0x69, 0x85};
 
 #ifdef HAVE_BLE
 static const uint8_t NOTIFY_USER_PRESENCE_NEEDED[] = {
@@ -117,9 +118,10 @@ void u2f_handle_sign(u2f_service_t *service, uint8_t p1, uint8_t p2,
     // Check that it looks like an APDU
     os_memmove(G_io_apdu_buffer, buffer + 65, keyHandleLength);
     app_dispatch();
-    if ((nano_context_D.ioFlags & IO_ASYNCH_REPLY) == 0) {
-        u2f_proxy_response(service, nano_context_D.outLength);
+    if ((nano_context_D.response.ioFlags & IO_ASYNCH_REPLY) == 0) {
+        u2f_proxy_response(service, nano_context_D.response.outLength);
     }
+
 }
 
 void u2f_handle_get_version(u2f_service_t *service, uint8_t p1, uint8_t p2,

@@ -17,6 +17,7 @@
 ********************************************************************************/
 
 #include "nano_internal.h"
+#include "nano_apdu_get_address.h"
 #include "nano_apdu_constants.h"
 
 #include "nano_bagl.h"
@@ -26,9 +27,11 @@
 
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_get_address_output(void);
+uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request *req);
 
-uint16_t nano_apdu_get_address() {
+uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
+    nano_apdu_get_address_request req;
+    nano_private_key_t privateKey;
     uint8_t *keyPathPtr;
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
 
@@ -57,50 +60,59 @@ uint16_t nano_apdu_get_address() {
     }
 
     // Retrieve the public key for the path
-    nano_private_derive_keypair(keyPathPtr, true);
-    os_memset(nano_private_key_D, 0, sizeof(nano_private_key_D)); // sanitise private key
+    nano_private_derive_keypair(keyPathPtr, privateKey, req.publicKey);
+    os_memset(privateKey, 0, sizeof(privateKey)); // sanitise private key
 
     if (display) {
-        nano_context_D.ioFlags |= IO_ASYNCH_REPLY;
-        nano_bagl_display_address();
+        // Update app state to confirm the address
+        nano_context_D.state = NANO_STATE_CONFIRM_ADDRESS;
+        os_memmove(&nano_context_D.stateData.getAddressRequest, &req, sizeof(req));
+        app_apply_state();
+
+        resp->ioFlags |= IO_ASYNCH_REPLY;
         return NANO_SW_OK;
     } else {
-        return nano_apdu_get_address_output();
+        uint16_t statusWord = nano_apdu_get_address_output(resp, &req);
+        os_memset(&req, 0, sizeof(req)); // sanitise request data
+        return statusWord;
     }
 }
 
-uint16_t nano_apdu_get_address_output(void) {
+uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request *req) {
     uint8_t length;
-    uint8_t *outPtr = G_io_apdu_buffer;
+    uint8_t *outPtr = resp->buffer;
 
     // Output raw public key
-    length = sizeof(nano_public_key_D);
+    length = sizeof(req->publicKey);
     *outPtr = length;
-    os_memmove(outPtr + 1, nano_public_key_D, length);
+    os_memmove(outPtr + 1, req->publicKey, length);
     outPtr += 1 + length;
 
     // Encode & output account address
     length = NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN;
     *outPtr = length;
-    nano_write_account_string(outPtr + 1, NANO_DEFAULT_PREFIX, nano_public_key_D);
+    nano_write_account_string(outPtr + 1, NANO_DEFAULT_PREFIX, req->publicKey);
     outPtr += 1 + length;
 
-    nano_context_D.outLength = outPtr - G_io_apdu_buffer;
-
-    // Reset the global variables
-    os_memset(nano_public_key_D, 0, sizeof(nano_public_key_D));
+    resp->outLength = outPtr - resp->buffer;
 
     return NANO_SW_OK;
 }
 
 void nano_bagl_display_address_callback(bool confirmed) {
-    nano_context_D.outLength = 0;
-    nano_context_D.ioFlags = 0;
+    nano_apdu_get_address_request *req = &nano_context_D.stateData.getAddressRequest;
+
+    uint16_t statusWord;
+    nano_apdu_response_t resp;
+    resp.buffer = nano_context_D.asyncBuffer;
+    resp.outLength = 0;
+    resp.ioFlags = 0;
 
     if (confirmed) {
-        nano_context_D.sw = nano_apdu_get_address_output();
+        statusWord = nano_apdu_get_address_output(&resp, req);
     } else {
-        nano_context_D.sw = NANO_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
+        statusWord = NANO_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
     }
-    app_async_response();
+    os_memset(req, 0, sizeof(req)); // sanitise request data
+    app_async_response(&resp, statusWord);
 }

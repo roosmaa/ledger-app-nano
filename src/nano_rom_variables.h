@@ -19,7 +19,7 @@
 
 #define DISPATCHER_APDUS 3
 
-typedef uint16_t (*apduProcessingFunction)(void);
+typedef uint16_t (*apduProcessingFunction)(nano_apdu_response_t *resp);
 
 extern uint8_t const DISPATCHER_CLA[DISPATCHER_APDUS];
 extern uint8_t const DISPATCHER_INS[DISPATCHER_APDUS];

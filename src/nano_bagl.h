@@ -23,10 +23,11 @@
 
 #define NANO_BAGL_COLOR_APP 0xFCB653
 
-void nano_bagl_display_address(void);
 void nano_bagl_display_address_callback(bool confirmed);
-
-void nano_bagl_confirm_sign_block();
 void nano_bagl_confirm_sign_block_callback(bool confirmed);
+
+/** Apply current global state to UX. Returns true if UX was updated,
+    false if the UX is already in the correct state and nothing was done. **/
+bool nano_bagl_apply_state();
 
 #endif

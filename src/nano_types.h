@@ -20,6 +20,22 @@
 #define NANO_TYPES_H
 
 #include <stdint.h>
+#include <stdbool.h>
+
+typedef struct {
+    /** IO flags to reply with at the end of an APDU handler */
+    uint8_t ioFlags;
+    /** Length of the outgoing command */
+    uint16_t outLength;
+    /** Pointer to the output buffer for the response */
+    uint8_t *buffer;
+} nano_apdu_response_t;
+
+typedef enum {
+    NANO_STATE_READY,
+    NANO_STATE_CONFIRM_ADDRESS,
+    NANO_STATE_CONFIRM_SIGNATURE,
+} nano_state_t;
 
 typedef uint8_t nano_private_key_t[32];
 typedef uint8_t nano_public_key_t[32];

@@ -22,26 +22,36 @@
 #include "os.h"
 #include "nano_types.h"
 #include "nano_secure_value.h"
+#include "nano_apdu_get_address.h"
+#include "nano_apdu_sign_block.h"
 
-struct nano_context_s {
+typedef struct {
     /** Flag if dongle has been halted */
     secu8 halted;
 
-    /** Currently processed block **/
-    nano_block_t block;
-
     /** Length of the incoming command */
     uint16_t inLength;
-    /** Length of the outgoing command */
-    uint16_t outLength;
 
-    /** IO flags to reply with at the end of an APDU handler */
-    uint8_t ioFlags;
+    /** Primary response for synchronous APDUs **/
+    nano_apdu_response_t response;
 
-    /** Status Word of the response */
-    uint16_t sw;
-};
-typedef struct nano_context_s nano_context_t;
+    /** Buffer used for asynchronous response data **/
+    uint8_t asyncBuffer[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
+
+    /** State determines the application state (UX displayed, etc).
+        This is also used to enforce only single confirmation
+        prompt. **/
+    nano_state_t state;
+    union {
+        // when NANO_STATE_READY
+        nano_apdu_response_t asyncResponse;
+        // when NANO_STATE_CONFIRM_ADDRESS
+        nano_apdu_get_address_request getAddressRequest;
+        // when NANO_STATE_CONFIRM_SIGNATURE
+        nano_apdu_sign_block_request signBlockRequest;
+    } stateData;
+
+} nano_context_t;
 
 void nano_context_init(void);
 

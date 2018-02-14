@@ -361,7 +361,8 @@ void nano_format_balance(char *dest, size_t destLen,
 }
 
 void nano_private_derive_keypair(uint8_t *bip32Path,
-                                 bool derivePublic) {
+                                 nano_private_key_t out_privateKey,
+                                 nano_public_key_t out_publicKey) {
     uint8_t bip32PathLength;
     uint8_t i;
     uint32_t bip32PathInt[MAX_BIP32_PATH];
@@ -377,15 +378,15 @@ void nano_private_derive_keypair(uint8_t *bip32Path,
         bip32Path += 4;
     }
     os_perso_derive_node_bip32(NANO_CURVE, bip32PathInt, bip32PathLength,
-                               nano_private_key_D, chainCode);
+                               out_privateKey, chainCode);
     os_memset(chainCode, 0, sizeof(chainCode));
 
-    if (derivePublic) {
-        ed25519_publickey(nano_private_key_D, nano_public_key_D);
+    if (out_publicKey != NULL) {
+        ed25519_publickey(out_privateKey, out_publicKey);
     }
 }
 
-void nano_hash_block(nano_block_t *block) {
+void nano_hash_block(nano_block_t *block, nano_public_key_t publicKey) {
     blake2b_ctx hash;
     blake2b_init(&hash, sizeof(block->base.hash), NULL, 0);
 
@@ -396,8 +397,8 @@ void nano_hash_block(nano_block_t *block) {
             sizeof(block->open.sourceBlock));
         blake2b_update(&hash, block->open.representative,
             sizeof(block->open.representative));
-        blake2b_update(&hash, nano_public_key_D,
-            sizeof(nano_public_key_D));
+        blake2b_update(&hash, publicKey,
+            sizeof(nano_public_key_t));
         break;
     case NANO_RECEIVE_BLOCK:
         blake2b_update(&hash, block->receive.previousBlock,
@@ -424,9 +425,11 @@ void nano_hash_block(nano_block_t *block) {
     blake2b_final(&hash, block->base.hash);
 }
 
-void nano_sign_block(nano_block_t *block) {
+void nano_sign_block(nano_block_t *block,
+                     nano_private_key_t privateKey,
+                     nano_public_key_t publicKey) {
     ed25519_sign(
         block->base.hash, sizeof(block->base.hash),
-        nano_private_key_D, nano_public_key_D,
+        privateKey, publicKey,
         block->base.signature);
 }

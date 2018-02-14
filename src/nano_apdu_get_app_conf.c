@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
-*   (c) 2016 Ledger
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@
 ********************************************************************************/
 
 #include "nano_internal.h"
+#include "nano_apdu_get_app_conf.h"
 #include "nano_apdu_constants.h"
 
 #define P1_UNUSED 0x00
 
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_get_app_conf_output(void);
+uint16_t nano_apdu_get_app_conf_output(nano_apdu_response_t *resp);
 
-uint16_t nano_apdu_get_app_conf() {
+uint16_t nano_apdu_get_app_conf(nano_apdu_response_t *resp) {
     switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
     case P1_UNUSED:
         break;
@@ -43,11 +44,11 @@ uint16_t nano_apdu_get_app_conf() {
         return NANO_SW_INCORRECT_LENGTH;
     }
 
-    return nano_apdu_get_app_conf_output();
+    return nano_apdu_get_app_conf_output(resp);
 }
 
-uint16_t nano_apdu_get_app_conf_output(void) {
-    uint8_t *outPtr = G_io_apdu_buffer;
+uint16_t nano_apdu_get_app_conf_output(nano_apdu_response_t *resp) {
+    uint8_t *outPtr = resp->buffer;
 
     // Output raw public key
     *outPtr = APP_MAJOR_VERSION;
@@ -57,7 +58,7 @@ uint16_t nano_apdu_get_app_conf_output(void) {
     *outPtr = APP_PATCH_VERSION;
     outPtr += 1;
 
-    nano_context_D.outLength = outPtr - G_io_apdu_buffer;
+    resp->outLength = outPtr - resp->buffer;
 
     return NANO_SW_OK;
 }

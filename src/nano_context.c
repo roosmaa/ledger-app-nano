@@ -24,4 +24,5 @@ void nano_context_init() {
     L_DEBUG_APP(("Context init\n"));
     os_memset(&nano_context_D, 0, sizeof(nano_context_D));
     SB_SET(nano_context_D.halted, 0);
+    nano_context_D.response.buffer = G_io_apdu_buffer;
 }

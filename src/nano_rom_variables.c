@@ -17,6 +17,8 @@
 
 #include "nano_internal.h"
 #include "nano_apdu_constants.h"
+#include "nano_apdu_get_address.h"
+#include "nano_apdu_get_app_conf.h"
 
 uint8_t const DISPATCHER_CLA[] = {
     NANO_CLA, // nano_apdu_get_app_conf

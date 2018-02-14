@@ -114,10 +114,17 @@ uint8_t io_event(uint8_t channel) {
         break;
 
     case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-        UX_DISPLAYED_EVENT({});
+        UX_DISPLAYED_EVENT({
+            app_apply_state();
+        });
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
+        if (app_apply_state()) {
+            // Apply caused changed, nothing else to do this cycle
+            break;
+        }
+
         UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
             ui_ticker_event(UX_ALLOWED);
         });

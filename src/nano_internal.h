@@ -20,8 +20,8 @@
 
 #include "nano.h"
 #include "nano_types.h"
+#include "nano_context.h"
 #include "nano_public_ram_variables.h"
-#include "nano_public_ram_key_variables.h"
 #include "nano_rom_variables.h"
 #include "nano_filesystem.h"
 #include "nano_helpers.h"

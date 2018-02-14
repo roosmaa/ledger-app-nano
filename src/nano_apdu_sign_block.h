@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
-*   (c) 2016 Ledger
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,13 +15,19 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_PUBLIC_RAM_KEY_VARIABLES_H
+#ifndef NANO_APDU_SIGN_BLOCK_H
 
-#define NANO_PUBLIC_RAM_KEY_VARIABLES_H
+#define NANO_APDU_SIGN_BLOCK_H
 
 #include "nano_types.h"
+#include "nano_helpers.h"
 
-extern nano_public_key_t nano_public_key_D;
-extern nano_private_key_t nano_private_key_D;
+typedef struct {
+    uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    nano_public_key_t publicKey;
+    nano_block_t block;
+} nano_apdu_sign_block_request;
 
-#endif
+uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp);
+
+#endif // NANO_APDU_SIGN_BLOCK_H
