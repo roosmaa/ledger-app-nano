@@ -34,6 +34,11 @@ typedef struct {
 } nano_apdu_sign_block_heap_t;
 
 typedef struct {
+    uint32_t bip32PathInt[MAX_BIP32_PATH];
+    uint8_t chainCode[32];
+} nano_derive_keypair_heap_t;
+
+typedef struct {
     // log10(x) = log2(x) / log2(10) ~= log2(x) / 3.322
     char buf[128 / 3 + 1 + 2];
     nano_balance_t num;

@@ -358,26 +358,30 @@ void nano_format_balance(char *dest, size_t destLen,
     os_memmove(dest, h->buf + start, MIN(destLen, end - start + 1));
 }
 
-void nano_private_derive_keypair(uint8_t *bip32Path,
-                                 nano_private_key_t out_privateKey,
-                                 nano_public_key_t out_publicKey) {
-    uint8_t bip32PathLength;
-    uint8_t i;
-    uint32_t bip32PathInt[MAX_BIP32_PATH];
-    uint8_t chainCode[32];
+void nano_derive_keypair(uint8_t *bip32Path,
+                         nano_private_key_t out_privateKey,
+                         nano_public_key_t out_publicKey) {
+    // NB! Explicit scope to limit usage of `h` as it becomes invalid
+    //     once the ed25519 function is called. The memory will be
+    //     reused for blake2b hashing.
+    {
+        nano_derive_keypair_heap_t *h = &nano_memory_space_b_D.nano_derive_keypair_heap;
+        uint8_t bip32PathLength;
+        uint8_t i;
 
-    bip32PathLength = bip32Path[0];
-    if (bip32PathLength > MAX_BIP32_PATH) {
-        THROW(INVALID_PARAMETER);
+        bip32PathLength = bip32Path[0];
+        if (bip32PathLength > MAX_BIP32_PATH) {
+            THROW(INVALID_PARAMETER);
+        }
+        bip32Path++;
+        for (i = 0; i < bip32PathLength; i++) {
+            h->bip32PathInt[i] = nano_read_u32(bip32Path, 1, 0);
+            bip32Path += 4;
+        }
+        os_perso_derive_node_bip32(NANO_CURVE, h->bip32PathInt, bip32PathLength,
+                                   out_privateKey, h->chainCode);
+        os_memset(h->chainCode, 0, sizeof(h->chainCode));
     }
-    bip32Path++;
-    for (i = 0; i < bip32PathLength; i++) {
-        bip32PathInt[i] = nano_read_u32(bip32Path, 1, 0);
-        bip32Path += 4;
-    }
-    os_perso_derive_node_bip32(NANO_CURVE, bip32PathInt, bip32PathLength,
-                               out_privateKey, chainCode);
-    os_memset(chainCode, 0, sizeof(chainCode));
 
     if (out_publicKey != NULL) {
         ed25519_publickey(out_privateKey, out_publicKey);

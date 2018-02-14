@@ -48,6 +48,7 @@ extern nano_memory_space_a_t nano_memory_space_a_D;
    short while and never at the same time. */
 typedef union {
     blake2b_ctx blake2b_ctx;
+    nano_derive_keypair_heap_t nano_derive_keypair_heap;
     nano_format_balance_heap_t nano_format_balance_heap;
 } nano_memory_space_b_t;
 extern nano_memory_space_b_t nano_memory_space_b_D;

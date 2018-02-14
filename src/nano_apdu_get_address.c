@@ -63,7 +63,7 @@ uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
     }
 
     // Retrieve the public key for the path
-    nano_private_derive_keypair(keyPathPtr, h->privateKey, h->req.publicKey);
+    nano_derive_keypair(keyPathPtr, h->privateKey, h->req.publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
 
     if (display) {

@@ -44,9 +44,9 @@ void nano_truncate_string(char *dest, size_t destLen,
 void nano_format_balance(char *dest, size_t destLen,
                          nano_balance_t balance);
 
-void nano_private_derive_keypair(uint8_t *bip32Path,
-                                 nano_private_key_t out_privateKey,
-                                 nano_public_key_t out_publicKey);
+void nano_derive_keypair(uint8_t *bip32Path,
+                         nano_private_key_t out_privateKey,
+                         nano_public_key_t out_publicKey);
 
 /** Implement Java hashCode() equivalent hashing of data **/
 uint32_t nano_simple_hash(uint8_t *data, size_t dataLen);
