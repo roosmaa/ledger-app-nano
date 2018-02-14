@@ -270,6 +270,9 @@ uint32_t ui_display_address_button(uint32_t button_mask,
 }
 
 void nano_bagl_display_address(void) {
+    if (nano_context_D.state != NANO_STATE_CONFIRM_ADDRESS) {
+        return;
+    }
     nano_apdu_get_address_request *req = &nano_context_D.stateData.getAddressRequest;
 
     os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
@@ -364,6 +367,9 @@ void ui_write_confirm_label_block_hash(char *label, nano_hash_t hash) {
 }
 
 void ui_confirm_sign_block_prepare_confirm_step(void) {
+    if (nano_context_D.state != NANO_STATE_CONFIRM_SIGNATURE) {
+        return;
+    }
     nano_apdu_sign_block_request *req = &nano_context_D.stateData.signBlockRequest;
 
     switch (req->block.base.type) {
@@ -541,6 +547,9 @@ uint32_t ui_confirm_sign_block_button(uint32_t button_mask,
 }
 
 void nano_bagl_confirm_sign_block(void) {
+    if (nano_context_D.state != NANO_STATE_CONFIRM_SIGNATURE) {
+        return;
+    }
     nano_apdu_sign_block_request *req = &nano_context_D.stateData.signBlockRequest;
 
     os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
