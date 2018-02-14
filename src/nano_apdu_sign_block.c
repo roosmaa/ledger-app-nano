@@ -39,7 +39,7 @@ void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
 uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request_t *req);
 
 uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
-    nano_apdu_sign_block_heap_t *h = &nano_memory_space_a_D.nano_apdu_sign_block_heap;
+    nano_apdu_sign_block_heap_t *h = &ram_a.nano_apdu_sign_block_heap_D;
     uint8_t *inPtr;
     uint8_t readLen;
 
@@ -196,7 +196,7 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
 }
 
 uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request_t *req) {
-    nano_apdu_sign_block_heap_t *h = &nano_memory_space_a_D.nano_apdu_sign_block_heap;
+    nano_apdu_sign_block_heap_t *h = &ram_a.nano_apdu_sign_block_heap_D;
     uint8_t *outPtr = resp->buffer;
 
     // Derive key and sign the block

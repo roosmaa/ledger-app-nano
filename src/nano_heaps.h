@@ -15,9 +15,9 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_HEAP_H
+#ifndef NANO_HEAPS_H
 
-#define NANO_HEAP_H
+#define NANO_HEAPS_H
 
 #include "nano_types.h"
 #include "nano_apdu_get_address.h"
@@ -44,4 +44,4 @@ typedef struct {
     nano_balance_t num;
 } nano_format_balance_heap_t;
 
-#endif // NANO_HEAP_H
+#endif // NANO_HEAPS_H

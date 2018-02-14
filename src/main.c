@@ -189,8 +189,8 @@ __attribute__((section(".boot"))) int main(void) {
                 os_memset(&u2f_service_D, 0, sizeof(u2f_service_D));
                 u2f_service_D.inputBuffer = G_io_apdu_buffer;
                 u2f_service_D.outputBuffer = G_io_apdu_buffer;
-                u2f_service_D.messageBuffer = nano_memory_space_a_D.u2f_message_buffer;
-                u2f_service_D.messageBufferSize = sizeof(nano_memory_space_a_D.u2f_message_buffer);
+                u2f_service_D.messageBuffer = ram_a.u2f_message_buffer_D;
+                u2f_service_D.messageBufferSize = sizeof(ram_a.u2f_message_buffer_D);
                 u2f_initialize_service(&u2f_service_D);
 
                 USB_power_U2F(true, N_nano.fidoTransport);

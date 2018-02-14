@@ -21,7 +21,7 @@
 #include "nano.h"
 #include "nano_types.h"
 #include "nano_context.h"
-#include "nano_heap.h"
+#include "nano_heaps.h"
 #include "nano_ram_variables.h"
 #include "nano_rom_variables.h"
 #include "nano_filesystem.h"

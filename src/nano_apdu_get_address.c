@@ -30,7 +30,7 @@
 uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request_t *req);
 
 uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
-    nano_apdu_get_address_heap_t *h = &nano_memory_space_a_D.nano_apdu_get_address_heap;
+    nano_apdu_get_address_heap_t *h = &ram_a.nano_apdu_get_address_heap_D;
     uint8_t *keyPathPtr;
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
 

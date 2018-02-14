@@ -160,7 +160,7 @@ bool nano_read_account_string(uint8_t *buffer, size_t size,
     #undef accPipeByte
 
     // Verify the checksum of the address
-    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_init(hash, sizeof(check), NULL, 0);
     blake2b_update(hash, outKey, sizeof(nano_public_key_t));
     blake2b_final(hash, check);
@@ -179,7 +179,7 @@ void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
     uint8_t k, i, c;
     uint8_t check[5];
 
-    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_init(hash, sizeof(check), NULL, 0);
     blake2b_update(hash, publicKey, sizeof(nano_public_key_t));
     blake2b_final(hash, check);
@@ -273,7 +273,7 @@ void nano_truncate_string(char *dest, size_t destLen,
 
 void nano_format_balance(char *dest, size_t destLen,
                          nano_balance_t balance) {
-    nano_format_balance_heap_t *h = &nano_memory_space_b_D.nano_format_balance_heap;
+    nano_format_balance_heap_t *h = &ram_b.nano_format_balance_heap_D;
     os_memset(h->buf, 0, sizeof(h->buf));
     os_memmove(h->num, balance, sizeof(h->num));
 
@@ -365,7 +365,7 @@ void nano_derive_keypair(uint8_t *bip32Path,
     //     once the ed25519 function is called. The memory will be
     //     reused for blake2b hashing.
     {
-        nano_derive_keypair_heap_t *h = &nano_memory_space_b_D.nano_derive_keypair_heap;
+        nano_derive_keypair_heap_t *h = &ram_b.nano_derive_keypair_heap_D;
         uint8_t bip32PathLength;
         uint8_t i;
 
@@ -397,7 +397,7 @@ uint32_t nano_simple_hash(uint8_t *data, size_t dataLen) {
 }
 
 void nano_hash_block(nano_block_t *block, nano_public_key_t publicKey) {
-    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_init(hash, sizeof(block->base.hash), NULL, 0);
 
     switch (block->base.type) {

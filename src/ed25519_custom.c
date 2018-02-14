@@ -13,19 +13,19 @@ void ed25519_randombytes_unsafe(void *out, size_t outlen) {
 
 void ed25519_hash_init(ed25519_hash_context *ctx) {
     UNUSED(ctx);
-    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_init(hash, 64, NULL, 0);
 }
 
 void ed25519_hash_update(ed25519_hash_context *ctx, uint8_t const *in, size_t inlen) {
     UNUSED(ctx);
-    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_update(hash, in, inlen);
 }
 
 void ed25519_hash_final(ed25519_hash_context *ctx, uint8_t *out) {
     UNUSED(ctx);
-    blake2b_ctx *hash = &nano_memory_space_b_D.blake2b_ctx;
+    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_final(hash, out);
 }
 
