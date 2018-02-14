@@ -25,6 +25,7 @@ ux_state_t ux;
 
 uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 nano_context_t nano_context_D;
+blake2b_ctx nano_blake2b_D;
 
 nano_memory_space_a_t nano_memory_space_a_D;
 

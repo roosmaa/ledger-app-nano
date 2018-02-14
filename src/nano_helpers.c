@@ -160,10 +160,9 @@ bool nano_read_account_string(uint8_t *buffer, size_t size,
     #undef accPipeByte
 
     // Verify the checksum of the address
-    blake2b_ctx hash;
-    blake2b_init(&hash, sizeof(check), NULL, 0);
-    blake2b_update(&hash, outKey, sizeof(nano_public_key_t));
-    blake2b_final(&hash, check);
+    blake2b_init(&nano_blake2b_D, sizeof(check), NULL, 0);
+    blake2b_update(&nano_blake2b_D, outKey, sizeof(nano_public_key_t));
+    blake2b_final(&nano_blake2b_D, check);
 
     for (i = 0; i < sizeof(check); i++) {
         if (check[i] != checkInp[i]) {
@@ -179,10 +178,9 @@ void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
     uint8_t k, i, c;
     uint8_t check[5];
 
-    blake2b_ctx hash;
-    blake2b_init(&hash, sizeof(check), NULL, 0);
-    blake2b_update(&hash, publicKey, sizeof(nano_public_key_t));
-    blake2b_final(&hash, check);
+    blake2b_init(&nano_blake2b_D, sizeof(check), NULL, 0);
+    blake2b_update(&nano_blake2b_D, publicKey, sizeof(nano_public_key_t));
+    blake2b_final(&nano_blake2b_D, check);
 
     switch (prefix) {
     case NANO_DEFAULT_PREFIX:
@@ -395,42 +393,41 @@ uint32_t nano_simple_hash(uint8_t *data, size_t dataLen) {
 }
 
 void nano_hash_block(nano_block_t *block, nano_public_key_t publicKey) {
-    blake2b_ctx hash;
-    blake2b_init(&hash, sizeof(block->base.hash), NULL, 0);
+    blake2b_init(&nano_blake2b_D, sizeof(block->base.hash), NULL, 0);
 
     switch (block->base.type) {
     case NANO_UNKNOWN_BLOCK: break;
     case NANO_OPEN_BLOCK:
-        blake2b_update(&hash, block->open.sourceBlock,
+        blake2b_update(&nano_blake2b_D, block->open.sourceBlock,
             sizeof(block->open.sourceBlock));
-        blake2b_update(&hash, block->open.representative,
+        blake2b_update(&nano_blake2b_D, block->open.representative,
             sizeof(block->open.representative));
-        blake2b_update(&hash, publicKey,
+        blake2b_update(&nano_blake2b_D, publicKey,
             sizeof(nano_public_key_t));
         break;
     case NANO_RECEIVE_BLOCK:
-        blake2b_update(&hash, block->receive.previousBlock,
+        blake2b_update(&nano_blake2b_D, block->receive.previousBlock,
             sizeof(block->receive.previousBlock));
-        blake2b_update(&hash, block->receive.sourceBlock,
+        blake2b_update(&nano_blake2b_D, block->receive.sourceBlock,
             sizeof(block->receive.sourceBlock));
         break;
     case NANO_SEND_BLOCK:
-        blake2b_update(&hash, block->send.previousBlock,
+        blake2b_update(&nano_blake2b_D, block->send.previousBlock,
             sizeof(block->send.previousBlock));
-        blake2b_update(&hash, block->send.destinationAccount,
+        blake2b_update(&nano_blake2b_D, block->send.destinationAccount,
             sizeof(block->send.destinationAccount));
-        blake2b_update(&hash, block->send.balance,
+        blake2b_update(&nano_blake2b_D, block->send.balance,
             sizeof(block->send.balance));
         break;
     case NANO_CHANGE_BLOCK:
-        blake2b_update(&hash, block->change.previousBlock,
+        blake2b_update(&nano_blake2b_D, block->change.previousBlock,
             sizeof(block->change.previousBlock));
-        blake2b_update(&hash, block->change.representative,
+        blake2b_update(&nano_blake2b_D, block->change.representative,
             sizeof(block->change.representative));
         break;
     }
 
-    blake2b_final(&hash, block->base.hash);
+    blake2b_final(&nano_blake2b_D, block->base.hash);
 }
 
 void nano_sign_block(nano_block_t *block,

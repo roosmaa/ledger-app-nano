@@ -20,6 +20,8 @@
 
 #define NANO_PUBLIC_RAM_VARIABLES_H
 
+#include "blake2b.h"
+
 #include "nano_context.h"
 #include "nano_apdu_get_address.h"
 #include "nano_apdu_sign_block.h"
@@ -31,6 +33,7 @@
 /** Buffer used for asynchronous response data **/
 extern uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 extern nano_context_t nano_context_D;
+extern blake2b_ctx nano_blake2b_D;
 
 /* U2F message buffer and APDU heaps are mutually exclusive,
    so can be mapped to a shared memory space. */
