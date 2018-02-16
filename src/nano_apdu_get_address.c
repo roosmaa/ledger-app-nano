@@ -88,9 +88,8 @@ uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_
 
     // Output raw public key
     length = sizeof(req->publicKey);
-    *outPtr = length;
-    os_memmove(outPtr + 1, req->publicKey, length);
-    outPtr += 1 + length;
+    os_memmove(outPtr, req->publicKey, length);
+    outPtr += length;
 
     // Encode & output account address
     length = NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN;

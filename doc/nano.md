@@ -34,8 +34,7 @@ This command returns the public key and the encoded address for the given BIP 32
 
 | *Description*                                     | *Length*  |
 |---------------------------------------------------|-----------|
-| Public key length                                 | 1         |
-| Public key                                        | var       |
+| Public key                                        | 32        |
 | Account address length                            | 1         |
 | Account address                                   | var       |
 
