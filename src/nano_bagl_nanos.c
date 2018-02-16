@@ -128,7 +128,10 @@ const ux_menu_entry_t menu_settings[] = {
     UX_MENU_END};
 
 const ux_menu_entry_t menu_about[] = {
-    {NULL, NULL, 0, NULL, "Version", APPVERSION, 0, 0},
+    {NULL, NULL, 0xAB, NULL, "Version", APPVERSION, 0, 0},
+    {NULL, NULL, 0xAB, NULL, "Developer", "Mart Roosmaa", 0, 0},
+    // URL with trailing spaces to avoid render artifacts when scrolling
+    {NULL, NULL, 0xAB, NULL, "Source code", " github.com/roosmaa/blue-app-nano ", 0, 0},
     {menu_main, NULL, 2, &C_nanos_icon_back, "Back", NULL, 61, 40},
     UX_MENU_END};
 
@@ -140,10 +143,26 @@ const ux_menu_entry_t menu_main[] = {
     {NULL, os_sched_exit, 0, &C_nanos_icon_dashboard, "Quit app", NULL, 50, 29},
     UX_MENU_END};
 
+const bagl_element_t *menu_prepro(const ux_menu_entry_t *menu_entry, bagl_element_t *element) {
+  // Customise the about menu appearance
+  if (menu_entry->userid == 0xAB) {
+    switch (element->component.userid) {
+    case 0x21: // 1st line
+      element->component.font_id = BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER;
+      break;
+    case 0x22: // 2nd line
+      element->component.stroke = 10; // scrolldelay
+      element->component.icon_id = 26; // scrollspeed
+      break;
+    }
+  }
+  return element;
+}
+
 void ui_idle(void) {
     bagl_state = NANO_STATE_READY;
     ux_step_count = 0;
-    UX_MENU_DISPLAY(0, menu_main, NULL);
+    UX_MENU_DISPLAY(0, menu_main, menu_prepro);
 }
 
 void ui_ticker_event(bool uxAllowed) {
