@@ -49,28 +49,17 @@ This command returns the signature for the provided block.
 
 **Command**
 
-| *CLA* | *INS*  | *P1*                 | *P2* | *Lc* | *Le* |
-|-------|--------|----------------------|------|------|------|
-|   A1  |   03   |  00 : open block     |  00  |      |      |
-|       |        |  01 : receive block  |      |      |      |
-|       |        |  02 : send block     |      |      |      |
-|       |        |  03 : change block   |      |      |      |
+| *CLA* | *INS*  | *P1* | *P2*        | *Lc* | *Le* |
+|-------|--------|------|-------------|------|------|
+|   A1  |   03   |  00  | *see below* |      |      |
+
+The ***P2*** value can compose of the following bitwise flags:
+
+- `0x01` - Use *xrb_* prefix for recipient address (instead of the default *nano_* one) when confirming change with user
+- `0x02` - Use *xrb_* prefix for representative address (instead of the default *nano_* one) when confirming change with user
 
 
-**Input data (open block)**
-
-| *Description*                                      | *Length*  |
-|----------------------------------------------------|-----------|
-| Number of BIP 32 derivations to perform (max 10)   | 1         |
-| First derivation index (big endian)                | 4         |
-| ...                                                | 4         |
-| Last derivation index (big endian)                 | 4         |
-| Representative address length                      | 1         |
-| Representative address                             | var       |
-| Source block hash                                  | 32        |
-
-
-**Input data (receive block)**
+**Input data**
 
 | *Description*                                      | *Length*  |
 |----------------------------------------------------|-----------|
@@ -78,35 +67,42 @@ This command returns the signature for the provided block.
 | First derivation index (big endian)                | 4         |
 | ...                                                | 4         |
 | Last derivation index (big endian)                 | 4         |
-| Previous block hash                                | 32        |
-| Source block hash                                  | 32        |
+| Grandparent block hash state                       | 1         |
+| Grandparent block hash                             | 0 / 32    |
+| Target value state                                 | 1         |
+| Target old value                                   | 0 / 32    |
+| Target new value (nullable)                        | 0 / 32    |
+| Representative value state                         | 1         |
+| Representative old value                           | 0 / 32    |
+| Representative new value                           | 32        |
+| Balance value state                                | 1         |
+| Balance old value                                  | 0 / 16    |
+| Balance new value                                  | 16        |
 
 
-**Input data (send block)**
+Grandparent block hash state can be one of the following values:
 
-| *Description*                                      | *Length*  |
-|----------------------------------------------------|-----------|
-| Number of BIP 32 derivations to perform (max 10)   | 1         |
-| First derivation index (big endian)                | 4         |
-| ...                                                | 4         |
-| Last derivation index (big endian)                 | 4         |
-| Previous block hash                                | 32        |
-| Destination address length                         | 1         |
-| Destination address                                | var       |
-| New balance (big endian)                           | 16        |
+- `0x00` (NULL) - Grandparent block hash has no value, and is not included in the input data
+- `0x01` (NON_NULL) - Grandparent block hash has a value and is included in the input data
 
 
-**Input data (change block)**
+Target, representative and balance value state field communicate how the field changed between the parent (old) block and the new block to be signed. The following equation illustrates the `Left-Hand Side (old value) -> Right-Hand Side (new value)` state change. The state field can have the following values:
 
-| *Description*                                      | *Length*  |
-|----------------------------------------------------|-----------|
-| Number of BIP 32 derivations to perform (max 10)   | 1         |
-| First derivation index (big endian)                | 4         |
-| ...                                                | 4         |
-| Last derivation index (big endian)                 | 4         |
-| Previous block hash                                | 32        |
-| Representative address length                      | 1         |
-| Representative address                             | var       |
+- `0x01` (CHANGED) - The value has changed from the value included in the parent block; both the old and new value need to be included in the input data
+- `0x02` (UNCHANGED) - The value has not changed from the value included in the parent block; only the new value needs to be included in the input data
+
+There are also the following flags for the state field that can be communicated the null-state of the old/new fields:
+
+- `0x80` (LHS_NULL) - The left-hand side (old value) is null, thus the old value field shouldn't be included in the input data
+- `0x40` (RHS_NULL) - The right-hand side (new value) is null, thus the new value field shouldn't be included in the input data (only target field supports a nullable right-hand side value)
+
+For example, the following state values could be used:
+
+- `CHANGED` - representative is being changed
+- `CHANGED | LHS_NULL` - balance field is being initialised in the first 1st/open block
+- `CHANGED | RHS_NULL` - target field is being changed into a null value
+- `UNCHANGED` - balance field wasn't modified
+- `UNCHANGED | LHS_NULL | RHS_NULL` - target field was unchanged from a null value
 
 
 **Output data**
