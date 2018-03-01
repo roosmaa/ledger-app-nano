@@ -39,11 +39,46 @@ This command returns the public key and the encoded address for the given BIP 32
 | Account address                                   | var       |
 
 
+### Validate block
+
+#### Description
+
+This command validates the signature of an universal block and caches the block data in-memory so that the next call to sign block command could determine the changes in account state.
+
+#### Coding
+
+**Command**
+
+| *CLA* | *INS*  | *P1* | *P2* | *Lc* | *Le* |
+|-------|--------|------|------|------|------|
+|   A1  |   03   |  00  |  00  |      |      |
+
+
+**Input data**
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Number of BIP 32 derivations to perform (max 10)   | 1         |
+| First derivation index (big endian)                | 4         |
+| ...                                                | 4         |
+| Last derivation index (big endian)                 | 4         |
+| Parent block hash                                  | 32        |
+| Link                                               | 32        |
+| Representative                                     | 32        |
+| Balance                                            | 16        |
+| Signature                                          | 64        |
+
+
+**Output data**
+
+*None*
+
+
 ### Sign block
 
 #### Description
 
-This command returns the signature for the provided block.
+This command returns the signature for the provided universal block data. For non-null parent blocks the validate block command needs to be called before the this command.
 
 #### Coding
 
@@ -51,7 +86,7 @@ This command returns the signature for the provided block.
 
 | *CLA* | *INS*  | *P1* | *P2*        | *Lc* | *Le* |
 |-------|--------|------|-------------|------|------|
-|   A1  |   03   |  00  | *see below* |      |      |
+|   A1  |   04   |  00  | *see below* |      |      |
 
 The ***P2*** value can compose of the following bitwise flags:
 
@@ -67,42 +102,10 @@ The ***P2*** value can compose of the following bitwise flags:
 | First derivation index (big endian)                | 4         |
 | ...                                                | 4         |
 | Last derivation index (big endian)                 | 4         |
-| Grandparent block hash state                       | 1         |
-| Grandparent block hash                             | 0 / 32    |
-| Target value state                                 | 1         |
-| Target old value                                   | 0 / 32    |
-| Target new value (nullable)                        | 0 / 32    |
-| Representative value state                         | 1         |
-| Representative old value                           | 0 / 32    |
-| Representative new value                           | 32        |
-| Balance value state                                | 1         |
-| Balance old value                                  | 0 / 16    |
-| Balance new value                                  | 16        |
-
-
-Grandparent block hash state can be one of the following values:
-
-- `0x00` (NULL) - Grandparent block hash has no value, and is not included in the input data
-- `0x01` (NON_NULL) - Grandparent block hash has a value and is included in the input data
-
-
-Target, representative and balance value state field communicate how the field changed between the parent (old) block and the new block to be signed. The following equation illustrates the `Left-Hand Side (old value) -> Right-Hand Side (new value)` state change. The state field can have the following values:
-
-- `0x01` (CHANGED) - The value has changed from the value included in the parent block; both the old and new value need to be included in the input data
-- `0x02` (UNCHANGED) - The value has not changed from the value included in the parent block; only the new value needs to be included in the input data
-
-There are also the following flags for the state field that can be communicated the null-state of the old/new fields:
-
-- `0x80` (LHS_NULL) - The left-hand side (old value) is null, thus the old value field shouldn't be included in the input data
-- `0x40` (RHS_NULL) - The right-hand side (new value) is null, thus the new value field shouldn't be included in the input data (only target field supports a nullable right-hand side value)
-
-For example, the following state values could be used:
-
-- `CHANGED` - representative is being changed
-- `CHANGED | LHS_NULL` - balance field is being initialised in the first 1st/open block
-- `CHANGED | RHS_NULL` - target field is being changed into a null value
-- `UNCHANGED` - balance field wasn't modified
-- `UNCHANGED | LHS_NULL | RHS_NULL` - target field was unchanged from a null value
+| Parent block hash                                  | 32        |
+| Target                                             | 32        |
+| Representative                                     | 32        |
+| Balance                                            | 16        |
 
 
 **Output data**
@@ -211,6 +214,7 @@ The following standard Status Words are returned for all APDUs - some specific S
 |   6982   | Security status not satisfied (dongle is locked or busy with another request) |
 |   6985   | User declined the request                                                     |
 |   6A80   | Invalid input data                                                            |
+|   6A81   | Parent block data cache-miss (exec validate block command)                    |
 |   6B00   | Incorrect parameter P1 or P2                                                  |
 |   6Fxx   | Technical problem (Internal error, please report)                             |
 |   9000   | Normal ending of the command                                                  |
