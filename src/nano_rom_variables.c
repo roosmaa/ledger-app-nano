@@ -19,28 +19,34 @@
 #include "nano_apdu_constants.h"
 #include "nano_apdu_get_address.h"
 #include "nano_apdu_get_app_conf.h"
+#include "nano_apdu_validate_block.h"
+#include "nano_apdu_sign_block.h"
 
 uint8_t const DISPATCHER_CLA[] = {
     NANO_CLA, // nano_apdu_get_app_conf
-    NANO_CLA, // nano_apdu_get_address,
-    NANO_CLA, // nano_apdu_sign_block,
+    NANO_CLA, // nano_apdu_get_address
+    NANO_CLA, // nano_apdu_validate_block
+    NANO_CLA, // nano_apdu_sign_block
 };
 
 uint8_t const DISPATCHER_INS[] = {
-    NANO_INS_GET_APP_CONF, // nano_apdu_get_app_conf
-    NANO_INS_GET_ADDRESS,  // nano_apdu_get_address,
-    NANO_INS_SIGN_BLOCK,   // nano_apdu_sign_block
+    NANO_INS_GET_APP_CONF,   // nano_apdu_get_app_conf
+    NANO_INS_GET_ADDRESS,    // nano_apdu_get_address
+    NANO_INS_VALIDATE_BLOCK, // nano_apdu_validate_block
+    NANO_INS_SIGN_BLOCK,     // nano_apdu_sign_block
 };
 
 bool const DISPATCHER_DATA_IN[] = {
     false, // nano_apdu_get_app_conf
-    true,  // nano_apdu_get_address,
+    true,  // nano_apdu_get_address
+    true,  // nano_apdu_validate_block
     true,  // nano_apdu_sign_block
 };
 
 apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
     nano_apdu_get_app_conf,
     nano_apdu_get_address,
+    nano_apdu_validate_block,
     nano_apdu_sign_block,
 };
 
@@ -62,3 +68,10 @@ uint8_t const BASE32_TABLE[75] = {
     0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12,
     0xff, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b,
     0xff, 0x1c, 0x1d, 0x1e, 0x1f };
+
+uint8_t const BLOCK_HASH_PREAMBLE[32] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
+};

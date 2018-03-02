@@ -33,7 +33,9 @@ extern nano_context_t nano_context_D;
    so can be mapped to a shared memory space. */
 typedef union {
     nano_apdu_get_address_heap_t nano_apdu_get_address_heap_D;
+    nano_apdu_validate_block_heap_t nano_apdu_validate_block_heap_D;
     nano_apdu_sign_block_heap_t nano_apdu_sign_block_heap_D;
+    nano_apdu_sign_block_output_heap_t nano_apdu_sign_block_output_heap_D;
 } ram_a_t;
 extern ram_a_t ram_a;
 
@@ -42,7 +44,7 @@ extern ram_a_t ram_a;
 typedef union {
     blake2b_ctx blake2b_ctx_D;
     nano_derive_keypair_heap_t nano_derive_keypair_heap_D;
-    nano_format_balance_heap_t nano_format_balance_heap_D;
+    nano_amount_format_heap_t nano_amount_format_heap_D;
 } ram_b_t;
 extern ram_b_t ram_b;
 

@@ -38,7 +38,9 @@ union {
         char account[NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN+1];
     } displayAddress;
     struct {
-        char blockType[20];
+        bool showAmount;
+        bool showRecipient;
+        bool showRepresentative;
         char confirmLabel[20];
         char confirmValue[MAX(NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN+1, 2*sizeof(nano_hash_t)+1)];
     } confirmSignBlock;
@@ -336,7 +338,7 @@ const bagl_element_t ui_confirm_sign_block[] = {
       /* fgcolor */ 0xFFFFFF, /* bgcolor */ 0x000000,
       /* font_id */ BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
-     /* text */ vars.confirmSignBlock.blockType, /* touch_area_brim */ 0,
+     /* text */ "block", /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
 
@@ -366,126 +368,60 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         return;
     }
     nano_apdu_sign_block_request_t *req = &nano_context_D.stateData.signBlockRequest;
+    uint8_t step = 1;
 
-    switch (req->block.base.type) {
-    case NANO_UNKNOWN_BLOCK:
-        switch (ux_step) {
-        default:
-        case 1:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_address_truncated(
-                vars.confirmSignBlock.confirmValue,
-                NANO_DEFAULT_PREFIX,
-                req->publicKey);
-            break;
-        case 2:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_hash_truncated(
-                vars.confirmSignBlock.confirmValue,
-                req->block.base.hash);
-            break;
-        }
-        break;
-    case NANO_OPEN_BLOCK:
-        switch (ux_step) {
-        default:
-        case 1:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_address_truncated(
-                vars.confirmSignBlock.confirmValue,
-                NANO_DEFAULT_PREFIX,
-                req->publicKey);
-            break;
-        case 2:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
-            ui_write_address_full(
-                vars.confirmSignBlock.confirmValue,
-                req->block.open.representativePrefix,
-                req->block.open.representative);
-            break;
-        case 3:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_hash_truncated(
-                vars.confirmSignBlock.confirmValue,
-                req->block.open.hash);
-            break;
-        }
-        break;
-    case NANO_RECEIVE_BLOCK:
-        switch (ux_step) {
-        default:
-        case 1:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_address_truncated(
-                vars.confirmSignBlock.confirmValue,
-                NANO_DEFAULT_PREFIX,
-                req->publicKey);
-            break;
-        case 2:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_hash_truncated(
-                vars.confirmSignBlock.confirmValue,
-                req->block.receive.hash);
-            break;
-        }
-        break;
-    case NANO_SEND_BLOCK:
-        switch (ux_step) {
-        default:
-        case 1:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_address_truncated(
-                vars.confirmSignBlock.confirmValue,
-                NANO_DEFAULT_PREFIX,
-                req->publicKey);
-            break;
-        case 2:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Balance after");
-            nano_format_balance(
+    if (ux_step == step++) {
+        strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
+        ui_write_address_truncated(
+            vars.confirmSignBlock.confirmValue,
+            NANO_DEFAULT_PREFIX,
+            req->publicKey);
+        return;
+    }
+
+    if (vars.confirmSignBlock.showAmount) {
+        if (ux_step == step++) {
+            if (vars.confirmSignBlock.showRecipient) {
+                strcpy(vars.confirmSignBlock.confirmLabel, "Send amount");
+            } else {
+                strcpy(vars.confirmSignBlock.confirmLabel, "Receive amount");
+            }
+            nano_amount_format(
                 vars.confirmSignBlock.confirmValue,
                 sizeof(vars.confirmSignBlock.confirmValue),
-                req->block.send.balance);
-            break;
-        case 3:
+                req->amount);
+            return;
+        }
+    }
+
+    if (vars.confirmSignBlock.showRecipient) {
+        if (ux_step == step++) {
             strcpy(vars.confirmSignBlock.confirmLabel, "Send to");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
-                req->block.send.destinationAccountPrefix,
-                req->block.send.destinationAccount);
-            break;
-        case 4:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_hash_truncated(
-                vars.confirmSignBlock.confirmValue,
-                req->block.send.hash);
-            break;
+                req->recipientPrefix,
+                req->recipient);
+            return;
         }
-        break;
-    case NANO_CHANGE_BLOCK:
-        switch (ux_step) {
-        default:
-        case 1:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
-            ui_write_address_truncated(
-                vars.confirmSignBlock.confirmValue,
-                NANO_DEFAULT_PREFIX,
-                req->publicKey);
-            break;
-        case 2:
+    }
+
+    if (vars.confirmSignBlock.showRepresentative) {
+        if (ux_step == step++) {
             strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
-                req->block.change.representativePrefix,
-                req->block.change.representative);
-            break;
-        case 3:
-            strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_hash_truncated(
-                vars.confirmSignBlock.confirmValue,
-                req->block.change.hash);
-            break;
+                req->representativePrefix,
+                req->representative);
+            return;
         }
-        break;
+    }
+
+    if (ux_step == step++) {
+        strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
+        ui_write_hash_truncated(
+            vars.confirmSignBlock.confirmValue,
+            req->hash);
+        return;
     }
 }
 
@@ -549,31 +485,23 @@ void nano_bagl_confirm_sign_block(void) {
 
     os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
 
-    switch (req->block.base.type) {
-    case NANO_UNKNOWN_BLOCK:
-        strcpy(vars.confirmSignBlock.blockType, "unknown block");
-        ux_step_count = 3;
-        break;
-    case NANO_OPEN_BLOCK:
-        strcpy(vars.confirmSignBlock.blockType, "open block");
-        ux_step_count = 4;
-        break;
-    case NANO_RECEIVE_BLOCK:
-        strcpy(vars.confirmSignBlock.blockType, "receive block");
-        ux_step_count = 3;
-        break;
-    case NANO_SEND_BLOCK:
-        strcpy(vars.confirmSignBlock.blockType, "send block");
-        ux_step_count = 5;
-        break;
-    case NANO_CHANGE_BLOCK:
-        strcpy(vars.confirmSignBlock.blockType, "change block");
-        ux_step_count = 4;
-        break;
+    if (!nano_is_zero(req->amount, sizeof(req->amount))) {
+        vars.confirmSignBlock.showAmount = true;
+
+        if (!nano_is_zero(req->recipient, sizeof(req->recipient))) {
+            vars.confirmSignBlock.showRecipient = true;
+        }
+    }
+    if (!nano_is_zero(req->representative, sizeof(req->representative))) {
+        vars.confirmSignBlock.showRepresentative = true;
     }
 
     bagl_state = NANO_STATE_CONFIRM_SIGNATURE;
     ux_step = 0;
+    ux_step_count = 3
+        + (vars.confirmSignBlock.showAmount ? 1 : 0)
+        + (vars.confirmSignBlock.showRecipient ? 1 : 0)
+        + (vars.confirmSignBlock.showRepresentative ? 1 : 0);
     UX_DISPLAY(ui_confirm_sign_block, ui_confirm_sign_block_prepro);
 }
 

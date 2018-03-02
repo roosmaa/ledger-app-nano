@@ -103,7 +103,7 @@ The ***P2*** value can compose of the following bitwise flags:
 | ...                                                | 4         |
 | Last derivation index (big endian)                 | 4         |
 | Parent block hash                                  | 32        |
-| Target                                             | 32        |
+| Link                                               | 32        |
 | Representative                                     | 32        |
 | Balance                                            | 16        |
 
@@ -214,7 +214,8 @@ The following standard Status Words are returned for all APDUs - some specific S
 |   6982   | Security status not satisfied (dongle is locked or busy with another request) |
 |   6985   | User declined the request                                                     |
 |   6A80   | Invalid input data                                                            |
-|   6A81   | Parent block data cache-miss (exec validate block command)                    |
+|   6A81   | Failed to validate the provided signature                                     |
+|   6A82   | Parent block data cache-miss (validate parent before sign)                    |
 |   6B00   | Incorrect parameter P1 or P2                                                  |
 |   6Fxx   | Technical problem (Internal error, please report)                             |
 |   9000   | Normal ending of the command                                                  |

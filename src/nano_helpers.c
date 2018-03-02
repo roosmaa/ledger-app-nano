@@ -30,6 +30,16 @@
 #define B_00011  3
 #define B_00001  1
 
+bool nano_is_zero(const uint8_t *ptr, size_t num) {
+    while (num > 0) {
+        num -= 1;
+        if (ptr[num] != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 uint32_t nano_read_u32(uint8_t *buffer, bool be,
                        bool skipSign) {
     uint8_t i;
@@ -246,9 +256,32 @@ void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
     #undef accGetByte
 }
 
-void nano_format_balance(char *dest, size_t destLen,
-                         nano_balance_t balance) {
-    nano_format_balance_heap_t *h = &ram_b.nano_format_balance_heap_D;
+int8_t nano_amount_cmp(const nano_amount_t a, const nano_amount_t b) {
+    size_t i;
+    for (i = 0; i < sizeof(nano_amount_t); i++) {
+        if (a[i] != b[i]) {
+            return a[i] > b[i] ? 1 : -1;
+        }
+    }
+    return 0;
+}
+
+void nano_amount_subtract(nano_amount_t value, const nano_amount_t other) {
+    uint8_t mask = -1;
+    uint8_t borrow = 0;
+    size_t i = sizeof(nano_amount_t);
+
+    while (i > 0) {
+        i -= 1;
+        uint16_t diff = (uint16_t)value[i] - (other[i] & mask) - borrow;
+        value[i] = (uint8_t)diff;
+        borrow = -(uint8_t)(diff >> 8);
+    }
+}
+
+void nano_amount_format(char *dest, size_t destLen,
+                        const nano_amount_t balance) {
+    nano_amount_format_heap_t *h = &ram_b.nano_amount_format_heap_D;
     os_memset(h->buf, 0, sizeof(h->buf));
     os_memmove(h->num, balance, sizeof(h->num));
 
@@ -371,50 +404,37 @@ uint32_t nano_simple_hash(uint8_t *data, size_t dataLen) {
     return result;
 }
 
-void nano_hash_block(nano_block_t *block, nano_public_key_t publicKey) {
+void nano_hash_block(nano_hash_t blockHash,
+                     const nano_block_data_t *blockData,
+                     const nano_public_key_t publicKey) {
     blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
-    blake2b_init(hash, sizeof(block->base.hash), NULL, 0);
+    blake2b_init(hash, sizeof(nano_hash_t), NULL, 0);
 
-    switch (block->base.type) {
-    case NANO_UNKNOWN_BLOCK: break;
-    case NANO_OPEN_BLOCK:
-        blake2b_update(hash, block->open.sourceBlock,
-            sizeof(block->open.sourceBlock));
-        blake2b_update(hash, block->open.representative,
-            sizeof(block->open.representative));
-        blake2b_update(hash, publicKey,
-            sizeof(nano_public_key_t));
-        break;
-    case NANO_RECEIVE_BLOCK:
-        blake2b_update(hash, block->receive.previousBlock,
-            sizeof(block->receive.previousBlock));
-        blake2b_update(hash, block->receive.sourceBlock,
-            sizeof(block->receive.sourceBlock));
-        break;
-    case NANO_SEND_BLOCK:
-        blake2b_update(hash, block->send.previousBlock,
-            sizeof(block->send.previousBlock));
-        blake2b_update(hash, block->send.destinationAccount,
-            sizeof(block->send.destinationAccount));
-        blake2b_update(hash, block->send.balance,
-            sizeof(block->send.balance));
-        break;
-    case NANO_CHANGE_BLOCK:
-        blake2b_update(hash, block->change.previousBlock,
-            sizeof(block->change.previousBlock));
-        blake2b_update(hash, block->change.representative,
-            sizeof(block->change.representative));
-        break;
-    }
+    blake2b_update(hash, BLOCK_HASH_PREAMBLE, sizeof(BLOCK_HASH_PREAMBLE));
+    blake2b_update(hash, publicKey, sizeof(nano_public_key_t));
+    blake2b_update(hash, blockData->parent, sizeof(blockData->parent));
+    blake2b_update(hash, blockData->representative,
+        sizeof(blockData->representative));
+    blake2b_update(hash, blockData->balance, sizeof(blockData->balance));
+    blake2b_update(hash, blockData->link, sizeof(blockData->link));
 
-    blake2b_final(hash, block->base.hash);
+    blake2b_final(hash, blockHash);
 }
 
-void nano_sign_block(nano_block_t *block,
-                     nano_private_key_t privateKey,
-                     nano_public_key_t publicKey) {
+void nano_sign_block(nano_signature_t signature,
+                     const nano_hash_t blockHash,
+                     const nano_private_key_t privateKey,
+                     const nano_public_key_t publicKey) {
     ed25519_sign(
-        block->base.hash, sizeof(block->base.hash),
+        blockHash, sizeof(nano_hash_t),
         privateKey, publicKey,
-        block->base.signature);
+        signature);
+}
+
+bool nano_verify_block_signature(const nano_hash_t blockHash,
+                                 const nano_public_key_t publicKey,
+                                 const nano_signature_t signature) {
+    return ed25519_sign_open(
+        blockHash, sizeof(nano_hash_t),
+        publicKey, signature) == 0;
 }

@@ -20,12 +20,10 @@
 #include "nano_apdu_sign_block.h"
 #include "nano_bagl.h"
 
-#define P1_OPEN_BLOCK    0x00
-#define P1_RECEIVE_BLOCK 0x01
-#define P1_SEND_BLOCK    0x02
-#define P1_CHANGE_BLOCK  0x03
+#define P1_UNUSED 0x00
 
-#define P2_UNUSED 0x00
+#define P2_RECIPIENT_XRB_FLAG 0x01
+#define P2_REPRESENTATIVE_XRB_FLAG 0x02
 
 uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request_t *req);
 
@@ -33,47 +31,18 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     nano_apdu_sign_block_heap_t *h = &ram_a.nano_apdu_sign_block_heap_D;
     uint8_t *inPtr;
     uint8_t readLen;
+    bool representativeChanged;
+    bool balanceDecreased;
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
-    case P1_OPEN_BLOCK:
-    case P1_RECEIVE_BLOCK:
-    case P1_SEND_BLOCK:
-    case P1_CHANGE_BLOCK:
-        break;
-    default:
-        return NANO_SW_INCORRECT_P1_P2;
-    }
-
-    switch (G_io_apdu_buffer[ISO_OFFSET_P2]) {
-    case P2_UNUSED:
+    case P1_UNUSED:
         break;
     default:
         return NANO_SW_INCORRECT_P1_P2;
     }
 
     // Verify the minimum size
-    switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
-    case P1_OPEN_BLOCK:
-        if (G_io_apdu_buffer[ISO_OFFSET_LC] < 34) {
-            return NANO_SW_INCORRECT_LENGTH;
-        }
-        break;
-    case P1_RECEIVE_BLOCK:
-        if (G_io_apdu_buffer[ISO_OFFSET_LC] < 65) {
-            return NANO_SW_INCORRECT_LENGTH;
-        }
-        break;
-    case P1_SEND_BLOCK:
-        if (G_io_apdu_buffer[ISO_OFFSET_LC] < 50) {
-            return NANO_SW_INCORRECT_LENGTH;
-        }
-        break;
-    case P1_CHANGE_BLOCK:
-        if (G_io_apdu_buffer[ISO_OFFSET_LC] < 34) {
-            return NANO_SW_INCORRECT_LENGTH;
-        }
-        break;
-    default:
+    if (G_io_apdu_buffer[ISO_OFFSET_LC] < 113) {
         return NANO_SW_INCORRECT_LENGTH;
     }
 
@@ -90,87 +59,96 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
         return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
-    // Derive public keys for hashing
+    // Store address display format preferences
+    if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_RECIPIENT_XRB_FLAG) != 0) {
+        h->req.recipientPrefix = NANO_XRB_PREFIX;
+    } else {
+        h->req.recipientPrefix = NANO_DEFAULT_PREFIX;
+    }
+    if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_REPRESENTATIVE_XRB_FLAG) != 0) {
+        h->req.representativePrefix = NANO_XRB_PREFIX;
+    } else {
+        h->req.representativePrefix = NANO_DEFAULT_PREFIX;
+    }
+
+    // Derive public key for hashing
     nano_derive_keypair(h->req.keyPath, h->privateKey, h->req.publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
 
     // Reset block state
-    os_memset(&h->req.block, 0, sizeof(h->req.block));
+    os_memset(&h->block, 0, sizeof(h->block));
 
     // Parse input data
-    switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
-    case P1_OPEN_BLOCK:
-        h->req.block.open.type = NANO_OPEN_BLOCK;
+    readLen = sizeof(h->block.parent);
+    os_memmove(h->block.parent, inPtr, readLen);
+    inPtr += readLen;
 
-        readLen = *inPtr;
-        if (!nano_read_account_string(
-                inPtr + 1, readLen,
-                &h->req.block.open.representativePrefix,
-                h->req.block.open.representative)) {
-            return NANO_SW_INCORRECT_DATA;
+    readLen = sizeof(h->block.link);
+    os_memmove(h->block.link, inPtr, readLen);
+    inPtr += readLen;
+
+    readLen = sizeof(h->block.representative);
+    os_memmove(h->block.representative, inPtr, readLen);
+    inPtr += readLen;
+
+    readLen = sizeof(h->block.balance);
+    os_memmove(h->block.balance, inPtr, readLen);
+    inPtr += readLen;
+
+    nano_hash_block(h->req.hash, &h->block, h->req.publicKey);
+
+    // Determine changes that we've been requested to sign
+    bool isFirstBlock = nano_is_zero(h->block.parent, sizeof(h->block.parent));
+    if (isFirstBlock) {
+        representativeChanged = true;
+        os_memmove(h->req.representative, h->block.representative,
+                sizeof(h->block.representative));
+        // For first block the balance must have increased
+        balanceDecreased = false;
+        os_memmove(h->req.amount, h->block.balance, sizeof(h->req.amount));
+
+    } else {
+        // Make sure that the parent block data is cached and available
+        if (os_memcmp(h->block.parent,
+                      nano_context_D.cachedBlock.hash,
+                      sizeof(h->block.parent)) != 0) {
+            return NANO_SW_PARENT_BLOCK_CACHE_MISS;
         }
-        inPtr += 1 + readLen;
 
-        readLen = sizeof(h->req.block.open.sourceBlock);
-        os_memmove(h->req.block.open.sourceBlock, inPtr, readLen);
-        inPtr += readLen;
-        break;
-
-    case P1_RECEIVE_BLOCK:
-        h->req.block.receive.type = NANO_RECEIVE_BLOCK;
-
-        readLen = sizeof(h->req.block.receive.previousBlock);
-        os_memmove(h->req.block.receive.previousBlock, inPtr, readLen);
-        inPtr += readLen;
-
-        readLen = sizeof(h->req.block.receive.sourceBlock);
-        os_memmove(h->req.block.receive.sourceBlock, inPtr, readLen);
-        inPtr += readLen;
-        break;
-
-    case P1_SEND_BLOCK:
-        h->req.block.send.type = NANO_SEND_BLOCK;
-
-        readLen = sizeof(h->req.block.send.previousBlock);
-        os_memmove(h->req.block.send.previousBlock, inPtr, readLen);
-        inPtr += readLen;
-
-        readLen = *inPtr;
-        if (!nano_read_account_string(
-                inPtr + 1, readLen,
-                &h->req.block.send.destinationAccountPrefix,
-                h->req.block.send.destinationAccount)) {
-            return NANO_SW_INCORRECT_DATA;
+        representativeChanged = os_memcmp(
+            h->block.representative,
+            nano_context_D.cachedBlock.representative,
+            sizeof(h->block.representative)) != 0;
+        if (representativeChanged) {
+            os_memmove(h->req.representative, h->block.representative,
+                sizeof(h->block.representative));
+        } else {
+            os_memset(h->req.representative, 0,
+                sizeof(h->block.representative));
         }
-        inPtr += 1 + readLen;
 
-        readLen = sizeof(h->req.block.send.balance);
-        os_memmove(h->req.block.send.balance, inPtr, readLen);
-        inPtr += readLen;
-        break;
-
-    case P1_CHANGE_BLOCK:
-        h->req.block.change.type = NANO_CHANGE_BLOCK;
-
-        readLen = sizeof(h->req.block.change.previousBlock);
-        os_memmove(h->req.block.change.previousBlock, inPtr, readLen);
-        inPtr += readLen;
-
-        readLen = *inPtr;
-        if (!nano_read_account_string(
-                inPtr + 1, readLen,
-                &h->req.block.change.representativePrefix,
-                h->req.block.change.representative)) {
-            return NANO_SW_INCORRECT_DATA;
+        balanceDecreased = nano_amount_cmp(
+            h->block.balance,
+            nano_context_D.cachedBlock.balance) < 0;
+        if (balanceDecreased) {
+            os_memmove(h->req.amount, nano_context_D.cachedBlock.balance, sizeof(h->req.amount));
+            nano_amount_subtract(h->req.amount, h->block.balance);
+        } else {
+            os_memmove(h->req.amount, h->block.balance, sizeof(h->req.amount));
+            nano_amount_subtract(h->req.amount, nano_context_D.cachedBlock.balance);
         }
-        inPtr += 1 + readLen;
-        break;
     }
 
-    nano_hash_block(&h->req.block, h->req.publicKey);
+    if (balanceDecreased) {
+        os_memmove(h->req.recipient, h->block.link,
+            sizeof(h->req.recipient));
+    } else {
+        os_memset(h->req.recipient, 0,
+            sizeof(h->req.recipient));
+    }
 
     // When auto receive is enabled, skip the prompt
-    if (N_nano.autoReceive && h->req.block.base.type == NANO_RECEIVE_BLOCK) {
+    if (N_nano.autoReceive && !balanceDecreased && !representativeChanged) {
         uint16_t statusWord = nano_apdu_sign_block_output(resp, &h->req);
         os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
         return statusWord;
@@ -187,21 +165,21 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
 }
 
 uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request_t *req) {
-    nano_apdu_sign_block_heap_t *h = &ram_a.nano_apdu_sign_block_heap_D;
+    nano_apdu_sign_block_output_heap_t *h = &ram_a.nano_apdu_sign_block_output_heap_D;
     uint8_t *outPtr = resp->buffer;
 
     // Derive key and sign the block
     nano_derive_keypair(req->keyPath, h->privateKey, NULL);
-    nano_sign_block(&req->block, h->privateKey, req->publicKey);
+    nano_sign_block(h->signature, req->hash, h->privateKey, req->publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey));
 
     // Output block hash
-    os_memmove(outPtr, req->block.base.hash, sizeof(req->block.base.hash));
-    outPtr += sizeof(req->block.base.hash);
+    os_memmove(outPtr, req->hash, sizeof(req->hash));
+    outPtr += sizeof(req->hash);
 
     // Output signature
-    os_memmove(outPtr, req->block.base.signature, sizeof(req->block.base.signature));
-    outPtr += sizeof(req->block.base.signature);
+    os_memmove(outPtr, h->signature, sizeof(h->signature));
+    outPtr += sizeof(h->signature);
 
     resp->outLength = outPtr - resp->buffer;
 

@@ -40,16 +40,9 @@ typedef enum {
 typedef uint8_t nano_private_key_t[32];
 typedef uint8_t nano_public_key_t[32];
 typedef uint8_t nano_hash_t[32];
+typedef uint8_t nano_link_t[32];
 typedef uint8_t nano_signature_t[64];
-typedef uint8_t nano_balance_t[16];
-
-typedef enum {
-    NANO_UNKNOWN_BLOCK,
-    NANO_OPEN_BLOCK,
-    NANO_RECEIVE_BLOCK,
-    NANO_SEND_BLOCK,
-    NANO_CHANGE_BLOCK,
-} nano_block_type_t;
+typedef uint8_t nano_amount_t[16];
 
 #define NANO_PREFIX_MAX_LEN 5
 #define NANO_DEFAULT_PREFIX_LEN 5 // len("nano_")
@@ -60,51 +53,17 @@ typedef enum {
     NANO_XRB_PREFIX, // xrb_
 } nano_address_prefix_t;
 
-#define NANO_BLOCK_COMMON \
-    nano_block_type_t type; \
-    nano_hash_t hash; \
-    nano_signature_t signature
-
 typedef struct {
-    NANO_BLOCK_COMMON;
-} nano_block_base_t;
-
-typedef struct {
-    NANO_BLOCK_COMMON;
+    nano_hash_t parent;
+    nano_link_t link;
     nano_public_key_t representative;
-    nano_address_prefix_t representativePrefix;
-    nano_hash_t sourceBlock;
-} nano_block_open_t;
+    nano_amount_t balance;
+} nano_block_data_t;
 
 typedef struct {
-    NANO_BLOCK_COMMON;
-    nano_hash_t previousBlock;
-    nano_hash_t sourceBlock;
-} nano_block_receive_t;
-
-typedef struct {
-    NANO_BLOCK_COMMON;
-    nano_hash_t previousBlock;
-    nano_public_key_t destinationAccount;
-    nano_address_prefix_t destinationAccountPrefix;
-    nano_balance_t balance;
-} nano_block_send_t;
-
-typedef struct {
-    NANO_BLOCK_COMMON;
-    nano_hash_t previousBlock;
+    nano_hash_t hash;
     nano_public_key_t representative;
-    nano_address_prefix_t representativePrefix;
-} nano_block_change_t;
-
-#undef NANO_BLOCK_COMMON
-
-typedef union {
-    nano_block_base_t base;
-    nano_block_open_t open;
-    nano_block_receive_t receive;
-    nano_block_send_t send;
-    nano_block_change_t change;
-} nano_block_t;
+    nano_amount_t balance;
+} nano_cached_block_data_t;
 
 #endif // NANO_TYPES_H

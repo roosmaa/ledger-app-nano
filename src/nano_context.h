@@ -35,6 +35,9 @@ typedef struct {
     /** Primary response for synchronous APDUs **/
     nano_apdu_response_t response;
 
+    /** Cached block for determining the deltas for the child block **/
+    nano_cached_block_data_t cachedBlock;
+
     /** State determines the application state (UX displayed, etc).
         This is also used to enforce only single confirmation
         prompt. **/

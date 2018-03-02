@@ -25,7 +25,12 @@
 typedef struct {
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
     nano_public_key_t publicKey;
-    nano_block_t block;
+    nano_hash_t hash;
+    nano_public_key_t recipient;
+    nano_address_prefix_t recipientPrefix;
+    nano_amount_t amount;
+    nano_public_key_t representative;
+    nano_address_prefix_t representativePrefix;
 } nano_apdu_sign_block_request_t;
 
 uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp);

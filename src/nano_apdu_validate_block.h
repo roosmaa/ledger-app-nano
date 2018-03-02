@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
-*   (c) 2016 Ledger
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,22 +15,20 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
+#ifndef NANO_APDU_VALIDATE_BLOCK_H
 
-#define DISPATCHER_APDUS 4
+#define NANO_APDU_VALIDATE_BLOCK_H
 
-typedef uint16_t (*apduProcessingFunction)(nano_apdu_response_t *resp);
+#include "nano_types.h"
+#include "nano_helpers.h"
 
-extern uint8_t const DISPATCHER_CLA[DISPATCHER_APDUS];
-extern uint8_t const DISPATCHER_INS[DISPATCHER_APDUS];
-extern bool const DISPATCHER_DATA_IN[DISPATCHER_APDUS];
-extern apduProcessingFunction const DISPATCHER_FUNCTIONS[DISPATCHER_APDUS];
+typedef struct {
+    nano_public_key_t publicKey;
+    nano_block_data_t block;
+    nano_hash_t hash;
+    nano_signature_t signature;
+} nano_apdu_validate_block_request_t;
 
-#define NANO_ACCOUNT_STRING_BASE_LEN 60
+uint16_t nano_apdu_validate_block(nano_apdu_response_t *resp);
 
-extern uint8_t const BASE16_ALPHABET[16];
-
-extern uint8_t const BASE32_ALPHABET[32];
-extern uint8_t const BASE32_TABLE[75];
-
-extern uint8_t const BLOCK_HASH_PREAMBLE[32];
+#endif // NANO_APDU_VALIDATE_BLOCK_H

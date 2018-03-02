@@ -21,6 +21,7 @@
 
 #include "nano_types.h"
 #include "nano_apdu_get_address.h"
+#include "nano_apdu_validate_block.h"
 #include "nano_apdu_sign_block.h"
 
 typedef struct {
@@ -29,9 +30,21 @@ typedef struct {
 } nano_apdu_get_address_heap_t;
 
 typedef struct {
+    nano_apdu_validate_block_request_t req;
+    uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    nano_private_key_t privateKey;
+} nano_apdu_validate_block_heap_t;
+
+typedef struct {
     nano_apdu_sign_block_request_t req;
     nano_private_key_t privateKey;
+    nano_block_data_t block;
 } nano_apdu_sign_block_heap_t;
+
+typedef struct {
+    nano_private_key_t privateKey;
+    nano_signature_t signature;
+} nano_apdu_sign_block_output_heap_t;
 
 typedef struct {
     uint32_t bip32PathInt[MAX_BIP32_PATH];
@@ -41,7 +54,7 @@ typedef struct {
 typedef struct {
     // log10(x) = log2(x) / log2(10) ~= log2(x) / 3.322
     char buf[128 / 3 + 1 + 2];
-    nano_balance_t num;
-} nano_format_balance_heap_t;
+    nano_amount_t num;
+} nano_amount_format_heap_t;
 
 #endif // NANO_HEAPS_H
