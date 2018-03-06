@@ -55,9 +55,6 @@ typedef struct {
     /** U2F timeout tracker, once zero the active connection is dropped
         appropriate status code. **/
     uint16_t u2fTimeout;
-    /** U2F indicator whether the host is connected to the ongoing
-        async operation. **/
-    bool u2fConnected;
 #endif // HAVE_IO_U2F
 
 } nano_context_t;

@@ -50,7 +50,6 @@ void app_dispatch(void) {
                     if (nano_context_D.state != NANO_STATE_READY) {
                         // Request ongoing, setup a timeout
                         nano_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
-                        nano_context_D.u2fConnected = true;
 
                         resp->ioFlags |= IO_ASYNCH_REPLY;
                         statusWord = NANO_SW_OK;
@@ -62,8 +61,6 @@ void app_dispatch(void) {
                         goto sendBuffer;
                     }
                 }
-
-
             }
 #endif // HAVE_IO_U2F
 
@@ -97,7 +94,6 @@ void app_dispatch(void) {
                 // Setup the timeout and request details
                 nano_context_D.u2fRequestHash = apduHash;
                 nano_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
-                nano_context_D.u2fConnected = true;
             }
 #endif // HAVE_IO_U2F
 
@@ -137,14 +133,11 @@ void app_async_response(nano_apdu_response_t *resp, uint16_t statusWord) {
 
 bool app_send_async_response(nano_apdu_response_t *resp) {
 #ifdef HAVE_IO_U2F
-    if (G_io_apdu_state == APDU_U2F) {
-        if (!nano_context_D.u2fConnected) {
-            return false;
-        }
-
-        nano_context_D.u2fConnected = false;
-        nano_context_D.u2fTimeout = 0;
+    if (G_io_apdu_state == APDU_IDLE) {
+        return false;
     }
+
+    nano_context_D.u2fTimeout = 0;
 #endif // HAVE_IO_U2F
 
     // Move the async result data to sync buffer

@@ -38,7 +38,6 @@ void ui_ticker_event(bool uxAllowed);
 #ifdef HAVE_IO_U2F
 
 void u2f_message_timeout() {
-    nano_context_D.u2fConnected = false;
     nano_context_D.u2fTimeout = 0;
 
     G_io_apdu_buffer[0] = 0x69;
