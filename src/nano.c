@@ -22,20 +22,12 @@
 #include "nano_apdu_constants.h"
 #include "nano_bagl.h"
 
-#ifdef HAVE_U2F
-
-#include "u2f_service.h"
-#include "u2f_transport.h"
-
-void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
-
-#endif
-
 void app_dispatch(void) {
     uint8_t cla;
     uint8_t ins;
     uint8_t dispatched;
     uint16_t statusWord;
+    uint32_t apduHash;
     nano_apdu_response_t *resp = &nano_context_D.response;
 
     // nothing to reply for now
@@ -50,6 +42,30 @@ void app_dispatch(void) {
                 statusWord = NANO_SW_HALTED;
                 goto sendSW;
             }
+
+#ifdef HAVE_IO_U2F
+            if (G_io_apdu_state == APDU_U2F) {
+                apduHash = nano_simple_hash(G_io_apdu_buffer, nano_context_D.inLength);
+                if (apduHash == nano_context_D.u2fRequestHash) {
+                    if (nano_context_D.state != NANO_STATE_READY) {
+                        // Request ongoing, setup a timeout
+                        nano_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
+                        nano_context_D.u2fConnected = true;
+
+                        resp->ioFlags |= IO_ASYNCH_REPLY;
+                        statusWord = NANO_SW_OK;
+                        goto sendSW;
+
+                    } else if (nano_context_D.stateData.asyncResponse.outLength > 0) {
+                        // Immediately return the previous response to this request
+                        nano_context_move_async_response();
+                        goto sendBuffer;
+                    }
+                }
+
+
+            }
+#endif // HAVE_IO_U2F
 
             cla = G_io_apdu_buffer[ISO_OFFSET_CLA];
             ins = G_io_apdu_buffer[ISO_OFFSET_INS];
@@ -76,11 +92,21 @@ void app_dispatch(void) {
             statusWord = ((apduProcessingFunction)PIC(
                 DISPATCHER_FUNCTIONS[dispatched]))(resp);
 
+#ifdef HAVE_IO_U2F
+            if (G_io_apdu_state == APDU_U2F && (resp->ioFlags & IO_ASYNCH_REPLY) != 0) {
+                // Setup the timeout and request details
+                nano_context_D.u2fRequestHash = apduHash;
+                nano_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
+                nano_context_D.u2fConnected = true;
+            }
+#endif // HAVE_IO_U2F
+
         sendSW:
             // prepare SW after replied data
             resp->buffer[resp->outLength] = (statusWord >> 8);
             resp->buffer[resp->outLength + 1] = (statusWord & 0xff);
             resp->outLength += 2;
+        sendBuffer: {}
         }
         CATCH(EXCEPTION_IO_RESET) {
             THROW(EXCEPTION_IO_RESET);
@@ -110,27 +136,22 @@ void app_async_response(nano_apdu_response_t *resp, uint16_t statusWord) {
 }
 
 bool app_send_async_response(nano_apdu_response_t *resp) {
-#ifdef HAVE_U2F
-    if (u2f_activated_D && !nano_context_D.u2fConnected) {
-        return false;
+#ifdef HAVE_IO_U2F
+    if (G_io_apdu_state == APDU_U2F) {
+        if (!nano_context_D.u2fConnected) {
+            return false;
+        }
+
+        nano_context_D.u2fConnected = false;
+        nano_context_D.u2fTimeout = 0;
     }
-#endif
+#endif // HAVE_IO_U2F
 
     // Move the async result data to sync buffer
     nano_context_move_async_response();
 
-#ifdef HAVE_U2F
-    if (u2f_activated_D) {
-        u2f_proxy_response(&u2f_service_D,
-            nano_context_D.response.outLength);
-    } else {
-        io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
-            nano_context_D.response.outLength);
-    }
-#else
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
         nano_context_D.response.outLength);
-#endif
     return true;
 }
 

@@ -26,7 +26,6 @@
 
 typedef struct nano_storage_s {
     bool autoReceive;
-    bool fidoTransport;
 } nano_storage_t;
 
 // the global nvram memory variable
@@ -35,6 +34,5 @@ extern nano_storage_t N_nano_real;
 #define N_nano (*(nano_storage_t *)PIC(&N_nano_real))
 
 void nano_set_auto_receive(bool enabled);
-void nano_set_fido_transport(bool enabled);
 
 #endif

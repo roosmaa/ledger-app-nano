@@ -20,15 +20,6 @@
 #include "nano_apdu_sign_block.h"
 #include "nano_bagl.h"
 
-#ifdef HAVE_U2F
-
-#include "u2f_service.h"
-#include "u2f_transport.h"
-
-void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
-
-#endif
-
 #define P1_OPEN_BLOCK    0x00
 #define P1_RECEIVE_BLOCK 0x01
 #define P1_SEND_BLOCK    0x02

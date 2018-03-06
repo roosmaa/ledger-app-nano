@@ -25,25 +25,13 @@
 #include "nano_context.h"
 #include "nano_heaps.h"
 
-#ifdef HAVE_U2F
-#include "u2f_service.h"
-#endif // HAVE_U2F
-
 /** Buffer used for asynchronous response data **/
 extern uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 extern nano_context_t nano_context_D;
 
-#ifdef HAVE_U2F
-extern u2f_service_t u2f_service_D;
-extern bool u2f_activated_D;
-#endif // HAVE_U2F
-
-/* U2F message buffer and APDU heaps are mutually exclusive,
+/* Different APDU heaps are mutually exclusive,
    so can be mapped to a shared memory space. */
 typedef union {
-#ifdef HAVE_U2F
-    uint8_t u2f_message_buffer_D[U2F_MAX_MESSAGE_SIZE];
-#endif // HAVE_U2F
     nano_apdu_get_address_heap_t nano_apdu_get_address_heap_D;
     nano_apdu_sign_block_heap_t nano_apdu_sign_block_heap_D;
 } ram_a_t;

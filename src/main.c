@@ -25,43 +25,35 @@
 #include "nano_internal.h"
 #include "nano_bagl.h"
 
-#ifdef HAVE_U2F
+#ifdef HAVE_IO_U2F
 
-#include "u2f_service.h"
 #include "u2f_transport.h"
+#include "u2f_processing.h"
 
-#endif // HAVE_U2F
-
-extern void USB_power_U2F(bool enabled, bool fido);
+#endif // HAVE_IO_U2F
 
 void ui_idle(void);
 void ui_ticker_event(bool uxAllowed);
 
-#ifdef HAVE_U2F
-void u2f_proxy_response(u2f_service_t *service, uint16_t tx) {
+#ifdef HAVE_IO_U2F
+
+void u2f_message_timeout() {
     nano_context_D.u2fConnected = false;
     nano_context_D.u2fTimeout = 0;
 
-    os_memset(service->messageBuffer, 0, 5);
-    os_memmove(service->messageBuffer + 5, G_io_apdu_buffer, tx);
-    service->messageBuffer[tx + 5] = 0x90;
-    service->messageBuffer[tx + 6] = 0x00;
-    u2f_send_fragmented_response(service, U2F_CMD_MSG, service->messageBuffer,
-                                 tx + 7, true);
+    G_io_apdu_buffer[0] = 0x69;
+    G_io_apdu_buffer[1] = 0x85;
+    u2f_message_reply(&G_io_u2f, U2F_CMD_MSG, G_io_apdu_buffer, 2);
+
+    // reset apdu state
+    G_io_apdu_state = APDU_IDLE;
+    G_io_apdu_offset = 0;
+    G_io_apdu_length = 0;
+    G_io_apdu_seq = 0;
+    G_io_apdu_media = IO_APDU_MEDIA_NONE;
 }
 
-void u2f_proxy_timeout(u2f_service_t *service) {
-    nano_context_D.u2fConnected = false;
-    nano_context_D.u2fTimeout = 0;
-
-    service->messageBuffer[0] = 0x69;
-    service->messageBuffer[1] = 0x85;
-    u2f_send_fragmented_response(service, U2F_CMD_MSG,
-                                 service->messageBuffer, 2,
-                                 true);
-}
-
-#endif // HAVE_U2F
+#endif // HAVE_IO_U2F
 
 // override point, but nothing more to do
 void io_seproxyhal_display(const bagl_element_t *element) {
@@ -131,15 +123,15 @@ uint8_t io_event(uint8_t channel) {
             break;
         }
 
-#ifdef HAVE_U2F
+#ifdef HAVE_IO_U2F
         if (nano_context_D.u2fTimeout > 0) {
             nano_context_D.u2fTimeout -= MIN(100, nano_context_D.u2fTimeout);
             if (nano_context_D.u2fTimeout == 0) {
-                u2f_proxy_timeout(&u2f_service_D);
+                u2f_message_timeout();
                 break;
             }
         }
-#endif // HAVE_U2F
+#endif // HAVE_IO_U2F
 
         UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
             ui_ticker_event(UX_ALLOWED);
@@ -183,20 +175,8 @@ __attribute__((section(".boot"))) int main(void) {
                 nano_context_init();
 
                 // deactivate usb before activating
-                USB_power_U2F(false, false);
-
-#ifdef HAVE_U2F
-                os_memset(&u2f_service_D, 0, sizeof(u2f_service_D));
-                u2f_service_D.inputBuffer = G_io_apdu_buffer;
-                u2f_service_D.outputBuffer = G_io_apdu_buffer;
-                u2f_service_D.messageBuffer = ram_a.u2f_message_buffer_D;
-                u2f_service_D.messageBufferSize = sizeof(ram_a.u2f_message_buffer_D);
-                u2f_initialize_service(&u2f_service_D);
-
-                USB_power_U2F(true, N_nano.fidoTransport);
-#else
-                USB_power_U2F(true, false);
-#endif
+                USB_power(false);
+                USB_power(true);
 
 #ifdef HAVE_BLE
                 BLE_power(false, NULL);

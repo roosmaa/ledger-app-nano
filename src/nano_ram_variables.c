@@ -26,10 +26,5 @@ ux_state_t ux;
 uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 nano_context_t nano_context_D;
 
-#ifdef HAVE_U2F
-u2f_service_t u2f_service_D;
-bool u2f_activated_D;
-#endif // HAVE_U2F
-
 ram_a_t ram_a;
 ram_b_t ram_b;

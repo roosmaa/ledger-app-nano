@@ -26,7 +26,6 @@
 
 #if defined(TARGET_NANOS)
 
-extern void USB_power_U2F(bool enabled, bool fido);
 extern ux_state_t ux;
 
 // display stepped screens
@@ -76,31 +75,6 @@ void ui_write_address_full(char *label, nano_address_prefix_t prefix, nano_publi
 const ux_menu_entry_t menu_main[];
 const ux_menu_entry_t menu_settings[];
 const ux_menu_entry_t menu_settings_autoreceive[];
-const ux_menu_entry_t menu_settings_browser[];
-
-#ifdef HAVE_U2F
-
-// change the setting
-void menu_settings_browser_change(uint32_t enabled) {
-    nano_set_fido_transport(enabled);
-    USB_power_U2F(false, false);
-    USB_power_U2F(true, N_nano.fidoTransport);
-    // go back to the menu entry
-    UX_MENU_DISPLAY(1, menu_settings, NULL);
-}
-
-// show the currently activated entry
-void menu_settings_browser_init(uint32_t ignored) {
-    UNUSED(ignored);
-    UX_MENU_DISPLAY(N_nano.fidoTransport ? 1 : 0,
-                    menu_settings_browser, NULL);
-}
-
-const ux_menu_entry_t menu_settings_browser[] = {
-    {NULL, menu_settings_browser_change, 0, NULL, "No", NULL, 0, 0},
-    {NULL, menu_settings_browser_change, 1, NULL, "Yes", NULL, 0, 0},
-    UX_MENU_END};
-#endif // HAVE_U2F
 
 void menu_settings_autoreceive_change(uint32_t enabled) {
     nano_set_auto_receive(enabled);
@@ -121,9 +95,6 @@ const ux_menu_entry_t menu_settings_autoreceive[] = {
 
 const ux_menu_entry_t menu_settings[] = {
     {NULL, menu_settings_autoreceive_init, 0, NULL, "Auto-receive", NULL, 0, 0},
-#ifdef HAVE_U2F
-    {NULL, menu_settings_browser_init, 0, NULL, "Browser support", NULL, 0, 0},
-#endif // HAVE_U2F
     {menu_main, NULL, 1, &C_nanos_icon_back, "Back", NULL, 61, 40},
     UX_MENU_END};
 

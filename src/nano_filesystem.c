@@ -23,8 +23,3 @@ void nano_set_auto_receive(bool enabled) {
     nvm_write((void *)&N_nano.autoReceive, &enabled,
               sizeof(enabled));
 }
-
-void nano_set_fido_transport(bool enabled) {
-    nvm_write((void *)&N_nano.fidoTransport, &enabled,
-              sizeof(enabled));
-}
