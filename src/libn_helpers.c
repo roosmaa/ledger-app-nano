@@ -88,7 +88,7 @@ size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
                                  const libn_public_key_t publicKey) {
     uint8_t prefixLen;
     uint8_t k, i, c;
-    uint8_t check[5];
+    uint8_t check[5] = { 0, 0, 0, 0, 0 };
 
     blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_init(hash, sizeof(check), NULL, 0);
