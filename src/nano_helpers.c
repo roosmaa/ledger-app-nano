@@ -338,22 +338,6 @@ void nano_amount_format(char *dest, size_t destLen,
     }
     h->buf[end] = '\0';
 
-    // In case there is still many digits after the decimal point,
-    // round it up to 6 digits after the decimal point
-    if (end > point + 6 + 1) {
-        end = point + 7;
-        if (h->buf[end] >= '5') {
-            uint8_t c = 10;
-            for (size_t i = end - 1; i >= start; i--) {
-                if (h->buf[i] == '.') continue;
-                c = (h->buf[i] - '0') + c / 10;
-                h->buf[i] = (c % 10) + '0';
-                if (c < 10) break;
-            }
-        }
-        h->buf[end] = '\0';
-    }
-
     // Append the unit
     h->buf[end++] = ' ';
     h->buf[end++] = 'N';
@@ -363,7 +347,8 @@ void nano_amount_format(char *dest, size_t destLen,
     h->buf[end] = '\0';
 
     // Copy the result to the destination buffer
-    os_memmove(dest, h->buf + start, MIN(destLen, end - start + 1));
+    os_memmove(dest, h->buf + start, MIN(destLen - 1, end - start + 1));
+    dest[destLen - 1] = '\0';
 }
 
 void nano_derive_keypair(uint8_t *bip32Path,
