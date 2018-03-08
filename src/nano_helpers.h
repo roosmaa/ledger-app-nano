@@ -38,9 +38,6 @@ bool nano_read_account_string(uint8_t *buffer, size_t size,
 void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
                                const nano_public_key_t publicKey);
 
-void nano_truncate_string(char *dest, size_t destLen,
-                         char *src, size_t srcLen);
-
 void nano_format_balance(char *dest, size_t destLen,
                          nano_balance_t balance);
 

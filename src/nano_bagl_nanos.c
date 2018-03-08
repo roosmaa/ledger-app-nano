@@ -40,24 +40,26 @@ union {
     struct {
         char blockType[20];
         char confirmLabel[20];
-        char confirmValue[NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN+1];
+        char confirmValue[MAX(NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN+1, 2*sizeof(nano_hash_t)+1)];
     } confirmSignBlock;
 } vars;
 
 void ui_write_address_truncated(char *label, nano_address_prefix_t prefix, nano_public_key_t publicKey) {
-    char buf[NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN];
-    nano_write_account_string((uint8_t *)buf, prefix, publicKey);
+    nano_write_account_string((uint8_t *)label, prefix, publicKey);
 
-    size_t addressSize;
+    size_t prefixSize;
     switch (prefix) {
     case NANO_DEFAULT_PREFIX:
-        addressSize = NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN;
+        prefixSize = NANO_DEFAULT_PREFIX_LEN;
         break;
     case NANO_XRB_PREFIX:
-        addressSize = NANO_ACCOUNT_STRING_BASE_LEN + NANO_XRB_PREFIX_LEN;
+        prefixSize = NANO_XRB_PREFIX_LEN;
         break;
     }
-    nano_truncate_string(label, 13, buf, addressSize);
+
+    os_memset(label + prefixSize + 5, '.', 2);
+    os_memmove(label + prefixSize + 7, label + prefixSize + NANO_ACCOUNT_STRING_BASE_LEN - 5, 5);
+    label[prefixSize+12] = '\0';
 }
 
 void ui_write_address_full(char *label, nano_address_prefix_t prefix, nano_public_key_t publicKey) {
@@ -71,6 +73,15 @@ void ui_write_address_full(char *label, nano_address_prefix_t prefix, nano_publi
         break;
     }
 }
+
+void ui_write_hash_truncated(char *label, nano_hash_t hash) {
+    nano_write_hex_string((uint8_t *)label, hash, sizeof(nano_hash_t));
+    // Truncate hash to 12345..67890 format
+    os_memset(label+5, '.', 2);
+    os_memmove(label+7, label+2*sizeof(nano_hash_t)-5, 5);
+    label[12] = '\0';
+}
+
 
 const ux_menu_entry_t menu_main[];
 const ux_menu_entry_t menu_settings[];
@@ -350,12 +361,6 @@ const bagl_element_t ui_confirm_sign_block[] = {
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
 };
 
-void ui_write_confirm_label_block_hash(char *label, nano_hash_t hash) {
-    char buf[2*sizeof(nano_hash_t)];
-    nano_write_hex_string((uint8_t *)buf, hash, sizeof(nano_hash_t));
-    nano_truncate_string(label, 13, buf, sizeof(buf));
-}
-
 void ui_confirm_sign_block_prepare_confirm_step(void) {
     if (nano_context_D.state != NANO_STATE_CONFIRM_SIGNATURE) {
         return;
@@ -375,7 +380,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_confirm_label_block_hash(
+            ui_write_hash_truncated(
                 vars.confirmSignBlock.confirmValue,
                 req->block.base.hash);
             break;
@@ -400,7 +405,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_confirm_label_block_hash(
+            ui_write_hash_truncated(
                 vars.confirmSignBlock.confirmValue,
                 req->block.open.hash);
             break;
@@ -418,7 +423,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 2:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_confirm_label_block_hash(
+            ui_write_hash_truncated(
                 vars.confirmSignBlock.confirmValue,
                 req->block.receive.hash);
             break;
@@ -450,7 +455,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 4:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_confirm_label_block_hash(
+            ui_write_hash_truncated(
                 vars.confirmSignBlock.confirmValue,
                 req->block.send.hash);
             break;
@@ -475,7 +480,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             break;
         case 3:
             strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
-            ui_write_confirm_label_block_hash(
+            ui_write_hash_truncated(
                 vars.confirmSignBlock.confirmValue,
                 req->block.change.hash);
             break;

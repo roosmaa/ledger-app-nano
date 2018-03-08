@@ -246,31 +246,6 @@ void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
     #undef accGetByte
 }
 
-void nano_truncate_string(char *dest, size_t destLen,
-                          char *src, size_t srcLen) {
-    size_t i;
-    os_memset(dest, 0, destLen);
-    destLen -= 1; // Leave the \0 c-string terminator
-
-    if (srcLen <= destLen) {
-        os_memmove(dest, src, srcLen);
-        return;
-    } else if (destLen < 9) {
-        os_memmove(dest, src, destLen);
-        return;
-    }
-
-    for (i = 0; i < destLen; i++) {
-        if (i < destLen / 2) {
-            dest[i] = src[i];
-        } else if (i == destLen / 2 || i - 1 == destLen / 2) {
-            dest[i] = '.';
-        } else {
-            dest[i] = src[srcLen - destLen + i];
-        }
-    }
-}
-
 void nano_format_balance(char *dest, size_t destLen,
                          nano_balance_t balance) {
     nano_format_balance_heap_t *h = &ram_b.nano_format_balance_heap_D;
