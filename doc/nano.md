@@ -132,7 +132,7 @@ This command returns the application configuration.
 |-------|--------|----------------------|------|------|------|
 |   A1  |   01   |  00                  |  00  |  00  |      |
 
-**Input data **
+**Input data**
 
 *None*
 
@@ -159,7 +159,7 @@ This command signs a 128bit nonce and returns the signature. `"Nano Signed Nonce
 |-------|--------|----------------------|------|------|------|
 |   A1  |   05   |  00                  |  00  |      |      |
 
-**Input data **
+**Input data**
 
 | *Description*                                      | *Length*  |
 |----------------------------------------------------|-----------|
