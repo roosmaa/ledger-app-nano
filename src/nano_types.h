@@ -43,6 +43,7 @@ typedef uint8_t nano_hash_t[32];
 typedef uint8_t nano_link_t[32];
 typedef uint8_t nano_signature_t[64];
 typedef uint8_t nano_amount_t[16];
+typedef uint8_t nano_nonce_t[16];
 
 #define NANO_PREFIX_MAX_LEN 5
 #define NANO_DEFAULT_PREFIX_LEN 5 // len("nano_")

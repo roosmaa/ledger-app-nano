@@ -145,6 +145,37 @@ This command returns the application configuration.
 | Patch app version                                  | 1         |
 
 
+### Sign nonce
+
+#### Description
+
+This command signs a 128bit nonce and returns the signature. `"Nano Signed Nonce:\n" + nonceBytes` is the message that gets signed with the private key. This method is meant to be used as a soft-authentication (eg for APIs), to prove that the Ledger with the private key is plugged into the computer.
+
+#### Coding
+
+**Command**
+
+| *CLA* | *INS*  | *P1*                 | *P2* | *Lc* | *Le* |
+|-------|--------|----------------------|------|------|------|
+|   A1  |   05   |  00                  |  00  |      |      |
+
+**Input data **
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Number of BIP 32 derivations to perform (max 10)   | 1         |
+| First derivation index (big endian)                | 4         |
+| ...                                                | 4         |
+| Last derivation index (big endian)                 | 4         |
+| Nonce                                              | 16        |
+
+**Output data**
+
+| *Description*                                      | *Length*  |
+|----------------------------------------------------|-----------|
+| Signature                                          | 64        |
+
+
 ## Transport protocol
 
 ### General transport description

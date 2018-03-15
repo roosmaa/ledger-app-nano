@@ -21,12 +21,14 @@
 #include "nano_apdu_get_app_conf.h"
 #include "nano_apdu_validate_block.h"
 #include "nano_apdu_sign_block.h"
+#include "nano_apdu_sign_nonce.h"
 
 uint8_t const DISPATCHER_CLA[] = {
     NANO_CLA, // nano_apdu_get_app_conf
     NANO_CLA, // nano_apdu_get_address
     NANO_CLA, // nano_apdu_validate_block
     NANO_CLA, // nano_apdu_sign_block
+    NANO_CLA, // nano_apdu_sign_nonce
 };
 
 uint8_t const DISPATCHER_INS[] = {
@@ -34,6 +36,7 @@ uint8_t const DISPATCHER_INS[] = {
     NANO_INS_GET_ADDRESS,    // nano_apdu_get_address
     NANO_INS_VALIDATE_BLOCK, // nano_apdu_validate_block
     NANO_INS_SIGN_BLOCK,     // nano_apdu_sign_block
+    NANO_INS_SIGN_NONCE,     // nano_apdu_sign_nonce
 };
 
 bool const DISPATCHER_DATA_IN[] = {
@@ -41,6 +44,7 @@ bool const DISPATCHER_DATA_IN[] = {
     true,  // nano_apdu_get_address
     true,  // nano_apdu_validate_block
     true,  // nano_apdu_sign_block
+    true,  // nano_apdu_sign_nonce
 };
 
 apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
@@ -48,6 +52,7 @@ apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
     nano_apdu_get_address,
     nano_apdu_validate_block,
     nano_apdu_sign_block,
+    nano_apdu_sign_nonce,
 };
 
 uint8_t const BASE16_ALPHABET[16] = {
@@ -75,3 +80,5 @@ uint8_t const BLOCK_HASH_PREAMBLE[32] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
 };
+
+uint8_t const NONCE_HASH_PREAMBLE[19] = "Nano Signed Nonce:\n";

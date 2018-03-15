@@ -408,20 +408,30 @@ void nano_hash_block(nano_hash_t blockHash,
     blake2b_final(hash, blockHash);
 }
 
-void nano_sign_block(nano_signature_t signature,
-                     const nano_hash_t blockHash,
-                     const nano_private_key_t privateKey,
-                     const nano_public_key_t publicKey) {
+void nano_hash_nonce(nano_hash_t nonceHash,
+                     const nano_nonce_t nonce) {
+    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
+
+    blake2b_init(hash, sizeof(nano_hash_t), NULL, 0);
+    blake2b_update(hash, NONCE_HASH_PREAMBLE, sizeof(NONCE_HASH_PREAMBLE));
+    blake2b_update(hash, nonce, sizeof(nano_nonce_t));
+    blake2b_final(hash, nonceHash);
+}
+
+void nano_sign_hash(nano_signature_t signature,
+                    const nano_hash_t hash,
+                    const nano_private_key_t privateKey,
+                    const nano_public_key_t publicKey) {
     ed25519_sign(
-        blockHash, sizeof(nano_hash_t),
+        hash, sizeof(nano_hash_t),
         privateKey, publicKey,
         signature);
 }
 
-bool nano_verify_block_signature(const nano_hash_t blockHash,
-                                 const nano_public_key_t publicKey,
-                                 const nano_signature_t signature) {
+bool nano_verify_hash_signature(const nano_hash_t hash,
+                                const nano_public_key_t publicKey,
+                                const nano_signature_t signature) {
     return ed25519_sign_open(
-        blockHash, sizeof(nano_hash_t),
+        hash, sizeof(nano_hash_t),
         publicKey, signature) == 0;
 }

@@ -15,20 +15,18 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_APDU_VALIDATE_BLOCK_H
+#ifndef NANO_APDU_SIGN_NONCE_H
 
-#define NANO_APDU_VALIDATE_BLOCK_H
+#define NANO_APDU_SIGN_NONCE_H
 
 #include "nano_types.h"
 #include "nano_helpers.h"
 
 typedef struct {
-    nano_public_key_t publicKey;
-    nano_block_data_t block;
-    nano_hash_t blockHash;
-    nano_signature_t signature;
-} nano_apdu_validate_block_request_t;
+    uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    nano_nonce_t nonce;
+} nano_apdu_sign_nonce_request_t;
 
-uint16_t nano_apdu_validate_block(nano_apdu_response_t *resp);
+uint16_t nano_apdu_sign_nonce(nano_apdu_response_t *resp);
 
-#endif // NANO_APDU_VALIDATE_BLOCK_H
+#endif // NANO_APDU_SIGN_NONCE_H

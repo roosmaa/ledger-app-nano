@@ -91,7 +91,7 @@ uint16_t nano_apdu_validate_block(nano_apdu_response_t *resp) {
     os_memmove(h->req.signature, inPtr, readLen);
     inPtr += readLen;
 
-    nano_hash_block(h->req.hash, &h->req.block, h->req.publicKey);
+    nano_hash_block(h->req.blockHash, &h->req.block, h->req.publicKey);
 
     uint16_t statusWord = nano_apdu_validate_block_output(resp, &h->req);
     os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
@@ -99,8 +99,8 @@ uint16_t nano_apdu_validate_block(nano_apdu_response_t *resp) {
 }
 
 uint16_t nano_apdu_validate_block_output(nano_apdu_response_t *resp, nano_apdu_validate_block_request_t *req) {
-    bool isValidSignature = nano_verify_block_signature(
-        req->hash, req->publicKey, req->signature);
+    bool isValidSignature = nano_verify_hash_signature(
+        req->blockHash, req->publicKey, req->signature);
 
     if (!isValidSignature) {
         return NANO_SW_INVALID_SIGNATURE;
@@ -112,7 +112,7 @@ uint16_t nano_apdu_validate_block_output(nano_apdu_response_t *resp, nano_apdu_v
         sizeof(nano_context_D.cachedBlock.representative));
     os_memmove(nano_context_D.cachedBlock.balance, req->block.balance,
         sizeof(nano_context_D.cachedBlock.balance));
-    os_memmove(nano_context_D.cachedBlock.hash, req->hash,
+    os_memmove(nano_context_D.cachedBlock.hash, req->blockHash,
         sizeof(nano_context_D.cachedBlock.hash));
 
     return NANO_SW_OK;

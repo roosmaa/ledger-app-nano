@@ -17,7 +17,7 @@
 
 #include "nano_internal.h"
 
-#define DISPATCHER_APDUS 4
+#define DISPATCHER_APDUS 5
 
 typedef uint16_t (*apduProcessingFunction)(nano_apdu_response_t *resp);
 
@@ -34,3 +34,4 @@ extern uint8_t const BASE32_ALPHABET[32];
 extern uint8_t const BASE32_TABLE[75];
 
 extern uint8_t const BLOCK_HASH_PREAMBLE[32];
+extern uint8_t const NONCE_HASH_PREAMBLE[19];

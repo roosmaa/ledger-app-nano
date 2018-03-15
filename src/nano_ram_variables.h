@@ -35,6 +35,7 @@ typedef union {
     nano_apdu_get_address_heap_t nano_apdu_get_address_heap_D;
     nano_apdu_validate_block_heap_t nano_apdu_validate_block_heap_D;
     nano_apdu_sign_block_heap_t nano_apdu_sign_block_heap_D;
+    nano_apdu_sign_nonce_heap_t nano_apdu_sign_nonce_heap_D;
 } ram_a_t;
 extern ram_a_t ram_a;
 

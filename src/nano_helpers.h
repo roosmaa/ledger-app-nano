@@ -55,12 +55,15 @@ uint32_t nano_simple_hash(uint8_t *data, size_t dataLen);
 void nano_hash_block(nano_hash_t blockHash,
                      const nano_block_data_t *blockData,
                      const nano_public_key_t publicKey);
-void nano_sign_block(nano_signature_t signature,
-                     const nano_hash_t blockHash,
-                     const nano_private_key_t privateKey,
-                     const nano_public_key_t publicKey);
-bool nano_verify_block_signature(const nano_hash_t blockHash,
-                                 const nano_public_key_t publicKey,
-                                 const nano_signature_t signature);
+void nano_hash_nonce(nano_hash_t nonceHash,
+                     const nano_nonce_t nonce);
+
+void nano_sign_hash(nano_signature_t signature,
+                    const nano_hash_t hash,
+                    const nano_private_key_t privateKey,
+                    const nano_public_key_t publicKey);
+bool nano_verify_hash_signature(const nano_hash_t blockHash,
+                                const nano_public_key_t publicKey,
+                                const nano_signature_t signature);
 
 #endif

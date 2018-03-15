@@ -23,6 +23,7 @@
 #include "nano_apdu_get_address.h"
 #include "nano_apdu_validate_block.h"
 #include "nano_apdu_sign_block.h"
+#include "nano_apdu_sign_nonce.h"
 
 typedef struct {
     nano_apdu_get_address_request_t req;
@@ -52,6 +53,20 @@ typedef struct {
         nano_apdu_sign_block_heap_output_t output;
     } io;
 } nano_apdu_sign_block_heap_t;
+
+typedef struct {
+    nano_private_key_t privateKey;
+    nano_public_key_t publicKey;
+    nano_hash_t nonceHash;
+    nano_signature_t signature;
+} nano_apdu_sign_nonce_heap_output_t;
+
+typedef struct {
+    nano_apdu_sign_nonce_request_t req;
+    union {
+        nano_apdu_sign_nonce_heap_output_t output;
+    } io;
+} nano_apdu_sign_nonce_heap_t;
 
 typedef struct {
     uint32_t bip32PathInt[MAX_BIP32_PATH];

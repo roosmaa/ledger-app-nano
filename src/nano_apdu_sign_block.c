@@ -96,7 +96,7 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     os_memmove(h->block.balance, inPtr, readLen);
     inPtr += readLen;
 
-    nano_hash_block(req->hash, &h->block, req->publicKey);
+    nano_hash_block(req->blockHash, &h->block, req->publicKey);
 
     // Determine changes that we've been requested to sign
     bool isFirstBlock = nano_is_zero(h->block.parent, sizeof(h->block.parent));
@@ -171,12 +171,12 @@ uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_
 
     // Derive key and sign the block
     nano_derive_keypair(req->keyPath, h->privateKey, NULL);
-    nano_sign_block(h->signature, req->hash, h->privateKey, req->publicKey);
+    nano_sign_hash(h->signature, req->blockHash, h->privateKey, req->publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey));
 
     // Output block hash
-    os_memmove(outPtr, req->hash, sizeof(req->hash));
-    outPtr += sizeof(req->hash);
+    os_memmove(outPtr, req->blockHash, sizeof(req->blockHash));
+    outPtr += sizeof(req->blockHash);
 
     // Output signature
     os_memmove(outPtr, h->signature, sizeof(h->signature));

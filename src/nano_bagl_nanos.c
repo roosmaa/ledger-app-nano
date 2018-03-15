@@ -420,7 +420,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         strcpy(vars.confirmSignBlock.confirmLabel, "Block hash");
         ui_write_hash_truncated(
             vars.confirmSignBlock.confirmValue,
-            req->hash);
+            req->blockHash);
         return;
     }
 }
