@@ -52,8 +52,9 @@ typedef struct {
 } nano_derive_keypair_heap_t;
 
 typedef struct {
-    // log10(x) = log2(x) / log2(10) ~= log2(x) / 3.322
-    char buf[128 / 3 + 1 + 2];
+    // MaxUInt128 = 340282366920938463463374607431768211455 (39 digits)
+    // 39 digits + 1 period + len(" Nano") + len('\0')
+    char buf[39 + 1 + 5 + 1];
     nano_amount_t num;
 } nano_amount_format_heap_t;
 

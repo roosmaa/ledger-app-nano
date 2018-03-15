@@ -285,7 +285,9 @@ void nano_amount_format(char *dest, size_t destLen,
     os_memset(h->buf, 0, sizeof(h->buf));
     os_memmove(h->num, balance, sizeof(h->num));
 
-    size_t end = sizeof(h->buf) - 1;
+    size_t end = sizeof(h->buf);
+    end -= 1; // len('\0')
+    end -= 5; // len(" Nano")
     size_t start = end;
 
     // Convert the balance into a string by dividing by 10 until
