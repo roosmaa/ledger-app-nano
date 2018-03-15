@@ -20,15 +20,6 @@
 #include "nano_apdu_validate_block.h"
 #include "nano_bagl.h"
 
-#ifdef HAVE_U2F
-
-#include "u2f_service.h"
-#include "u2f_transport.h"
-
-void u2f_proxy_response(u2f_service_t *service, uint16_t tx);
-
-#endif
-
 #define P1_UNUSED    0x00
 #define P2_UNUSED 0x00
 
