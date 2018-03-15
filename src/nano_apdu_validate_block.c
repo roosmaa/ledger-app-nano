@@ -20,7 +20,7 @@
 #include "nano_apdu_validate_block.h"
 #include "nano_bagl.h"
 
-#define P1_UNUSED    0x00
+#define P1_UNUSED 0x00
 #define P2_UNUSED 0x00
 
 uint16_t nano_apdu_validate_block_output(nano_apdu_response_t *resp, nano_apdu_validate_block_request_t *req);

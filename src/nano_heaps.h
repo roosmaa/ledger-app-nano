@@ -36,15 +36,22 @@ typedef struct {
 } nano_apdu_validate_block_heap_t;
 
 typedef struct {
-    nano_apdu_sign_block_request_t req;
     nano_private_key_t privateKey;
     nano_block_data_t block;
-} nano_apdu_sign_block_heap_t;
+} nano_apdu_sign_block_heap_input_t;
 
 typedef struct {
     nano_private_key_t privateKey;
     nano_signature_t signature;
-} nano_apdu_sign_block_output_heap_t;
+} nano_apdu_sign_block_heap_output_t;
+
+typedef struct {
+    nano_apdu_sign_block_request_t req;
+    union {
+        nano_apdu_sign_block_heap_input_t input;
+        nano_apdu_sign_block_heap_output_t output;
+    } io;
+} nano_apdu_sign_block_heap_t;
 
 typedef struct {
     uint32_t bip32PathInt[MAX_BIP32_PATH];
