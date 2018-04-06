@@ -70,11 +70,9 @@ uint16_t nano_apdu_sign_nonce_output(nano_apdu_response_t *resp, nano_apdu_sign_
     nano_apdu_sign_nonce_heap_output_t *h = &ram_a.nano_apdu_sign_nonce_heap_D.io.output;
     uint8_t *outPtr = resp->buffer;
 
-    nano_hash_nonce(h->nonceHash, req->nonce);
-
     // Derive key and sign the block
     nano_derive_keypair(req->keyPath, h->privateKey, h->publicKey);
-    nano_sign_hash(h->signature, h->nonceHash, h->privateKey, h->publicKey);
+    nano_sign_nonce(h->signature, req->nonce, h->privateKey, h->publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey));
 
     // Output signature

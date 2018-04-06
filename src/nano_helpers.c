@@ -408,16 +408,6 @@ void nano_hash_block(nano_hash_t blockHash,
     blake2b_final(hash, blockHash);
 }
 
-void nano_hash_nonce(nano_hash_t nonceHash,
-                     const nano_nonce_t nonce) {
-    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
-
-    blake2b_init(hash, sizeof(nano_hash_t), NULL, 0);
-    blake2b_update(hash, NONCE_HASH_PREAMBLE, sizeof(NONCE_HASH_PREAMBLE));
-    blake2b_update(hash, nonce, sizeof(nano_nonce_t));
-    blake2b_final(hash, nonceHash);
-}
-
 void nano_sign_hash(nano_signature_t signature,
                     const nano_hash_t hash,
                     const nano_private_key_t privateKey,
@@ -434,4 +424,24 @@ bool nano_verify_hash_signature(const nano_hash_t hash,
     return ed25519_sign_open(
         hash, sizeof(nano_hash_t),
         publicKey, signature) == 0;
+}
+
+void nano_sign_nonce(nano_signature_t signature,
+                     const nano_nonce_t nonce,
+                     const nano_private_key_t privateKey,
+                     const nano_public_key_t publicKey) {
+    uint8_t msg[sizeof(NONCE_PREAMBLE) + 2 * sizeof(nano_nonce_t)];
+
+    // Construct the message to contain the preamble with the hex-encoded
+    // nonce (eg. "Nano Signed Nonce:\n96DFEF63B836C9B1DD57CFF76F6DF3D0")
+    uint8_t *ptr = msg;
+    os_memmove(ptr, NONCE_PREAMBLE, sizeof(NONCE_PREAMBLE));
+    ptr += sizeof(NONCE_PREAMBLE);
+    nano_write_hex_string(ptr, nonce, sizeof(nano_nonce_t));
+    ptr += 2 * sizeof(nano_nonce_t);
+
+    ed25519_sign(
+        msg, sizeof(msg),
+        privateKey, publicKey,
+        signature);
 }

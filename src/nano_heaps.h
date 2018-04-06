@@ -57,7 +57,6 @@ typedef struct {
 typedef struct {
     nano_private_key_t privateKey;
     nano_public_key_t publicKey;
-    nano_hash_t nonceHash;
     nano_signature_t signature;
 } nano_apdu_sign_nonce_heap_output_t;
 
