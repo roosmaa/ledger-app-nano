@@ -149,7 +149,7 @@ This command returns the application configuration.
 
 #### Description
 
-This command signs a 128bit nonce and returns the signature. `"Nano Signed Nonce:\n" + nonceBytes` is the message that gets hashed and the hash signed with the private key. This method is meant to be used as a soft-authentication (eg for APIs), to prove that the Ledger with the private key is plugged into the computer.
+This command signs a 128bit nonce and returns the signature. `"Nano Signed Nonce:\n" + nonceBytes` is the message that gets signed with the private key. This method is meant to be used as a soft-authentication (eg for APIs), to prove that the Ledger with the private key is plugged into the computer.
 
 #### Coding
 
