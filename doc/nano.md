@@ -246,7 +246,7 @@ The following standard Status Words are returned for all APDUs - some specific S
 |   6985   | User declined the request                                                     |
 |   6A80   | Invalid input data                                                            |
 |   6A81   | Failed to verify the provided signature                                     |
-|   6A82   | Parent block data cache-miss (validate parent before sign)                    |
+|   6A82   | Parent block data cache-miss (cache parent before sign)                    |
 |   6B00   | Incorrect parameter P1 or P2                                                  |
 |   6Fxx   | Technical problem (Internal error, please report)                             |
 |   9000   | Normal ending of the command                                                  |
