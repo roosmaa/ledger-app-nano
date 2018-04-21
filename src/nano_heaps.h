@@ -21,7 +21,7 @@
 
 #include "nano_types.h"
 #include "nano_apdu_get_address.h"
-#include "nano_apdu_validate_block.h"
+#include "nano_apdu_cache_block.h"
 #include "nano_apdu_sign_block.h"
 #include "nano_apdu_sign_nonce.h"
 
@@ -31,10 +31,10 @@ typedef struct {
 } nano_apdu_get_address_heap_t;
 
 typedef struct {
-    nano_apdu_validate_block_request_t req;
+    nano_apdu_cache_block_request_t req;
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
     nano_private_key_t privateKey;
-} nano_apdu_validate_block_heap_t;
+} nano_apdu_cache_block_heap_t;
 
 typedef struct {
     nano_private_key_t privateKey;

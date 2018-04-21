@@ -15,9 +15,9 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_APDU_VALIDATE_BLOCK_H
+#ifndef NANO_APDU_CACHE_BLOCK_H
 
-#define NANO_APDU_VALIDATE_BLOCK_H
+#define NANO_APDU_CACHE_BLOCK_H
 
 #include "nano_types.h"
 #include "nano_helpers.h"
@@ -27,8 +27,8 @@ typedef struct {
     nano_block_data_t block;
     nano_hash_t blockHash;
     nano_signature_t signature;
-} nano_apdu_validate_block_request_t;
+} nano_apdu_cache_block_request_t;
 
-uint16_t nano_apdu_validate_block(nano_apdu_response_t *resp);
+uint16_t nano_apdu_cache_block(nano_apdu_response_t *resp);
 
-#endif // NANO_APDU_VALIDATE_BLOCK_H
+#endif // NANO_APDU_CACHE_BLOCK_H

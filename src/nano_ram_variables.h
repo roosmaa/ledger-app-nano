@@ -33,7 +33,7 @@ extern nano_context_t nano_context_D;
    so can be mapped to a shared memory space. */
 typedef union {
     nano_apdu_get_address_heap_t nano_apdu_get_address_heap_D;
-    nano_apdu_validate_block_heap_t nano_apdu_validate_block_heap_D;
+    nano_apdu_cache_block_heap_t nano_apdu_cache_block_heap_D;
     nano_apdu_sign_block_heap_t nano_apdu_sign_block_heap_D;
     nano_apdu_sign_nonce_heap_t nano_apdu_sign_nonce_heap_D;
 } ram_a_t;

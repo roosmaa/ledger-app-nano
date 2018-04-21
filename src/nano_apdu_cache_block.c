@@ -17,16 +17,16 @@
 
 #include "nano_internal.h"
 #include "nano_apdu_constants.h"
-#include "nano_apdu_validate_block.h"
+#include "nano_apdu_cache_block.h"
 #include "nano_bagl.h"
 
 #define P1_UNUSED 0x00
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_validate_block_output(nano_apdu_response_t *resp, nano_apdu_validate_block_request_t *req);
+uint16_t nano_apdu_cache_block_output(nano_apdu_response_t *resp, nano_apdu_cache_block_request_t *req);
 
-uint16_t nano_apdu_validate_block(nano_apdu_response_t *resp) {
-    nano_apdu_validate_block_heap_t *h = &ram_a.nano_apdu_validate_block_heap_D;
+uint16_t nano_apdu_cache_block(nano_apdu_response_t *resp) {
+    nano_apdu_cache_block_heap_t *h = &ram_a.nano_apdu_cache_block_heap_D;
     uint8_t *inPtr;
     uint8_t readLen;
 
@@ -93,18 +93,19 @@ uint16_t nano_apdu_validate_block(nano_apdu_response_t *resp) {
 
     nano_hash_block(h->req.blockHash, &h->req.block, h->req.publicKey);
 
-    uint16_t statusWord = nano_apdu_validate_block_output(resp, &h->req);
+    uint16_t statusWord = nano_apdu_cache_block_output(resp, &h->req);
     os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
     return statusWord;
 }
 
-uint16_t nano_apdu_validate_block_output(nano_apdu_response_t *resp, nano_apdu_validate_block_request_t *req) {
-    bool isValidSignature = nano_verify_hash_signature(
-        req->blockHash, req->publicKey, req->signature);
-
-    if (!isValidSignature) {
-        return NANO_SW_INVALID_SIGNATURE;
-    }
+uint16_t nano_apdu_cache_block_output(nano_apdu_response_t *resp, nano_apdu_cache_block_request_t *req) {
+    // TODO: Enable signature verification once Ledger SDK primitives can be used
+    // bool isValidSignature = nano_verify_hash_signature(
+    //     req->blockHash, req->publicKey, req->signature);
+    //
+    // if (!isValidSignature) {
+    //     return NANO_SW_INVALID_SIGNATURE;
+    // }
 
     // Copy the data over to the cache
     os_memset(&nano_context_D.cachedBlock, 0, sizeof(nano_context_D.cachedBlock));

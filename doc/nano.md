@@ -39,11 +39,11 @@ This command returns the public key and the encoded address for the given BIP 32
 | Account address                                   | var       |
 
 
-### Validate block
+### Cache block
 
 #### Description
 
-This command validates the signature of an universal block and caches the block data in-memory so that the next call to sign block command could determine the changes in account state.
+This command caches the frontier block in memory. The sign block command uses this cached data to determine the changes in account state.
 
 #### Coding
 
@@ -245,7 +245,7 @@ The following standard Status Words are returned for all APDUs - some specific S
 |   6982   | Security status not satisfied (dongle is locked or busy with another request) |
 |   6985   | User declined the request                                                     |
 |   6A80   | Invalid input data                                                            |
-|   6A81   | Failed to validate the provided signature                                     |
+|   6A81   | Failed to verify the provided signature                                     |
 |   6A82   | Parent block data cache-miss (validate parent before sign)                    |
 |   6B00   | Incorrect parameter P1 or P2                                                  |
 |   6Fxx   | Technical problem (Internal error, please report)                             |
