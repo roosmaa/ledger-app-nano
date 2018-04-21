@@ -74,7 +74,7 @@ void nano_write_u32_le(uint8_t *buffer, uint32_t value) {
     buffer[3] = ((value >> 24) & 0xff);
 }
 
-void nano_write_hex_string(uint8_t *buffer, uint8_t *bytes, size_t bytesLen) {
+void nano_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLen) {
     uint32_t i;
     for (i = 0; i < bytesLen; i++) {
         buffer[2*i] = BASE16_ALPHABET[(bytes[i] >> 4) & 0xF];

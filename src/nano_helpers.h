@@ -32,7 +32,7 @@ uint32_t nano_read_u32(uint8_t *buffer, bool be,
 void nano_write_u32_be(uint8_t *buffer, uint32_t value);
 void nano_write_u32_le(uint8_t *buffer, uint32_t value);
 
-void nano_write_hex_string(uint8_t *buffer, uint8_t *bytes, size_t bytesLen);
+void nano_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLen);
 
 bool nano_read_account_string(uint8_t *buffer, size_t size,
                               nano_address_prefix_t *outPrefix,
