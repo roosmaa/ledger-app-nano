@@ -64,12 +64,12 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_RECIPIENT_XRB_FLAG) != 0) {
         req->recipientPrefix = NANO_XRB_PREFIX;
     } else {
-        req->recipientPrefix = NANO_DEFAULT_PREFIX;
+        req->recipientPrefix = NANO_NANO_PREFIX;
     }
     if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_REPRESENTATIVE_XRB_FLAG) != 0) {
         req->representativePrefix = NANO_XRB_PREFIX;
     } else {
-        req->representativePrefix = NANO_DEFAULT_PREFIX;
+        req->representativePrefix = NANO_NANO_PREFIX;
     }
 
     // Derive public key for hashing

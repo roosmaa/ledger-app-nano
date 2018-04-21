@@ -95,12 +95,12 @@ bool nano_read_account_string(uint8_t *buffer, size_t size,
         (buffer[2] == 'n' || buffer[2] == 'N') &&
         (buffer[3] == 'o' || buffer[3] == 'O') &&
         (buffer[4] == '-' || buffer[4] == '_')) {
-        if (size != NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN) {
+        if (size != NANO_ACCOUNT_STRING_BASE_LEN + NANO_NANO_PREFIX_LEN) {
             return false;
         }
         size -= 5;
         buffer += 5;
-        *outPrefix = NANO_DEFAULT_PREFIX;
+        *outPrefix = NANO_NANO_PREFIX;
     } else if ((buffer[0] == 'x' || buffer[0] == 'X') &&
                (buffer[1] == 'r' || buffer[1] == 'R') &&
                (buffer[2] == 'b' || buffer[2] == 'B') &&
@@ -195,13 +195,13 @@ void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
     blake2b_final(hash, check);
 
     switch (prefix) {
-    case NANO_DEFAULT_PREFIX:
+    case NANO_NANO_PREFIX:
         buffer[0] = 'n';
         buffer[1] = 'a';
         buffer[2] = 'n';
         buffer[3] = 'o';
         buffer[4] = '_';
-        buffer += NANO_DEFAULT_PREFIX_LEN;
+        buffer += NANO_NANO_PREFIX_LEN;
         break;
     case NANO_XRB_PREFIX:
         buffer[0] = 'x';

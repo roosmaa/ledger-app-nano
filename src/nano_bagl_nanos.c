@@ -51,8 +51,8 @@ void ui_write_address_truncated(char *label, nano_address_prefix_t prefix, nano_
 
     size_t prefixSize;
     switch (prefix) {
-    case NANO_DEFAULT_PREFIX:
-        prefixSize = NANO_DEFAULT_PREFIX_LEN;
+    case NANO_NANO_PREFIX:
+        prefixSize = NANO_NANO_PREFIX_LEN;
         break;
     case NANO_XRB_PREFIX:
         prefixSize = NANO_XRB_PREFIX_LEN;
@@ -67,8 +67,8 @@ void ui_write_address_truncated(char *label, nano_address_prefix_t prefix, nano_
 void ui_write_address_full(char *label, nano_address_prefix_t prefix, nano_public_key_t publicKey) {
     nano_write_account_string((uint8_t *)label, prefix, publicKey);
     switch (prefix) {
-    case NANO_DEFAULT_PREFIX:
-        label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_DEFAULT_PREFIX_LEN] = '\0';
+    case NANO_NANO_PREFIX:
+        label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_NANO_PREFIX_LEN] = '\0';
         break;
     case NANO_XRB_PREFIX:
         label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_XRB_PREFIX_LEN] = '\0';
