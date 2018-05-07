@@ -37,6 +37,12 @@ else
 ICONNAME=nanos_icon.gif
 endif
 
+ifeq (customCA.key,$(wildcard customCA.key))
+	CUSTOM_CA_PARAM=--rootPrivateKey `cat customCA.key`
+else
+	CUSTOM_CA_PARAM=
+endif
+
 ################
 # Default rule #
 ################
@@ -94,10 +100,10 @@ SDK_SOURCE_PATH  += lib_stusb_impl
 SDK_SOURCE_PATH  += lib_u2f
 
 load: all
-	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
+	python -m ledgerblue.loadApp $(CUSTOM_CA_PARAM) $(APP_LOAD_PARAMS)
 
 delete:
-	python -m ledgerblue.deleteApp $(COMMON_DELETE_PARAMS)
+	python -m ledgerblue.deleteApp $(CUSTOM_CA_PARAM) $(COMMON_DELETE_PARAMS)
 
 # import generic rules from the sdk
 include $(BOLOS_SDK)/Makefile.rules
