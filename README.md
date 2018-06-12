@@ -1,8 +1,16 @@
 # blue-app-nano
 
-$NANO wallet application for Ledger Nano S
+$NANO wallet application for Ledger Nano S. (Ledger Blue is unsupported at this time.)
 
-To use the $NANO Ledger app with web wallets, make sure that the "Browser support" is turned on.
+## For users
+
+You can install the Nano app from the Ledger Manager. If it doesn't show up for you in Ledger Manager, make sure that your Ledger firmware has been upgraded to the latest version. See also the Ledger own [guide on installing and using the app](https://support.ledgerwallet.com/hc/en-us/articles/360005459013-Install-and-use-Nano).
+
+To interact with the Nano network, you need to use a wallet software that has integrated Ledger support. Currently the following wallets have integrated Ledger support:
+
+- [NanoVault.io](https://nanovault.io/) ([user guide](http://blog.nanovault.io/guides/use-your-ledger-device-with-nanovault/))
+
+_If a wallet is missing from above, please [create an issue](https://github.com/roosmaa/blue-app-nano/issues/new) and it will be added to this list._
 
 ## For wallet developers
 
