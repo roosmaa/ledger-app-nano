@@ -33,4 +33,8 @@
 void app_async_response(libn_apdu_response_t *resp, uint16_t statusWord);
 bool app_apply_state(void);
 
+void app_init(void);
+void app_main(void);
+void app_exit(void);
+
 #endif
