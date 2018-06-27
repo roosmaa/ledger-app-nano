@@ -356,6 +356,7 @@ void libn_amount_format(char *dest, size_t destLen,
 void libn_derive_keypair(uint8_t *bip32Path,
                          libn_private_key_t out_privateKey,
                          libn_public_key_t out_publicKey) {
+    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     // NB! Explicit scope to limit usage of `h` as it becomes invalid
     //     once the ed25519 function is called. The memory will be
     //     reused for blake2b hashing.
@@ -363,6 +364,7 @@ void libn_derive_keypair(uint8_t *bip32Path,
         libn_derive_keypair_heap_t *h = &ram_b.libn_derive_keypair_heap_D;
         uint8_t bip32PathLength;
         uint8_t i;
+        const uint8_t bip32PrefixLength = sizeof(coin->bip32Prefix) / sizeof(coin->bip32Prefix[0]);
 
         bip32PathLength = bip32Path[0];
         if (bip32PathLength > MAX_BIP32_PATH) {
@@ -372,6 +374,15 @@ void libn_derive_keypair(uint8_t *bip32Path,
         for (i = 0; i < bip32PathLength; i++) {
             h->bip32PathInt[i] = libn_read_u32(bip32Path, 1, 0);
             bip32Path += 4;
+        }
+        // Verify that the prefix is the allowed prefix
+        if (bip32PathLength < bip32PrefixLength) {
+            THROW(INVALID_PARAMETER);
+        }
+        for (i = 0; i < bip32PrefixLength; i++) {
+            if (h->bip32PathInt[i] != coin->bip32Prefix[i]) {
+                THROW(INVALID_PARAMETER);
+            }
         }
         os_perso_derive_node_bip32(LIBN_CURVE, h->bip32PathInt, bip32PathLength,
                                    out_privateKey, h->chainCode);
