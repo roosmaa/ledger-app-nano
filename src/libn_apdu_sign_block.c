@@ -149,7 +149,7 @@ uint16_t libn_apdu_sign_block(libn_apdu_response_t *resp) {
     }
 
     // When auto receive is enabled, skip the prompt
-    if (N_nano.autoReceive && !balanceDecreased && !representativeChanged) {
+    if (N_libn.autoReceive && !balanceDecreased && !representativeChanged) {
         uint16_t statusWord = libn_apdu_sign_block_output(resp, req);
         os_memset(req, 0, sizeof(*req)); // sanitise request data
         return statusWord;

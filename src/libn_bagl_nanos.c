@@ -88,7 +88,7 @@ void menu_settings_autoreceive_change(uint32_t enabled) {
 
 void menu_settings_autoreceive_init(uint32_t ignored) {
     UNUSED(ignored);
-    UX_MENU_DISPLAY(N_nano.autoReceive ? 1 : 0,
+    UX_MENU_DISPLAY(N_libn.autoReceive ? 1 : 0,
                     menu_settings_autoreceive, NULL);
 }
 

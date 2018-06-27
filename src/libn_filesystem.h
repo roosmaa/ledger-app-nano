@@ -31,7 +31,7 @@ typedef struct libn_storage_s {
 // the global nvram memory variable
 extern libn_storage_t N_libn_real;
 
-#define N_nano (*(libn_storage_t *)PIC(&N_libn_real))
+#define N_libn (*(libn_storage_t *)PIC(&N_libn_real))
 
 void libn_set_auto_receive(bool enabled);
 

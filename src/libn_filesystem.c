@@ -20,6 +20,6 @@
 #include "libn_ram_variables.h"
 
 void libn_set_auto_receive(bool enabled) {
-    nvm_write((void *)&N_nano.autoReceive, &enabled,
+    nvm_write((void *)&N_libn.autoReceive, &enabled,
               sizeof(enabled));
 }
