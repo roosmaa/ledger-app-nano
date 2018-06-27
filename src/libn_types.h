@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "os_io_seproxyhal.h"
 
 typedef struct {
     /** IO flags to reply with at the end of an APDU handler */
@@ -44,6 +45,26 @@ typedef uint8_t libn_link_t[32];
 typedef uint8_t libn_signature_t[64];
 typedef uint8_t libn_amount_t[16];
 typedef uint8_t libn_nonce_t[16];
+
+typedef enum {
+    LIBN_COIN_TYPE_NANO,
+} libn_coin_type_t;
+
+typedef enum {
+    LIBN_DEFAULT_ADDRESS_PREFIX_PRIMARY,
+    LIBN_DEFAULT_ADDRESS_PREFIX_SECONDARY,
+} libn_default_address_prefix_t;
+
+typedef struct {
+    const char coinName[10];
+    const bagl_icon_details_t *coinBadge;
+    const uint32_t bip32Prefix[2];
+    const char addressPrimaryPrefix[6];
+    const char addressSecondaryPrefix[6];
+    const libn_default_address_prefix_t addressDefaultPrefix;
+    const char defaultUnit[10];
+    const uint8_t defaultUnitScale;
+} libn_coin_conf_t;
 
 #define LIBN_PREFIX_MAX_LEN 5
 #define LIBN_NANO_PREFIX_LEN 5 // len("nano_")

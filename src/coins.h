@@ -1,7 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
 *   (c) 2018 Mart Roosmaa
-*   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -16,38 +15,11 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "os_io_seproxyhal.h"
-#include "libn_internal.h"
-#include "coins.h"
+#ifndef COINS_H
+#define COINS_H
 
-__attribute__((section(".boot"))) int main(void) {
-    init_coin_config(LIBN_COIN_TYPE_NANO);
+#include "libn_types.h"
 
-    // exit critical section
-    __asm volatile("cpsie i");
+void init_coin_config(libn_coin_type_t coin_type);
 
-    // ensure exception will work as planned
-    os_boot();
-
-    for (;;) {
-        BEGIN_TRY {
-            TRY {
-                app_init();
-                app_main();
-            }
-            CATCH(EXCEPTION_IO_RESET) {
-                // reset IO and UX
-                continue;
-            }
-            CATCH_ALL {
-                break;
-            }
-            FINALLY {
-            }
-        }
-        END_TRY;
-    }
-
-    app_exit();
-    return 0;
-}
+#endif // COINS_H
