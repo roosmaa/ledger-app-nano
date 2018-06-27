@@ -441,18 +441,29 @@ void libn_sign_nonce(libn_signature_t signature,
                      const libn_nonce_t nonce,
                      const libn_private_key_t privateKey,
                      const libn_public_key_t publicKey) {
-    uint8_t msg[sizeof(NONCE_PREAMBLE) + 2 * sizeof(libn_nonce_t)];
+    const libn_coin_conf_t *coin = &libn_coin_conf_D;
+    uint8_t msg[sizeof(coin->coinName) +
+                sizeof(NONCE_PREAMBLE) +
+                2 * sizeof(libn_nonce_t)];
+    size_t len;
 
     // Construct the message to contain the preamble with the hex-encoded
     // nonce (eg. "Nano Signed Nonce:\n96DFEF63B836C9B1DD57CFF76F6DF3D0")
     uint8_t *ptr = msg;
+    // Append the coin name
+    len = strnlen(coin->coinName, sizeof(coin->coinName));
+    os_memmove(ptr, coin->coinName, len);
+    ptr += len;
+    // Apend the " Signed Nonce:\n"
     os_memmove(ptr, NONCE_PREAMBLE, sizeof(NONCE_PREAMBLE));
     ptr += sizeof(NONCE_PREAMBLE);
+    // Append the nonce
     libn_write_hex_string(ptr, nonce, sizeof(libn_nonce_t));
     ptr += 2 * sizeof(libn_nonce_t);
 
+    len = ptr - msg;
     ed25519_sign(
-        msg, sizeof(msg),
+        msg, len,
         privateKey, publicKey,
         signature);
 }

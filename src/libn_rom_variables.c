@@ -81,4 +81,4 @@ uint8_t const BLOCK_HASH_PREAMBLE[32] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06,
 };
 
-uint8_t const NONCE_PREAMBLE[19] = "Nano Signed Nonce:\n";
+uint8_t const NONCE_PREAMBLE[15] = " Signed Nonce:\n";
