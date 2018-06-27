@@ -9,7 +9,7 @@ REGISTER_COINS(
         /* addressPrimaryPrefix */ "nano_",
         /* addressSecondaryPrefix */ "xrb_",
         /* addressDefaultPrefix */ LIBN_SECONDARY_PREFIX,
-        /* defaultUnit */ "Mnano",
+        /* defaultUnit */ "NANO",
         /* defaultUnitScale */ 30, // 1 Mnano = 10^30 raw
     })
 )
