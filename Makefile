@@ -18,9 +18,12 @@
 ifeq ($(BOLOS_SDK),)
 $(error Environment variable BOLOS_SDK is not set)
 endif
+ifeq (customCA.key,$(wildcard customCA.key))
+	SCP_PRIVKEY=`cat customCA.key`
+endif
 include $(BOLOS_SDK)/Makefile.defines
 
-APPNAME ="Nano"
+APPNAME="Nano"
 APP_LOAD_PARAMS=--appFlags 0x50 --path "44'/165'" --curve ed25519 $(COMMON_LOAD_PARAMS)
 
 APPVERSION_M=1
@@ -35,12 +38,6 @@ ifeq ($(TARGET_NAME),TARGET_BLUE)
 ICONNAME=blue_icon.gif
 else
 ICONNAME=nanos_icon.gif
-endif
-
-ifeq (customCA.key,$(wildcard customCA.key))
-	CUSTOM_CA_PARAM=--rootPrivateKey `cat customCA.key`
-else
-	CUSTOM_CA_PARAM=
 endif
 
 ################
@@ -100,10 +97,10 @@ SDK_SOURCE_PATH  += lib_stusb_impl
 SDK_SOURCE_PATH  += lib_u2f
 
 load: all
-	python -m ledgerblue.loadApp $(CUSTOM_CA_PARAM) $(APP_LOAD_PARAMS)
+	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
 
 delete:
-	python -m ledgerblue.deleteApp $(CUSTOM_CA_PARAM) $(COMMON_DELETE_PARAMS)
+	python -m ledgerblue.deleteApp $(COMMON_DELETE_PARAMS)
 
 # import generic rules from the sdk
 include $(BOLOS_SDK)/Makefile.rules
