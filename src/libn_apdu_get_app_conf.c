@@ -48,15 +48,23 @@ uint16_t libn_apdu_get_app_conf(libn_apdu_response_t *resp) {
 }
 
 uint16_t libn_apdu_get_app_conf_output(libn_apdu_response_t *resp) {
+    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     uint8_t *outPtr = resp->buffer;
+    uint8_t length;
 
-    // Output raw public key
+    // Output app version
     *outPtr = APP_MAJOR_VERSION;
     outPtr += 1;
     *outPtr = APP_MINOR_VERSION;
     outPtr += 1;
     *outPtr = APP_PATCH_VERSION;
     outPtr += 1;
+
+    // Output coin name
+    length = strnlen(coin->coinName, sizeof(coin->coinName));
+    *outPtr = length;
+    os_memmove(outPtr + 1, coin->coinName, length);
+    outPtr += 1 + length;
 
     resp->outLength = outPtr - resp->buffer;
 

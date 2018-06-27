@@ -143,6 +143,8 @@ This command returns the application configuration.
 | Major app version                                  | 1         |
 | Minor app version                                  | 1         |
 | Patch app version                                  | 1         |
+| Coin name length                                   | 1         |
+| Coin name                                          | var       |
 
 
 ### Sign nonce
