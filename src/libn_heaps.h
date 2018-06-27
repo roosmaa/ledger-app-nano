@@ -74,9 +74,13 @@ typedef struct {
 
 typedef struct {
     // MaxUInt128 = 340282366920938463463374607431768211455 (39 digits)
-    // 39 digits + 1 period + len(" Nano") + len('\0')
-    char buf[39 + 1 + 5 + 1];
+    char buf[39 /* digits */
+             + 1 /* period */
+             + 1 /* " " before unit */
+             + sizeof((libn_coin_conf_t){}.defaultUnit)
+             + 1 /* '\0' NULL terminator */];
     libn_amount_t num;
+    uint8_t unitLen;
 } libn_amount_format_heap_t;
 
 #endif // LIBN_HEAPS_H

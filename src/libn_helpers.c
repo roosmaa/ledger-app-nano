@@ -281,13 +281,15 @@ void libn_amount_subtract(libn_amount_t value, const libn_amount_t other) {
 
 void libn_amount_format(char *dest, size_t destLen,
                         const libn_amount_t balance) {
+    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     libn_amount_format_heap_t *h = &ram_b.libn_amount_format_heap_D;
     os_memset(h->buf, 0, sizeof(h->buf));
     os_memmove(h->num, balance, sizeof(h->num));
+    h->unitLen = strnlen(coin->defaultUnit, sizeof(coin->defaultUnit));
 
     size_t end = sizeof(h->buf);
-    end -= 1; // len('\0')
-    end -= 5; // len(" Nano")
+    end -= 1; // '\0' NULL terminator
+    end -= 1 + h->unitLen; // len(" " + defaultUnit)
     size_t start = end;
 
     // Convert the balance into a string by dividing by 10 until
@@ -319,7 +321,7 @@ void libn_amount_format(char *dest, size_t destLen,
              h->num[12] || h->num[13] || h->num[14] || h->num[15]);
 
     // Assign the location for the decimal point
-    size_t point = end - 1 - 30;
+    size_t point = end - 1 - coin->defaultUnitScale;
     // Make sure that the number is zero padded until the point location
     while (start > point) {
         h->buf[--start] = '0';
@@ -342,10 +344,8 @@ void libn_amount_format(char *dest, size_t destLen,
 
     // Append the unit
     h->buf[end++] = ' ';
-    h->buf[end++] = 'N';
-    h->buf[end++] = 'a';
-    h->buf[end++] = 'n';
-    h->buf[end++] = 'o';
+    os_memmove(h->buf + end, coin->defaultUnit, h->unitLen);
+    end += h->unitLen;
     h->buf[end] = '\0';
 
     // Copy the result to the destination buffer
