@@ -23,8 +23,39 @@ ifeq (customCA.key,$(wildcard customCA.key))
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
-APPNAME="Nano"
-APP_LOAD_PARAMS=--appFlags 0x50 --path "44'/165'" --curve ed25519 $(COMMON_LOAD_PARAMS)
+LIB_LOAD_FLAGS = --appFlags 0x850
+APP_LOAD_FLAGS = --appFlags 0x50 --dep Nano
+APP_LOAD_PARAMS = --path "44'/165'" --curve ed25519 $(COMMON_LOAD_PARAMS)
+ALL_PATH_PARAMS =
+
+# Nano coin config
+NANO_APP_NAME = "Nano"
+NANO_PATH_PARAM = --path "44'/165'"
+NANO_COIN_TYPE = LIBN_COIN_TYPE_NANO
+ALL_PATH_PARAMS += $(NANO_PATH_PARAM)
+
+# Banano coin config
+BANANO_APP_NAME = "Banano"
+BANANO_PATH_PARAM = --path "44'/198'"
+BANANO_COIN_TYPE = LIBN_COIN_TYPE_BANANO
+ALL_PATH_PARAMS += $(BANANO_PATH_PARAM)
+
+DEFINES += SHARED_LIBRARY_NAME=\"$(NANO_APP_NAME)\"
+
+ifeq ($(COIN),nano)
+APPNAME = $(NANO_APP_NAME)
+APP_LOAD_PARAMS += $(LIB_LOAD_FLAGS) $(ALL_PATH_PARAMS)
+DEFINES += IS_SHARED_LIBRARY
+DEFINES += DEFAULT_COIN_TYPE=$(NANO_COIN_TYPE)
+
+else ifeq ($(COIN),banano)
+APPNAME = $(BANANO_APP_NAME)
+APP_LOAD_PARAMS += $(APP_LOAD_FLAGS) $(BANANO_PATH_PARAM)
+DEFINES += DEFAULT_COIN_TYPE=$(BANANO_COIN_TYPE)
+
+else ifeq ($(filter clean,$(MAKECMDGOALS)),)
+$(error Unsupported COIN - use nano, banano)
+endif
 
 APPVERSION_M=1
 APPVERSION_N=0
@@ -35,9 +66,9 @@ MAX_ADPU_INPUT_SIZE=217
 MAX_ADPU_OUTPUT_SIZE=98
 
 ifeq ($(TARGET_NAME),TARGET_BLUE)
-ICONNAME=blue_icon.gif
+ICONNAME=blue_icon_$(COIN).gif
 else
-ICONNAME=nanos_icon.gif
+ICONNAME=nanos_icon_$(COIN).gif
 endif
 
 ################

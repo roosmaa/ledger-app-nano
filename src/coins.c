@@ -12,4 +12,14 @@ REGISTER_COINS(
         /* defaultUnit */ "NANO",
         /* defaultUnitScale */ 30, // 1 Mnano = 10^30 raw
     })
+    COIN(LIBN_COIN_TYPE_BANANO, {
+        /* coinName */ "Banano",
+        /* coinBadge */ &C_nanos_badge_banano,
+        /* bip32Prefix */ { HARDENED(44), HARDENED(198) },
+        /* addressPrimaryPrefix */ "ban_",
+        /* addressSecondaryPrefix */ "ban_",
+        /* addressDefaultPrefix */ LIBN_PRIMARY_PREFIX,
+        /* defaultUnit */ "BANANO",
+        /* defaultUnitScale */ 30, // 1 Mnano = 10^30 raw
+    })
 )

@@ -20,11 +20,23 @@
 #include "libn_internal.h"
 #include "coins.h"
 
-__attribute__((section(".boot"))) int main(void) {
-    init_coin_config(LIBN_COIN_TYPE_NANO);
+#ifdef IS_SHARED_LIBRARY
+
+__attribute__((section(".boot"))) int main(int arg0) {
+    const uint32_t *libcall_args = (uint32_t *)arg0;
 
     // exit critical section
     __asm volatile("cpsie i");
+
+    if (libcall_args) {
+        if (libcall_args[0] != 0x100) {
+            os_lib_throw(INVALID_PARAMETER);
+        }
+        // grab the coin type from the first parameter
+        init_coin_config((libn_coin_type_t)libcall_args[1]);
+    } else {
+        init_coin_config(DEFAULT_COIN_TYPE);
+    }
 
     // ensure exception will work as planned
     os_boot();
@@ -51,3 +63,29 @@ __attribute__((section(".boot"))) int main(void) {
     app_exit();
     return 0;
 }
+
+#else // IS_SHARED_LIBRARY
+
+__attribute__((section(".boot"))) int main(void) {
+    // in RAM allocation (on stack), to allow simple simple traversal into the
+    // bitcoin app (separate NVRAM zone)
+    uint32_t libcall_params[3];
+    BEGIN_TRY {
+        TRY {
+            // ensure syscall will accept us
+            check_api_level(CX_COMPAT_APILEVEL);
+            // delegate to Nano app/lib
+            libcall_params[0] = SHARED_LIBRARY_NAME;
+            libcall_params[1] = 0x100; // use the Init call, as we won't exit
+            libcall_params[2] = DEFAULT_COIN_TYPE;
+            os_lib_call(&libcall_params);
+        }
+        FINALLY {
+            app_exit();
+        }
+    }
+    END_TRY;
+    return 0;
+}
+
+#endif // IS_SHARED_LIBRARY
