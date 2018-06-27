@@ -34,9 +34,6 @@ void libn_write_u32_le(uint8_t *buffer, uint32_t value);
 
 void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLen);
 
-bool libn_read_account_string(uint8_t *buffer, size_t size,
-                              libn_address_prefix_t *outPrefix,
-                              libn_public_key_t outKey);
 size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
                                  const libn_public_key_t publicKey);
 
