@@ -2,7 +2,7 @@
 #include "ed25519-hash-custom.h"
 #include "ed25519-randombytes-custom.h"
 #include "blake2b.h"
-#include "nano_ram_variables.h"
+#include "libn_ram_variables.h"
 
 void ed25519_randombytes_unsafe(void *out, size_t outlen) {
     cx_rng(out, outlen);

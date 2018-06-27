@@ -15,15 +15,15 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_CONTEXT_H
+#ifndef LIBN_CONTEXT_H
 
-#define NANO_CONTEXT_H
+#define LIBN_CONTEXT_H
 
 #include "os.h"
-#include "nano_types.h"
-#include "nano_secure_value.h"
-#include "nano_apdu_get_address.h"
-#include "nano_apdu_sign_block.h"
+#include "libn_types.h"
+#include "libn_secure_value.h"
+#include "libn_apdu_get_address.h"
+#include "libn_apdu_sign_block.h"
 
 typedef struct {
     /** Flag if dongle has been halted */
@@ -33,22 +33,22 @@ typedef struct {
     uint16_t inLength;
 
     /** Primary response for synchronous APDUs **/
-    nano_apdu_response_t response;
+    libn_apdu_response_t response;
 
     /** Cached block for determining the deltas for the child block **/
-    nano_cached_block_data_t cachedBlock;
+    libn_cached_block_data_t cachedBlock;
 
     /** State determines the application state (UX displayed, etc).
         This is also used to enforce only single confirmation
         prompt. **/
-    nano_state_t state;
+    libn_state_t state;
     union {
-        // when NANO_STATE_READY
-        nano_apdu_response_t asyncResponse;
-        // when NANO_STATE_CONFIRM_ADDRESS
-        nano_apdu_get_address_request_t getAddressRequest;
-        // when NANO_STATE_CONFIRM_SIGNATURE
-        nano_apdu_sign_block_request_t signBlockRequest;
+        // when LIBN_STATE_READY
+        libn_apdu_response_t asyncResponse;
+        // when LIBN_STATE_CONFIRM_ADDRESS
+        libn_apdu_get_address_request_t getAddressRequest;
+        // when LIBN_STATE_CONFIRM_SIGNATURE
+        libn_apdu_sign_block_request_t signBlockRequest;
     } stateData;
 
 #ifdef HAVE_IO_U2F
@@ -60,9 +60,9 @@ typedef struct {
     uint16_t u2fTimeout;
 #endif // HAVE_IO_U2F
 
-} nano_context_t;
+} libn_context_t;
 
-void nano_context_init(void);
-void nano_context_move_async_response(void);
+void libn_context_init(void);
+void libn_context_move_async_response(void);
 
 #endif

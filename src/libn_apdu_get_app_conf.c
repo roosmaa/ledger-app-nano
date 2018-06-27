@@ -15,39 +15,39 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
-#include "nano_apdu_get_app_conf.h"
-#include "nano_apdu_constants.h"
+#include "libn_internal.h"
+#include "libn_apdu_get_app_conf.h"
+#include "libn_apdu_constants.h"
 
 #define P1_UNUSED 0x00
 
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_get_app_conf_output(nano_apdu_response_t *resp);
+uint16_t libn_apdu_get_app_conf_output(libn_apdu_response_t *resp);
 
-uint16_t nano_apdu_get_app_conf(nano_apdu_response_t *resp) {
+uint16_t libn_apdu_get_app_conf(libn_apdu_response_t *resp) {
     switch (G_io_apdu_buffer[ISO_OFFSET_P1]) {
     case P1_UNUSED:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P2]) {
     case P2_UNUSED:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     if (G_io_apdu_buffer[ISO_OFFSET_LC] > 0x00) {
-        return NANO_SW_INCORRECT_LENGTH;
+        return LIBN_SW_INCORRECT_LENGTH;
     }
 
-    return nano_apdu_get_app_conf_output(resp);
+    return libn_apdu_get_app_conf_output(resp);
 }
 
-uint16_t nano_apdu_get_app_conf_output(nano_apdu_response_t *resp) {
+uint16_t libn_apdu_get_app_conf_output(libn_apdu_response_t *resp) {
     uint8_t *outPtr = resp->buffer;
 
     // Output raw public key
@@ -60,5 +60,5 @@ uint16_t nano_apdu_get_app_conf_output(nano_apdu_response_t *resp) {
 
     resp->outLength = outPtr - resp->buffer;
 
-    return NANO_SW_OK;
+    return LIBN_SW_OK;
 }

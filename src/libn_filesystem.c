@@ -15,24 +15,11 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
+#include "libn_internal.h"
 
-void sbSet(secu8 *target, uint8_t source) {
-    *target = (((uint16_t)~source) << 8) + source;
-}
+#include "libn_ram_variables.h"
 
-void sbCheck(secu8 source) {
-    if (((source >> 8) & 0xff) != (uint8_t)(~(source & 0xff))) {
-        reset();
-    }
-}
-
-void ssSet(secu16 *target, uint16_t source) {
-    *target = (((uint32_t)~source) << 16) + source;
-}
-
-void ssCheck(secu16 source) {
-    if (((source >> 16) & 0xffff) != (uint16_t)(~(source & 0xffff))) {
-        reset();
-    }
+void libn_set_auto_receive(bool enabled) {
+    nvm_write((void *)&N_nano.autoReceive, &enabled,
+              sizeof(enabled));
 }

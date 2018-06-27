@@ -15,16 +15,22 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_INTERNAL_H
-#define NANO_INTERNAL_H
+#ifndef LIBN_H
 
-#include "nano.h"
-#include "nano_types.h"
-#include "nano_context.h"
-#include "nano_heaps.h"
-#include "nano_ram_variables.h"
-#include "nano_rom_variables.h"
-#include "nano_filesystem.h"
-#include "nano_helpers.h"
+#define LIBN_H
+
+#include "os.h"
+
+#define L_DEBUG_APP(x)
+#define L_DEBUG_NOPREFIX(x)
+#define L_DEBUG_BUF(x)
+
+#define SW_TECHNICAL_DETAILS(x) LIBN_SW_TECHNICAL_PROBLEM
+
+#include "libn_secure_value.h"
+#include "libn_types.h"
+
+void app_async_response(libn_apdu_response_t *resp, uint16_t statusWord);
+bool app_apply_state(void);
 
 #endif

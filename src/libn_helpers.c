@@ -15,12 +15,12 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
-#include "nano_apdu_constants.h"
+#include "libn_internal.h"
+#include "libn_apdu_constants.h"
 #include "ed25519.h"
 #include "blake2b.h"
 
-#define NANO_CURVE CX_CURVE_Ed25519
+#define LIBN_CURVE CX_CURVE_Ed25519
 
 // Define some binary "literals" for the massive bit manipulation operation
 // when converting public key to account string.
@@ -30,7 +30,7 @@
 #define B_00011  3
 #define B_00001  1
 
-bool nano_is_zero(const uint8_t *ptr, size_t num) {
+bool libn_is_zero(const uint8_t *ptr, size_t num) {
     while (num > 0) {
         num -= 1;
         if (ptr[num] != 0) {
@@ -40,7 +40,7 @@ bool nano_is_zero(const uint8_t *ptr, size_t num) {
     return true;
 }
 
-uint32_t nano_read_u32(uint8_t *buffer, bool be,
+uint32_t libn_read_u32(uint8_t *buffer, bool be,
                        bool skipSign) {
     uint8_t i;
     uint32_t result = 0;
@@ -60,21 +60,21 @@ uint32_t nano_read_u32(uint8_t *buffer, bool be,
     return result;
 }
 
-void nano_write_u32_be(uint8_t *buffer, uint32_t value) {
+void libn_write_u32_be(uint8_t *buffer, uint32_t value) {
     buffer[0] = ((value >> 24) & 0xff);
     buffer[1] = ((value >> 16) & 0xff);
     buffer[2] = ((value >> 8) & 0xff);
     buffer[3] = (value & 0xff);
 }
 
-void nano_write_u32_le(uint8_t *buffer, uint32_t value) {
+void libn_write_u32_le(uint8_t *buffer, uint32_t value) {
     buffer[0] = (value & 0xff);
     buffer[1] = ((value >> 8) & 0xff);
     buffer[2] = ((value >> 16) & 0xff);
     buffer[3] = ((value >> 24) & 0xff);
 }
 
-void nano_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLen) {
+void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLen) {
     uint32_t i;
     for (i = 0; i < bytesLen; i++) {
         buffer[2*i] = BASE16_ALPHABET[(bytes[i] >> 4) & 0xF];
@@ -82,9 +82,9 @@ void nano_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLe
     }
 }
 
-bool nano_read_account_string(uint8_t *buffer, size_t size,
-                              nano_address_prefix_t *outPrefix,
-                              nano_public_key_t outKey) {
+bool libn_read_account_string(uint8_t *buffer, size_t size,
+                              libn_address_prefix_t *outPrefix,
+                              libn_public_key_t outKey) {
     uint8_t k, i, c;
     uint8_t checkInp[5];
     uint8_t check[5];
@@ -95,36 +95,36 @@ bool nano_read_account_string(uint8_t *buffer, size_t size,
         (buffer[2] == 'n' || buffer[2] == 'N') &&
         (buffer[3] == 'o' || buffer[3] == 'O') &&
         (buffer[4] == '-' || buffer[4] == '_')) {
-        if (size != NANO_ACCOUNT_STRING_BASE_LEN + NANO_NANO_PREFIX_LEN) {
+        if (size != LIBN_ACCOUNT_STRING_BASE_LEN + LIBN_NANO_PREFIX_LEN) {
             return false;
         }
         size -= 5;
         buffer += 5;
-        *outPrefix = NANO_NANO_PREFIX;
+        *outPrefix = LIBN_NANO_PREFIX;
     } else if ((buffer[0] == 'x' || buffer[0] == 'X') &&
                (buffer[1] == 'r' || buffer[1] == 'R') &&
                (buffer[2] == 'b' || buffer[2] == 'B') &&
                (buffer[3] == '-' || buffer[3] == '_')) {
-        if (size != NANO_ACCOUNT_STRING_BASE_LEN + NANO_XRB_PREFIX_LEN) {
+        if (size != LIBN_ACCOUNT_STRING_BASE_LEN + LIBN_XRB_PREFIX_LEN) {
             return false;
         }
         size -= 4;
         buffer += 4;
-        *outPrefix = NANO_XRB_PREFIX;
+        *outPrefix = LIBN_XRB_PREFIX;
     } else {
         return false;
     }
 
     os_memset(checkInp, 0, sizeof(checkInp));
     os_memset(check, 0, sizeof(check));
-    os_memset(outKey, 0, sizeof(nano_public_key_t));
+    os_memset(outKey, 0, sizeof(libn_public_key_t));
 
     // Helper macro to create a virtual array of checkInp and outKey variables
     #define accPipeByte(x, v) \
         if ((x) < sizeof(checkInp)) { \
             checkInp[(x)] |= (v);\
-        } else if ((x) - sizeof(checkInp) < sizeof(nano_public_key_t)) { \
-            outKey[sizeof(nano_public_key_t) - 1 - ((x) - sizeof(checkInp))] |= (v);\
+        } else if ((x) - sizeof(checkInp) < sizeof(libn_public_key_t)) { \
+            outKey[sizeof(libn_public_key_t) - 1 - ((x) - sizeof(checkInp))] |= (v);\
         }
     for (k = 0; k < size; k++) {
         i = (k / 8) * 5;
@@ -172,7 +172,7 @@ bool nano_read_account_string(uint8_t *buffer, size_t size,
     // Verify the checksum of the address
     blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_init(hash, sizeof(check), NULL, 0);
-    blake2b_update(hash, outKey, sizeof(nano_public_key_t));
+    blake2b_update(hash, outKey, sizeof(libn_public_key_t));
     blake2b_final(hash, check);
 
     for (i = 0; i < sizeof(check); i++) {
@@ -184,41 +184,41 @@ bool nano_read_account_string(uint8_t *buffer, size_t size,
     return true;
 }
 
-void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
-                               const nano_public_key_t publicKey) {
+void libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
+                               const libn_public_key_t publicKey) {
     uint8_t k, i, c;
     uint8_t check[5];
 
     blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
     blake2b_init(hash, sizeof(check), NULL, 0);
-    blake2b_update(hash, publicKey, sizeof(nano_public_key_t));
+    blake2b_update(hash, publicKey, sizeof(libn_public_key_t));
     blake2b_final(hash, check);
 
     switch (prefix) {
-    case NANO_NANO_PREFIX:
+    case LIBN_NANO_PREFIX:
         buffer[0] = 'n';
         buffer[1] = 'a';
         buffer[2] = 'n';
         buffer[3] = 'o';
         buffer[4] = '_';
-        buffer += NANO_NANO_PREFIX_LEN;
+        buffer += LIBN_NANO_PREFIX_LEN;
         break;
-    case NANO_XRB_PREFIX:
+    case LIBN_XRB_PREFIX:
         buffer[0] = 'x';
         buffer[1] = 'r';
         buffer[2] = 'b';
         buffer[3] = '_';
-        buffer += NANO_XRB_PREFIX_LEN;
+        buffer += LIBN_XRB_PREFIX_LEN;
         break;
     }
 
     // Helper macro to create a virtual array of check and publicKey variables
     #define accGetByte(x) (uint8_t)( \
         ((x) < sizeof(check)) ? check[(x)] : \
-        ((x) - sizeof(check) < sizeof(nano_public_key_t)) ? publicKey[sizeof(nano_public_key_t) - 1 - ((x) - sizeof(check))] : \
+        ((x) - sizeof(check) < sizeof(libn_public_key_t)) ? publicKey[sizeof(libn_public_key_t) - 1 - ((x) - sizeof(check))] : \
         0 \
     )
-    for (k = 0; k < NANO_ACCOUNT_STRING_BASE_LEN; k++) {
+    for (k = 0; k < LIBN_ACCOUNT_STRING_BASE_LEN; k++) {
         i = (k / 8) * 5;
         c = 0;
         switch (k % 8) {
@@ -251,14 +251,14 @@ void nano_write_account_string(uint8_t *buffer, nano_address_prefix_t prefix,
             c = (accGetByte(i + 4) >> 3) & B_11111;
             break;
         }
-        buffer[NANO_ACCOUNT_STRING_BASE_LEN-1-k] = BASE32_ALPHABET[c];
+        buffer[LIBN_ACCOUNT_STRING_BASE_LEN-1-k] = BASE32_ALPHABET[c];
     }
     #undef accGetByte
 }
 
-int8_t nano_amount_cmp(const nano_amount_t a, const nano_amount_t b) {
+int8_t libn_amount_cmp(const libn_amount_t a, const libn_amount_t b) {
     size_t i;
-    for (i = 0; i < sizeof(nano_amount_t); i++) {
+    for (i = 0; i < sizeof(libn_amount_t); i++) {
         if (a[i] != b[i]) {
             return a[i] > b[i] ? 1 : -1;
         }
@@ -266,10 +266,10 @@ int8_t nano_amount_cmp(const nano_amount_t a, const nano_amount_t b) {
     return 0;
 }
 
-void nano_amount_subtract(nano_amount_t value, const nano_amount_t other) {
+void libn_amount_subtract(libn_amount_t value, const libn_amount_t other) {
     uint8_t mask = -1;
     uint8_t borrow = 0;
-    size_t i = sizeof(nano_amount_t);
+    size_t i = sizeof(libn_amount_t);
 
     while (i > 0) {
         i -= 1;
@@ -279,9 +279,9 @@ void nano_amount_subtract(nano_amount_t value, const nano_amount_t other) {
     }
 }
 
-void nano_amount_format(char *dest, size_t destLen,
-                        const nano_amount_t balance) {
-    nano_amount_format_heap_t *h = &ram_b.nano_amount_format_heap_D;
+void libn_amount_format(char *dest, size_t destLen,
+                        const libn_amount_t balance) {
+    libn_amount_format_heap_t *h = &ram_b.libn_amount_format_heap_D;
     os_memset(h->buf, 0, sizeof(h->buf));
     os_memmove(h->num, balance, sizeof(h->num));
 
@@ -353,14 +353,14 @@ void nano_amount_format(char *dest, size_t destLen,
     dest[destLen - 1] = '\0';
 }
 
-void nano_derive_keypair(uint8_t *bip32Path,
-                         nano_private_key_t out_privateKey,
-                         nano_public_key_t out_publicKey) {
+void libn_derive_keypair(uint8_t *bip32Path,
+                         libn_private_key_t out_privateKey,
+                         libn_public_key_t out_publicKey) {
     // NB! Explicit scope to limit usage of `h` as it becomes invalid
     //     once the ed25519 function is called. The memory will be
     //     reused for blake2b hashing.
     {
-        nano_derive_keypair_heap_t *h = &ram_b.nano_derive_keypair_heap_D;
+        libn_derive_keypair_heap_t *h = &ram_b.libn_derive_keypair_heap_D;
         uint8_t bip32PathLength;
         uint8_t i;
 
@@ -370,10 +370,10 @@ void nano_derive_keypair(uint8_t *bip32Path,
         }
         bip32Path++;
         for (i = 0; i < bip32PathLength; i++) {
-            h->bip32PathInt[i] = nano_read_u32(bip32Path, 1, 0);
+            h->bip32PathInt[i] = libn_read_u32(bip32Path, 1, 0);
             bip32Path += 4;
         }
-        os_perso_derive_node_bip32(NANO_CURVE, h->bip32PathInt, bip32PathLength,
+        os_perso_derive_node_bip32(LIBN_CURVE, h->bip32PathInt, bip32PathLength,
                                    out_privateKey, h->chainCode);
         os_memset(h->chainCode, 0, sizeof(h->chainCode));
     }
@@ -383,7 +383,7 @@ void nano_derive_keypair(uint8_t *bip32Path,
     }
 }
 
-uint32_t nano_simple_hash(uint8_t *data, size_t dataLen) {
+uint32_t libn_simple_hash(uint8_t *data, size_t dataLen) {
     uint32_t result = 5;
     for (size_t i = 0; i < dataLen; i++) {
         result = 29 * result + data[i];
@@ -391,14 +391,14 @@ uint32_t nano_simple_hash(uint8_t *data, size_t dataLen) {
     return result;
 }
 
-void nano_hash_block(nano_hash_t blockHash,
-                     const nano_block_data_t *blockData,
-                     const nano_public_key_t publicKey) {
+void libn_hash_block(libn_hash_t blockHash,
+                     const libn_block_data_t *blockData,
+                     const libn_public_key_t publicKey) {
     blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
-    blake2b_init(hash, sizeof(nano_hash_t), NULL, 0);
+    blake2b_init(hash, sizeof(libn_hash_t), NULL, 0);
 
     blake2b_update(hash, BLOCK_HASH_PREAMBLE, sizeof(BLOCK_HASH_PREAMBLE));
-    blake2b_update(hash, publicKey, sizeof(nano_public_key_t));
+    blake2b_update(hash, publicKey, sizeof(libn_public_key_t));
     blake2b_update(hash, blockData->parent, sizeof(blockData->parent));
     blake2b_update(hash, blockData->representative,
         sizeof(blockData->representative));
@@ -408,37 +408,37 @@ void nano_hash_block(nano_hash_t blockHash,
     blake2b_final(hash, blockHash);
 }
 
-void nano_sign_hash(nano_signature_t signature,
-                    const nano_hash_t hash,
-                    const nano_private_key_t privateKey,
-                    const nano_public_key_t publicKey) {
+void libn_sign_hash(libn_signature_t signature,
+                    const libn_hash_t hash,
+                    const libn_private_key_t privateKey,
+                    const libn_public_key_t publicKey) {
     ed25519_sign(
-        hash, sizeof(nano_hash_t),
+        hash, sizeof(libn_hash_t),
         privateKey, publicKey,
         signature);
 }
 
-bool nano_verify_hash_signature(const nano_hash_t hash,
-                                const nano_public_key_t publicKey,
-                                const nano_signature_t signature) {
+bool libn_verify_hash_signature(const libn_hash_t hash,
+                                const libn_public_key_t publicKey,
+                                const libn_signature_t signature) {
     return ed25519_sign_open(
-        hash, sizeof(nano_hash_t),
+        hash, sizeof(libn_hash_t),
         publicKey, signature) == 0;
 }
 
-void nano_sign_nonce(nano_signature_t signature,
-                     const nano_nonce_t nonce,
-                     const nano_private_key_t privateKey,
-                     const nano_public_key_t publicKey) {
-    uint8_t msg[sizeof(NONCE_PREAMBLE) + 2 * sizeof(nano_nonce_t)];
+void libn_sign_nonce(libn_signature_t signature,
+                     const libn_nonce_t nonce,
+                     const libn_private_key_t privateKey,
+                     const libn_public_key_t publicKey) {
+    uint8_t msg[sizeof(NONCE_PREAMBLE) + 2 * sizeof(libn_nonce_t)];
 
     // Construct the message to contain the preamble with the hex-encoded
     // nonce (eg. "Nano Signed Nonce:\n96DFEF63B836C9B1DD57CFF76F6DF3D0")
     uint8_t *ptr = msg;
     os_memmove(ptr, NONCE_PREAMBLE, sizeof(NONCE_PREAMBLE));
     ptr += sizeof(NONCE_PREAMBLE);
-    nano_write_hex_string(ptr, nonce, sizeof(nano_nonce_t));
-    ptr += 2 * sizeof(nano_nonce_t);
+    libn_write_hex_string(ptr, nonce, sizeof(libn_nonce_t));
+    ptr += 2 * sizeof(libn_nonce_t);
 
     ed25519_sign(
         msg, sizeof(msg),

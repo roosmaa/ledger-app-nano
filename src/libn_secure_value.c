@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
-*   (c) 2018 Mart Roosmaa
+*   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,20 +15,24 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_APDU_CACHE_BLOCK_H
+#include "libn_internal.h"
 
-#define NANO_APDU_CACHE_BLOCK_H
+void sbSet(secu8 *target, uint8_t source) {
+    *target = (((uint16_t)~source) << 8) + source;
+}
 
-#include "nano_types.h"
-#include "nano_helpers.h"
+void sbCheck(secu8 source) {
+    if (((source >> 8) & 0xff) != (uint8_t)(~(source & 0xff))) {
+        reset();
+    }
+}
 
-typedef struct {
-    nano_public_key_t publicKey;
-    nano_block_data_t block;
-    nano_hash_t blockHash;
-    nano_signature_t signature;
-} nano_apdu_cache_block_request_t;
+void ssSet(secu16 *target, uint16_t source) {
+    *target = (((uint32_t)~source) << 16) + source;
+}
 
-uint16_t nano_apdu_cache_block(nano_apdu_response_t *resp);
-
-#endif // NANO_APDU_CACHE_BLOCK_H
+void ssCheck(secu16 source) {
+    if (((source >> 16) & 0xffff) != (uint16_t)(~(source & 0xffff))) {
+        reset();
+    }
+}

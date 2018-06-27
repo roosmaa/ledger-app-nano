@@ -15,12 +15,19 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_APDU_GET_APP_CONF_H
+#ifndef LIBN_BAGL_H
 
-#define NANO_APDU_GET_APP_CONF_H
+#define LIBN_BAGL_H
 
-#include "nano_types.h"
+#include "libn_app.h"
 
-uint16_t nano_apdu_get_app_conf(nano_apdu_response_t *resp);
+#define LIBN_BAGL_COLOR_APP 0xFCB653
 
-#endif // NANO_APDU_GET_APP_CONF_H
+void libn_bagl_display_address_callback(bool confirmed);
+void libn_bagl_confirm_sign_block_callback(bool confirmed);
+
+/** Apply current global state to UX. Returns true if UX was updated,
+    false if the UX is already in the correct state and nothing was done. **/
+bool libn_bagl_apply_state();
+
+#endif // LIBN_BAGL_H

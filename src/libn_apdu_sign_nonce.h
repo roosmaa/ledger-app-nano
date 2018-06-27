@@ -15,16 +15,18 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_APDU_GET_ADDRESS_H
+#ifndef LIBN_APDU_SIGN_NONCE_H
 
-#define NANO_APDU_GET_ADDRESS_H
+#define LIBN_APDU_SIGN_NONCE_H
 
-#include "nano_types.h"
+#include "libn_types.h"
+#include "libn_helpers.h"
 
 typedef struct {
-    nano_public_key_t publicKey;
-} nano_apdu_get_address_request_t;
+    uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    libn_nonce_t nonce;
+} libn_apdu_sign_nonce_request_t;
 
-uint16_t nano_apdu_get_address(nano_apdu_response_t *resp);
+uint16_t libn_apdu_sign_nonce(libn_apdu_response_t *resp);
 
-#endif // NANO_APDU_GET_ADDRESS_H
+#endif // LIBN_APDU_SIGN_NONCE_H

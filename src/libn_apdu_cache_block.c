@@ -15,18 +15,18 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
-#include "nano_apdu_constants.h"
-#include "nano_apdu_cache_block.h"
-#include "nano_bagl.h"
+#include "libn_internal.h"
+#include "libn_apdu_constants.h"
+#include "libn_apdu_cache_block.h"
+#include "libn_bagl.h"
 
 #define P1_UNUSED 0x00
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_cache_block_output(nano_apdu_response_t *resp, nano_apdu_cache_block_request_t *req);
+uint16_t libn_apdu_cache_block_output(libn_apdu_response_t *resp, libn_apdu_cache_block_request_t *req);
 
-uint16_t nano_apdu_cache_block(nano_apdu_response_t *resp) {
-    nano_apdu_cache_block_heap_t *h = &ram_a.nano_apdu_cache_block_heap_D;
+uint16_t libn_apdu_cache_block(libn_apdu_response_t *resp) {
+    libn_apdu_cache_block_heap_t *h = &ram_a.libn_apdu_cache_block_heap_D;
     uint8_t *inPtr;
     uint8_t readLen;
 
@@ -34,19 +34,19 @@ uint16_t nano_apdu_cache_block(nano_apdu_response_t *resp) {
     case P1_UNUSED:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P2]) {
     case P2_UNUSED:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     // Verify the minimum size
     if (G_io_apdu_buffer[ISO_OFFSET_LC] < 177) {
-        return NANO_SW_INCORRECT_LENGTH;
+        return LIBN_SW_INCORRECT_LENGTH;
     }
 
     inPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
@@ -55,15 +55,15 @@ uint16_t nano_apdu_cache_block(nano_apdu_response_t *resp) {
     inPtr += readLen;
 
     if (!os_global_pin_is_validated()) {
-        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+        return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
     // Make sure that we're not about to interrupt another operation
-    if (nano_context_D.state != NANO_STATE_READY) {
-        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+    if (libn_context_D.state != LIBN_STATE_READY) {
+        return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
     // Derive public key for hashing
-    nano_derive_keypair(h->keyPath, h->privateKey, h->req.publicKey);
+    libn_derive_keypair(h->keyPath, h->privateKey, h->req.publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
     os_memset(&h->keyPath, 0, sizeof(h->keyPath));
 
@@ -91,30 +91,30 @@ uint16_t nano_apdu_cache_block(nano_apdu_response_t *resp) {
     os_memmove(h->req.signature, inPtr, readLen);
     inPtr += readLen;
 
-    nano_hash_block(h->req.blockHash, &h->req.block, h->req.publicKey);
+    libn_hash_block(h->req.blockHash, &h->req.block, h->req.publicKey);
 
-    uint16_t statusWord = nano_apdu_cache_block_output(resp, &h->req);
+    uint16_t statusWord = libn_apdu_cache_block_output(resp, &h->req);
     os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
     return statusWord;
 }
 
-uint16_t nano_apdu_cache_block_output(nano_apdu_response_t *resp, nano_apdu_cache_block_request_t *req) {
+uint16_t libn_apdu_cache_block_output(libn_apdu_response_t *resp, libn_apdu_cache_block_request_t *req) {
     // TODO: Enable signature verification once Ledger SDK primitives can be used
-    // bool isValidSignature = nano_verify_hash_signature(
+    // bool isValidSignature = libn_verify_hash_signature(
     //     req->blockHash, req->publicKey, req->signature);
     //
     // if (!isValidSignature) {
-    //     return NANO_SW_INVALID_SIGNATURE;
+    //     return LIBN_SW_INVALID_SIGNATURE;
     // }
 
     // Copy the data over to the cache
-    os_memset(&nano_context_D.cachedBlock, 0, sizeof(nano_context_D.cachedBlock));
-    os_memmove(nano_context_D.cachedBlock.representative, req->block.representative,
-        sizeof(nano_context_D.cachedBlock.representative));
-    os_memmove(nano_context_D.cachedBlock.balance, req->block.balance,
-        sizeof(nano_context_D.cachedBlock.balance));
-    os_memmove(nano_context_D.cachedBlock.hash, req->blockHash,
-        sizeof(nano_context_D.cachedBlock.hash));
+    os_memset(&libn_context_D.cachedBlock, 0, sizeof(libn_context_D.cachedBlock));
+    os_memmove(libn_context_D.cachedBlock.representative, req->block.representative,
+        sizeof(libn_context_D.cachedBlock.representative));
+    os_memmove(libn_context_D.cachedBlock.balance, req->block.balance,
+        sizeof(libn_context_D.cachedBlock.balance));
+    os_memmove(libn_context_D.cachedBlock.hash, req->blockHash,
+        sizeof(libn_context_D.cachedBlock.hash));
 
-    return NANO_SW_OK;
+    return LIBN_SW_OK;
 }

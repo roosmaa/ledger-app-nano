@@ -15,21 +15,21 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
-#include "nano_apdu_constants.h"
-#include "nano_apdu_sign_block.h"
-#include "nano_bagl.h"
+#include "libn_internal.h"
+#include "libn_apdu_constants.h"
+#include "libn_apdu_sign_block.h"
+#include "libn_bagl.h"
 
 #define P1_UNUSED 0x00
 
 #define P2_RECIPIENT_XRB_FLAG 0x01
 #define P2_REPRESENTATIVE_XRB_FLAG 0x02
 
-uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request_t *req);
+uint16_t libn_apdu_sign_block_output(libn_apdu_response_t *resp, libn_apdu_sign_block_request_t *req);
 
-uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
-    nano_apdu_sign_block_request_t *req = &ram_a.nano_apdu_sign_block_heap_D.req;
-    nano_apdu_sign_block_heap_input_t *h = &ram_a.nano_apdu_sign_block_heap_D.io.input;
+uint16_t libn_apdu_sign_block(libn_apdu_response_t *resp) {
+    libn_apdu_sign_block_request_t *req = &ram_a.libn_apdu_sign_block_heap_D.req;
+    libn_apdu_sign_block_heap_input_t *h = &ram_a.libn_apdu_sign_block_heap_D.io.input;
     uint8_t *inPtr;
     uint8_t readLen;
     bool representativeChanged;
@@ -39,12 +39,12 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     case P1_UNUSED:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     // Verify the minimum size
     if (G_io_apdu_buffer[ISO_OFFSET_LC] < 113) {
-        return NANO_SW_INCORRECT_LENGTH;
+        return LIBN_SW_INCORRECT_LENGTH;
     }
 
     inPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
@@ -53,27 +53,27 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     inPtr += readLen;
 
     if (!os_global_pin_is_validated()) {
-        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+        return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
     // Make sure that we're not about to interrupt another operation
-    if (nano_context_D.state != NANO_STATE_READY) {
-        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+    if (libn_context_D.state != LIBN_STATE_READY) {
+        return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
     // Store address display format preferences
     if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_RECIPIENT_XRB_FLAG) != 0) {
-        req->recipientPrefix = NANO_XRB_PREFIX;
+        req->recipientPrefix = LIBN_XRB_PREFIX;
     } else {
-        req->recipientPrefix = NANO_NANO_PREFIX;
+        req->recipientPrefix = LIBN_NANO_PREFIX;
     }
     if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_REPRESENTATIVE_XRB_FLAG) != 0) {
-        req->representativePrefix = NANO_XRB_PREFIX;
+        req->representativePrefix = LIBN_XRB_PREFIX;
     } else {
-        req->representativePrefix = NANO_NANO_PREFIX;
+        req->representativePrefix = LIBN_NANO_PREFIX;
     }
 
     // Derive public key for hashing
-    nano_derive_keypair(req->keyPath, h->privateKey, req->publicKey);
+    libn_derive_keypair(req->keyPath, h->privateKey, req->publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
 
     // Reset block state
@@ -96,10 +96,10 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     os_memmove(h->block.balance, inPtr, readLen);
     inPtr += readLen;
 
-    nano_hash_block(req->blockHash, &h->block, req->publicKey);
+    libn_hash_block(req->blockHash, &h->block, req->publicKey);
 
     // Determine changes that we've been requested to sign
-    bool isFirstBlock = nano_is_zero(h->block.parent, sizeof(h->block.parent));
+    bool isFirstBlock = libn_is_zero(h->block.parent, sizeof(h->block.parent));
     if (isFirstBlock) {
         representativeChanged = true;
         os_memmove(req->representative, h->block.representative,
@@ -111,14 +111,14 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
     } else {
         // Make sure that the parent block data is cached and available
         if (os_memcmp(h->block.parent,
-                      nano_context_D.cachedBlock.hash,
+                      libn_context_D.cachedBlock.hash,
                       sizeof(h->block.parent)) != 0) {
-            return NANO_SW_PARENT_BLOCK_CACHE_MISS;
+            return LIBN_SW_PARENT_BLOCK_CACHE_MISS;
         }
 
         representativeChanged = os_memcmp(
             h->block.representative,
-            nano_context_D.cachedBlock.representative,
+            libn_context_D.cachedBlock.representative,
             sizeof(h->block.representative)) != 0;
         if (representativeChanged) {
             os_memmove(req->representative, h->block.representative,
@@ -128,15 +128,15 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
                 sizeof(h->block.representative));
         }
 
-        balanceDecreased = nano_amount_cmp(
+        balanceDecreased = libn_amount_cmp(
             h->block.balance,
-            nano_context_D.cachedBlock.balance) < 0;
+            libn_context_D.cachedBlock.balance) < 0;
         if (balanceDecreased) {
-            os_memmove(req->amount, nano_context_D.cachedBlock.balance, sizeof(req->amount));
-            nano_amount_subtract(req->amount, h->block.balance);
+            os_memmove(req->amount, libn_context_D.cachedBlock.balance, sizeof(req->amount));
+            libn_amount_subtract(req->amount, h->block.balance);
         } else {
             os_memmove(req->amount, h->block.balance, sizeof(req->amount));
-            nano_amount_subtract(req->amount, nano_context_D.cachedBlock.balance);
+            libn_amount_subtract(req->amount, libn_context_D.cachedBlock.balance);
         }
     }
 
@@ -150,28 +150,28 @@ uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp) {
 
     // When auto receive is enabled, skip the prompt
     if (N_nano.autoReceive && !balanceDecreased && !representativeChanged) {
-        uint16_t statusWord = nano_apdu_sign_block_output(resp, req);
+        uint16_t statusWord = libn_apdu_sign_block_output(resp, req);
         os_memset(req, 0, sizeof(*req)); // sanitise request data
         return statusWord;
     } else {
         // Update app state to confirm the address
-        nano_context_D.state = NANO_STATE_CONFIRM_SIGNATURE;
-        os_memmove(&nano_context_D.stateData.signBlockRequest, req, sizeof(*req));
+        libn_context_D.state = LIBN_STATE_CONFIRM_SIGNATURE;
+        os_memmove(&libn_context_D.stateData.signBlockRequest, req, sizeof(*req));
         os_memset(req, 0, sizeof(*req)); // sanitise request data
         app_apply_state();
 
         resp->ioFlags |= IO_ASYNCH_REPLY;
-        return NANO_SW_OK;
+        return LIBN_SW_OK;
     }
 }
 
-uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_block_request_t *req) {
-    nano_apdu_sign_block_heap_output_t *h = &ram_a.nano_apdu_sign_block_heap_D.io.output;
+uint16_t libn_apdu_sign_block_output(libn_apdu_response_t *resp, libn_apdu_sign_block_request_t *req) {
+    libn_apdu_sign_block_heap_output_t *h = &ram_a.libn_apdu_sign_block_heap_D.io.output;
     uint8_t *outPtr = resp->buffer;
 
     // Derive key and sign the block
-    nano_derive_keypair(req->keyPath, h->privateKey, NULL);
-    nano_sign_hash(h->signature, req->blockHash, h->privateKey, req->publicKey);
+    libn_derive_keypair(req->keyPath, h->privateKey, NULL);
+    libn_sign_hash(h->signature, req->blockHash, h->privateKey, req->publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey));
 
     // Output block hash
@@ -184,22 +184,22 @@ uint16_t nano_apdu_sign_block_output(nano_apdu_response_t *resp, nano_apdu_sign_
 
     resp->outLength = outPtr - resp->buffer;
 
-    return NANO_SW_OK;
+    return LIBN_SW_OK;
 }
 
-void nano_bagl_confirm_sign_block_callback(bool confirmed) {
-    nano_apdu_sign_block_request_t *req = &nano_context_D.stateData.signBlockRequest;
+void libn_bagl_confirm_sign_block_callback(bool confirmed) {
+    libn_apdu_sign_block_request_t *req = &libn_context_D.stateData.signBlockRequest;
 
     uint16_t statusWord;
-    nano_apdu_response_t resp;
-    resp.buffer = nano_async_buffer_D;
+    libn_apdu_response_t resp;
+    resp.buffer = libn_async_buffer_D;
     resp.outLength = 0;
     resp.ioFlags = 0;
 
     if (confirmed) {
-        statusWord = nano_apdu_sign_block_output(&resp, req);
+        statusWord = libn_apdu_sign_block_output(&resp, req);
     } else {
-        statusWord = NANO_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
+        statusWord = LIBN_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
     }
     os_memset(req, 0, sizeof(req)); // sanitise request data
     app_async_response(&resp, statusWord);

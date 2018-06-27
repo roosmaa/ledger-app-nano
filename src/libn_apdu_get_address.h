@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
-*   (c) 2016 Ledger
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,24 +15,16 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_FS_H
+#ifndef LIBN_APDU_GET_ADDRESS_H
 
-#define NANO_FS_H
+#define LIBN_APDU_GET_ADDRESS_H
 
-#include <stdbool.h>
+#include "libn_types.h"
 
-#include "os.h"
-#include "nano_context.h"
+typedef struct {
+    libn_public_key_t publicKey;
+} libn_apdu_get_address_request_t;
 
-typedef struct nano_storage_s {
-    bool autoReceive;
-} nano_storage_t;
+uint16_t libn_apdu_get_address(libn_apdu_response_t *resp);
 
-// the global nvram memory variable
-extern nano_storage_t N_nano_real;
-
-#define N_nano (*(nano_storage_t *)PIC(&N_nano_real))
-
-void nano_set_auto_receive(bool enabled);
-
-#endif
+#endif // LIBN_APDU_GET_ADDRESS_H

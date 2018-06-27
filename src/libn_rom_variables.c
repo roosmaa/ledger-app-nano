@@ -15,44 +15,44 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
-#include "nano_apdu_constants.h"
-#include "nano_apdu_get_address.h"
-#include "nano_apdu_get_app_conf.h"
-#include "nano_apdu_cache_block.h"
-#include "nano_apdu_sign_block.h"
-#include "nano_apdu_sign_nonce.h"
+#include "libn_internal.h"
+#include "libn_apdu_constants.h"
+#include "libn_apdu_get_address.h"
+#include "libn_apdu_get_app_conf.h"
+#include "libn_apdu_cache_block.h"
+#include "libn_apdu_sign_block.h"
+#include "libn_apdu_sign_nonce.h"
 
 uint8_t const DISPATCHER_CLA[] = {
-    NANO_CLA, // nano_apdu_get_app_conf
-    NANO_CLA, // nano_apdu_get_address
-    NANO_CLA, // nano_apdu_cache_block
-    NANO_CLA, // nano_apdu_sign_block
-    NANO_CLA, // nano_apdu_sign_nonce
+    LIBN_CLA, // libn_apdu_get_app_conf
+    LIBN_CLA, // libn_apdu_get_address
+    LIBN_CLA, // libn_apdu_cache_block
+    LIBN_CLA, // libn_apdu_sign_block
+    LIBN_CLA, // libn_apdu_sign_nonce
 };
 
 uint8_t const DISPATCHER_INS[] = {
-    NANO_INS_GET_APP_CONF,   // nano_apdu_get_app_conf
-    NANO_INS_GET_ADDRESS,    // nano_apdu_get_address
-    NANO_INS_CACHE_BLOCK,    // nano_apdu_cache_block
-    NANO_INS_SIGN_BLOCK,     // nano_apdu_sign_block
-    NANO_INS_SIGN_NONCE,     // nano_apdu_sign_nonce
+    LIBN_INS_GET_APP_CONF,   // libn_apdu_get_app_conf
+    LIBN_INS_GET_ADDRESS,    // libn_apdu_get_address
+    LIBN_INS_CACHE_BLOCK,    // libn_apdu_cache_block
+    LIBN_INS_SIGN_BLOCK,     // libn_apdu_sign_block
+    LIBN_INS_SIGN_NONCE,     // libn_apdu_sign_nonce
 };
 
 bool const DISPATCHER_DATA_IN[] = {
-    false, // nano_apdu_get_app_conf
-    true,  // nano_apdu_get_address
-    true,  // nano_apdu_cache_block
-    true,  // nano_apdu_sign_block
-    true,  // nano_apdu_sign_nonce
+    false, // libn_apdu_get_app_conf
+    true,  // libn_apdu_get_address
+    true,  // libn_apdu_cache_block
+    true,  // libn_apdu_sign_block
+    true,  // libn_apdu_sign_nonce
 };
 
 apduProcessingFunction const DISPATCHER_FUNCTIONS[] = {
-    nano_apdu_get_app_conf,
-    nano_apdu_get_address,
-    nano_apdu_cache_block,
-    nano_apdu_sign_block,
-    nano_apdu_sign_nonce,
+    libn_apdu_get_app_conf,
+    libn_apdu_get_address,
+    libn_apdu_cache_block,
+    libn_apdu_sign_block,
+    libn_apdu_sign_nonce,
 };
 
 uint8_t const BASE16_ALPHABET[16] = {

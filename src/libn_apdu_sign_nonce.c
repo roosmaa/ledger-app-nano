@@ -15,17 +15,17 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
-#include "nano_apdu_constants.h"
-#include "nano_apdu_sign_nonce.h"
+#include "libn_internal.h"
+#include "libn_apdu_constants.h"
+#include "libn_apdu_sign_nonce.h"
 
 #define P1_UNUSED 0x00
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_sign_nonce_output(nano_apdu_response_t *resp, nano_apdu_sign_nonce_request_t *req);
+uint16_t libn_apdu_sign_nonce_output(libn_apdu_response_t *resp, libn_apdu_sign_nonce_request_t *req);
 
-uint16_t nano_apdu_sign_nonce(nano_apdu_response_t *resp) {
-    nano_apdu_sign_nonce_request_t *req = &ram_a.nano_apdu_sign_nonce_heap_D.req;
+uint16_t libn_apdu_sign_nonce(libn_apdu_response_t *resp) {
+    libn_apdu_sign_nonce_request_t *req = &ram_a.libn_apdu_sign_nonce_heap_D.req;
     uint8_t *inPtr;
     uint8_t readLen;
 
@@ -33,19 +33,19 @@ uint16_t nano_apdu_sign_nonce(nano_apdu_response_t *resp) {
     case P1_UNUSED:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P2]) {
     case P2_UNUSED:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     // Verify the minimum size
     if (G_io_apdu_buffer[ISO_OFFSET_LC] < 17) {
-        return NANO_SW_INCORRECT_LENGTH;
+        return LIBN_SW_INCORRECT_LENGTH;
     }
 
     inPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
@@ -54,25 +54,25 @@ uint16_t nano_apdu_sign_nonce(nano_apdu_response_t *resp) {
     inPtr += readLen;
 
     if (!os_global_pin_is_validated()) {
-        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+        return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
     readLen = sizeof(req->nonce);
     os_memmove(req->nonce, inPtr, readLen);
     inPtr += readLen;
 
-    uint16_t statusWord = nano_apdu_sign_nonce_output(resp, req);
+    uint16_t statusWord = libn_apdu_sign_nonce_output(resp, req);
     os_memset(req, 0, sizeof(*req)); // sanitise request data
     return statusWord;
 }
 
-uint16_t nano_apdu_sign_nonce_output(nano_apdu_response_t *resp, nano_apdu_sign_nonce_request_t *req) {
-    nano_apdu_sign_nonce_heap_output_t *h = &ram_a.nano_apdu_sign_nonce_heap_D.io.output;
+uint16_t libn_apdu_sign_nonce_output(libn_apdu_response_t *resp, libn_apdu_sign_nonce_request_t *req) {
+    libn_apdu_sign_nonce_heap_output_t *h = &ram_a.libn_apdu_sign_nonce_heap_D.io.output;
     uint8_t *outPtr = resp->buffer;
 
     // Derive key and sign the block
-    nano_derive_keypair(req->keyPath, h->privateKey, h->publicKey);
-    nano_sign_nonce(h->signature, req->nonce, h->privateKey, h->publicKey);
+    libn_derive_keypair(req->keyPath, h->privateKey, h->publicKey);
+    libn_sign_nonce(h->signature, req->nonce, h->privateKey, h->publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey));
 
     // Output signature
@@ -81,5 +81,5 @@ uint16_t nano_apdu_sign_nonce_output(nano_apdu_response_t *resp, nano_apdu_sign_
 
     resp->outLength = outPtr - resp->buffer;
 
-    return NANO_SW_OK;
+    return LIBN_SW_OK;
 }

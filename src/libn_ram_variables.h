@@ -16,26 +16,26 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_PUBLIC_RAM_VARIABLES_H
+#ifndef LIBN_PUBLIC_RAM_VARIABLES_H
 
-#define NANO_PUBLIC_RAM_VARIABLES_H
+#define LIBN_PUBLIC_RAM_VARIABLES_H
 
 #include "blake2b.h"
 
-#include "nano_context.h"
-#include "nano_heaps.h"
+#include "libn_context.h"
+#include "libn_heaps.h"
 
 /** Buffer used for asynchronous response data **/
-extern uint8_t nano_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
-extern nano_context_t nano_context_D;
+extern uint8_t libn_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
+extern libn_context_t libn_context_D;
 
 /* Different APDU heaps are mutually exclusive,
    so can be mapped to a shared memory space. */
 typedef union {
-    nano_apdu_get_address_heap_t nano_apdu_get_address_heap_D;
-    nano_apdu_cache_block_heap_t nano_apdu_cache_block_heap_D;
-    nano_apdu_sign_block_heap_t nano_apdu_sign_block_heap_D;
-    nano_apdu_sign_nonce_heap_t nano_apdu_sign_nonce_heap_D;
+    libn_apdu_get_address_heap_t libn_apdu_get_address_heap_D;
+    libn_apdu_cache_block_heap_t libn_apdu_cache_block_heap_D;
+    libn_apdu_sign_block_heap_t libn_apdu_sign_block_heap_D;
+    libn_apdu_sign_nonce_heap_t libn_apdu_sign_nonce_heap_D;
 } ram_a_t;
 extern ram_a_t ram_a;
 
@@ -43,9 +43,9 @@ extern ram_a_t ram_a;
    short while and never at the same time. */
 typedef union {
     blake2b_ctx blake2b_ctx_D;
-    nano_derive_keypair_heap_t nano_derive_keypair_heap_D;
-    nano_amount_format_heap_t nano_amount_format_heap_D;
+    libn_derive_keypair_heap_t libn_derive_keypair_heap_D;
+    libn_amount_format_heap_t libn_amount_format_heap_D;
 } ram_b_t;
 extern ram_b_t ram_b;
 
-#endif // NANO_PUBLIC_RAM_VARIABLES_H
+#endif // LIBN_PUBLIC_RAM_VARIABLES_H

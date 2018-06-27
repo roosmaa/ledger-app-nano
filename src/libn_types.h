@@ -15,9 +15,9 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_TYPES_H
+#ifndef LIBN_TYPES_H
 
-#define NANO_TYPES_H
+#define LIBN_TYPES_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -29,45 +29,45 @@ typedef struct {
     uint16_t outLength;
     /** Pointer to the output buffer for the response */
     uint8_t *buffer;
-} nano_apdu_response_t;
+} libn_apdu_response_t;
 
 typedef enum {
-    NANO_STATE_READY,
-    NANO_STATE_CONFIRM_ADDRESS,
-    NANO_STATE_CONFIRM_SIGNATURE,
-} nano_state_t;
+    LIBN_STATE_READY,
+    LIBN_STATE_CONFIRM_ADDRESS,
+    LIBN_STATE_CONFIRM_SIGNATURE,
+} libn_state_t;
 
-typedef uint8_t nano_private_key_t[32];
-typedef uint8_t nano_public_key_t[32];
-typedef uint8_t nano_hash_t[32];
-typedef uint8_t nano_link_t[32];
-typedef uint8_t nano_signature_t[64];
-typedef uint8_t nano_amount_t[16];
-typedef uint8_t nano_nonce_t[16];
+typedef uint8_t libn_private_key_t[32];
+typedef uint8_t libn_public_key_t[32];
+typedef uint8_t libn_hash_t[32];
+typedef uint8_t libn_link_t[32];
+typedef uint8_t libn_signature_t[64];
+typedef uint8_t libn_amount_t[16];
+typedef uint8_t libn_nonce_t[16];
 
-#define NANO_PREFIX_MAX_LEN 5
-#define NANO_NANO_PREFIX_LEN 5 // len("nano_")
-#define NANO_XRB_PREFIX_LEN 4 // len("xrb_")
+#define LIBN_PREFIX_MAX_LEN 5
+#define LIBN_NANO_PREFIX_LEN 5 // len("nano_")
+#define LIBN_XRB_PREFIX_LEN 4 // len("xrb_")
 
 typedef enum {
-    NANO_NANO_PREFIX, // nano_
-    NANO_XRB_PREFIX, // xrb_
-} nano_address_prefix_t;
+    LIBN_NANO_PREFIX, // nano_
+    LIBN_XRB_PREFIX, // xrb_
+} libn_address_prefix_t;
 
-#define NANO_DEFAULT_PREFIX NANO_XRB_PREFIX
-#define NANO_DEFAULT_PREFIX_LEN NANO_XRB_PREFIX_LEN
-
-typedef struct {
-    nano_hash_t parent;
-    nano_link_t link;
-    nano_public_key_t representative;
-    nano_amount_t balance;
-} nano_block_data_t;
+#define LIBN_DEFAULT_PREFIX LIBN_XRB_PREFIX
+#define LIBN_DEFAULT_PREFIX_LEN LIBN_XRB_PREFIX_LEN
 
 typedef struct {
-    nano_hash_t hash;
-    nano_public_key_t representative;
-    nano_amount_t balance;
-} nano_cached_block_data_t;
+    libn_hash_t parent;
+    libn_link_t link;
+    libn_public_key_t representative;
+    libn_amount_t balance;
+} libn_block_data_t;
 
-#endif // NANO_TYPES_H
+typedef struct {
+    libn_hash_t hash;
+    libn_public_key_t representative;
+    libn_amount_t balance;
+} libn_cached_block_data_t;
+
+#endif // LIBN_TYPES_H

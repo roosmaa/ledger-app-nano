@@ -15,24 +15,16 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
+#ifndef LIBN_INTERNAL_H
+#define LIBN_INTERNAL_H
 
-#define DISPATCHER_APDUS 5
+#include "libn_app.h"
+#include "libn_types.h"
+#include "libn_context.h"
+#include "libn_heaps.h"
+#include "libn_ram_variables.h"
+#include "libn_rom_variables.h"
+#include "libn_filesystem.h"
+#include "libn_helpers.h"
 
-typedef uint16_t (*apduProcessingFunction)(nano_apdu_response_t *resp);
-
-extern uint8_t const DISPATCHER_CLA[DISPATCHER_APDUS];
-extern uint8_t const DISPATCHER_INS[DISPATCHER_APDUS];
-extern bool const DISPATCHER_DATA_IN[DISPATCHER_APDUS];
-extern apduProcessingFunction const DISPATCHER_FUNCTIONS[DISPATCHER_APDUS];
-
-#define NANO_ACCOUNT_STRING_BASE_LEN 60
-
-extern uint8_t const BASE16_ALPHABET[16];
-
-extern uint8_t const BASE32_ALPHABET[32];
-extern uint8_t const BASE32_TABLE[75];
-
-extern uint8_t const BLOCK_HASH_PREAMBLE[32];
-
-extern uint8_t const NONCE_PREAMBLE[19];
+#endif

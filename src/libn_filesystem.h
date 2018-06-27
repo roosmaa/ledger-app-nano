@@ -15,30 +15,24 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_SECURE_VALUE_H
+#ifndef LIBN_FS_H
 
-#define NANO_SECURE_VALUE_H
+#define LIBN_FS_H
+
+#include <stdbool.h>
 
 #include "os.h"
+#include "libn_context.h"
 
-typedef uint16_t secu8;
-typedef uint32_t secu16;
+typedef struct libn_storage_s {
+    bool autoReceive;
+} libn_storage_t;
 
-void sbSet(secu8 *target, uint8_t source);
-void sbCheck(secu8 source);
-void ssSet(secu16 *target, uint16_t source);
-void ssCheck(secu16 source);
+// the global nvram memory variable
+extern libn_storage_t N_libn_real;
 
-#define SB_GET(x) ((uint8_t)x)
+#define N_nano (*(libn_storage_t *)PIC(&N_libn_real))
 
-#define SB_SET(x, y) sbSet(&x, y);
-
-#define SB_CHECK(x) sbCheck(x);
-
-#define SS_GET(x) ((uint16_t)x)
-
-#define SS_SET(x, y) ssSet(&x, y);
-
-#define SS_CHECK(x) ssCheck(x);
+void libn_set_auto_receive(bool enabled);
 
 #endif

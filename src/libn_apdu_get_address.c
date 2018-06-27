@@ -16,21 +16,21 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
-#include "nano_apdu_get_address.h"
-#include "nano_apdu_constants.h"
+#include "libn_internal.h"
+#include "libn_apdu_get_address.h"
+#include "libn_apdu_constants.h"
 
-#include "nano_bagl.h"
+#include "libn_bagl.h"
 
 #define P1_NO_DISPLAY 0x00
 #define P1_DISPLAY 0x01
 
 #define P2_UNUSED 0x00
 
-uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request_t *req);
+uint16_t libn_apdu_get_address_output(libn_apdu_response_t *resp, libn_apdu_get_address_request_t *req);
 
-uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
-    nano_apdu_get_address_heap_t *h = &ram_a.nano_apdu_get_address_heap_D;
+uint16_t libn_apdu_get_address(libn_apdu_response_t *resp) {
+    libn_apdu_get_address_heap_t *h = &ram_a.libn_apdu_get_address_heap_D;
     uint8_t *keyPathPtr;
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
 
@@ -39,50 +39,50 @@ uint16_t nano_apdu_get_address(nano_apdu_response_t *resp) {
     case P1_DISPLAY:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     switch (G_io_apdu_buffer[ISO_OFFSET_P2]) {
     case P2_UNUSED:
         break;
     default:
-        return NANO_SW_INCORRECT_P1_P2;
+        return LIBN_SW_INCORRECT_P1_P2;
     }
 
     if (G_io_apdu_buffer[ISO_OFFSET_LC] < 0x01) {
-        return NANO_SW_INCORRECT_LENGTH;
+        return LIBN_SW_INCORRECT_LENGTH;
     }
     keyPathPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
 
     if (!os_global_pin_is_validated()) {
-        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+        return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
     // Make sure that we're not about to interrupt another operation
-    if (display && nano_context_D.state != NANO_STATE_READY) {
-        return NANO_SW_SECURITY_STATUS_NOT_SATISFIED;
+    if (display && libn_context_D.state != LIBN_STATE_READY) {
+        return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
     // Retrieve the public key for the path
-    nano_derive_keypair(keyPathPtr, h->privateKey, h->req.publicKey);
+    libn_derive_keypair(keyPathPtr, h->privateKey, h->req.publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
 
     if (display) {
         // Update app state to confirm the address
-        nano_context_D.state = NANO_STATE_CONFIRM_ADDRESS;
-        os_memmove(&nano_context_D.stateData.getAddressRequest, &h->req, sizeof(h->req));
+        libn_context_D.state = LIBN_STATE_CONFIRM_ADDRESS;
+        os_memmove(&libn_context_D.stateData.getAddressRequest, &h->req, sizeof(h->req));
         os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
         app_apply_state();
 
         resp->ioFlags |= IO_ASYNCH_REPLY;
-        return NANO_SW_OK;
+        return LIBN_SW_OK;
     } else {
-        uint16_t statusWord = nano_apdu_get_address_output(resp, &h->req);
+        uint16_t statusWord = libn_apdu_get_address_output(resp, &h->req);
         os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
         return statusWord;
     }
 }
 
-uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_address_request_t *req) {
+uint16_t libn_apdu_get_address_output(libn_apdu_response_t *resp, libn_apdu_get_address_request_t *req) {
     uint8_t length;
     uint8_t *outPtr = resp->buffer;
 
@@ -92,29 +92,29 @@ uint16_t nano_apdu_get_address_output(nano_apdu_response_t *resp, nano_apdu_get_
     outPtr += length;
 
     // Encode & output account address
-    length = NANO_ACCOUNT_STRING_BASE_LEN + NANO_DEFAULT_PREFIX_LEN;
+    length = LIBN_ACCOUNT_STRING_BASE_LEN + LIBN_DEFAULT_PREFIX_LEN;
     *outPtr = length;
-    nano_write_account_string(outPtr + 1, NANO_DEFAULT_PREFIX, req->publicKey);
+    libn_write_account_string(outPtr + 1, LIBN_DEFAULT_PREFIX, req->publicKey);
     outPtr += 1 + length;
 
     resp->outLength = outPtr - resp->buffer;
 
-    return NANO_SW_OK;
+    return LIBN_SW_OK;
 }
 
-void nano_bagl_display_address_callback(bool confirmed) {
-    nano_apdu_get_address_request_t *req = &nano_context_D.stateData.getAddressRequest;
+void libn_bagl_display_address_callback(bool confirmed) {
+    libn_apdu_get_address_request_t *req = &libn_context_D.stateData.getAddressRequest;
 
     uint16_t statusWord;
-    nano_apdu_response_t resp;
-    resp.buffer = nano_async_buffer_D;
+    libn_apdu_response_t resp;
+    resp.buffer = libn_async_buffer_D;
     resp.outLength = 0;
     resp.ioFlags = 0;
 
     if (confirmed) {
-        statusWord = nano_apdu_get_address_output(&resp, req);
+        statusWord = libn_apdu_get_address_output(&resp, req);
     } else {
-        statusWord = NANO_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
+        statusWord = LIBN_SW_CONDITIONS_OF_USE_NOT_SATISFIED;
     }
     os_memset(req, 0, sizeof(req)); // sanitise request data
     app_async_response(&resp, statusWord);

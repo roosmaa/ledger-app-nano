@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
-*   (c) 2018 Mart Roosmaa
+*   (c) 2016 Ledger
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,19 +15,30 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef __NANO_BAGL_H__
+#ifndef LIBN_SECURE_VALUE_H
 
-#define __NANO_BAGL_H__
+#define LIBN_SECURE_VALUE_H
 
-#include "nano.h"
+#include "os.h"
 
-#define NANO_BAGL_COLOR_APP 0xFCB653
+typedef uint16_t secu8;
+typedef uint32_t secu16;
 
-void nano_bagl_display_address_callback(bool confirmed);
-void nano_bagl_confirm_sign_block_callback(bool confirmed);
+void sbSet(secu8 *target, uint8_t source);
+void sbCheck(secu8 source);
+void ssSet(secu16 *target, uint16_t source);
+void ssCheck(secu16 source);
 
-/** Apply current global state to UX. Returns true if UX was updated,
-    false if the UX is already in the correct state and nothing was done. **/
-bool nano_bagl_apply_state();
+#define SB_GET(x) ((uint8_t)x)
+
+#define SB_SET(x, y) sbSet(&x, y);
+
+#define SB_CHECK(x) sbCheck(x);
+
+#define SS_GET(x) ((uint16_t)x)
+
+#define SS_SET(x, y) ssSet(&x, y);
+
+#define SS_CHECK(x) ssCheck(x);
 
 #endif

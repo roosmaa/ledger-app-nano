@@ -15,68 +15,68 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_HEAPS_H
+#ifndef LIBN_HEAPS_H
 
-#define NANO_HEAPS_H
+#define LIBN_HEAPS_H
 
-#include "nano_types.h"
-#include "nano_apdu_get_address.h"
-#include "nano_apdu_cache_block.h"
-#include "nano_apdu_sign_block.h"
-#include "nano_apdu_sign_nonce.h"
-
-typedef struct {
-    nano_apdu_get_address_request_t req;
-    nano_private_key_t privateKey;
-} nano_apdu_get_address_heap_t;
+#include "libn_types.h"
+#include "libn_apdu_get_address.h"
+#include "libn_apdu_cache_block.h"
+#include "libn_apdu_sign_block.h"
+#include "libn_apdu_sign_nonce.h"
 
 typedef struct {
-    nano_apdu_cache_block_request_t req;
+    libn_apdu_get_address_request_t req;
+    libn_private_key_t privateKey;
+} libn_apdu_get_address_heap_t;
+
+typedef struct {
+    libn_apdu_cache_block_request_t req;
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
-    nano_private_key_t privateKey;
-} nano_apdu_cache_block_heap_t;
+    libn_private_key_t privateKey;
+} libn_apdu_cache_block_heap_t;
 
 typedef struct {
-    nano_private_key_t privateKey;
-    nano_block_data_t block;
-} nano_apdu_sign_block_heap_input_t;
+    libn_private_key_t privateKey;
+    libn_block_data_t block;
+} libn_apdu_sign_block_heap_input_t;
 
 typedef struct {
-    nano_private_key_t privateKey;
-    nano_signature_t signature;
-} nano_apdu_sign_block_heap_output_t;
+    libn_private_key_t privateKey;
+    libn_signature_t signature;
+} libn_apdu_sign_block_heap_output_t;
 
 typedef struct {
-    nano_apdu_sign_block_request_t req;
+    libn_apdu_sign_block_request_t req;
     union {
-        nano_apdu_sign_block_heap_input_t input;
-        nano_apdu_sign_block_heap_output_t output;
+        libn_apdu_sign_block_heap_input_t input;
+        libn_apdu_sign_block_heap_output_t output;
     } io;
-} nano_apdu_sign_block_heap_t;
+} libn_apdu_sign_block_heap_t;
 
 typedef struct {
-    nano_private_key_t privateKey;
-    nano_public_key_t publicKey;
-    nano_signature_t signature;
-} nano_apdu_sign_nonce_heap_output_t;
+    libn_private_key_t privateKey;
+    libn_public_key_t publicKey;
+    libn_signature_t signature;
+} libn_apdu_sign_nonce_heap_output_t;
 
 typedef struct {
-    nano_apdu_sign_nonce_request_t req;
+    libn_apdu_sign_nonce_request_t req;
     union {
-        nano_apdu_sign_nonce_heap_output_t output;
+        libn_apdu_sign_nonce_heap_output_t output;
     } io;
-} nano_apdu_sign_nonce_heap_t;
+} libn_apdu_sign_nonce_heap_t;
 
 typedef struct {
     uint32_t bip32PathInt[MAX_BIP32_PATH];
     uint8_t chainCode[32];
-} nano_derive_keypair_heap_t;
+} libn_derive_keypair_heap_t;
 
 typedef struct {
     // MaxUInt128 = 340282366920938463463374607431768211455 (39 digits)
     // 39 digits + 1 period + len(" Nano") + len('\0')
     char buf[39 + 1 + 5 + 1];
-    nano_amount_t num;
-} nano_amount_format_heap_t;
+    libn_amount_t num;
+} libn_amount_format_heap_t;
 
-#endif // NANO_HEAPS_H
+#endif // LIBN_HEAPS_H

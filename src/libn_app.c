@@ -18,9 +18,9 @@
 #include "os.h"
 #include "os_io_seproxyhal.h"
 
-#include "nano_internal.h"
-#include "nano_apdu_constants.h"
-#include "nano_bagl.h"
+#include "libn_internal.h"
+#include "libn_apdu_constants.h"
+#include "libn_bagl.h"
 
 void app_dispatch(void) {
     uint8_t cla;
@@ -28,7 +28,7 @@ void app_dispatch(void) {
     uint8_t dispatched;
     uint16_t statusWord;
     uint32_t apduHash;
-    nano_apdu_response_t *resp = &nano_context_D.response;
+    libn_apdu_response_t *resp = &libn_context_D.response;
 
     // nothing to reply for now
     resp->outLength = 0;
@@ -37,27 +37,27 @@ void app_dispatch(void) {
     BEGIN_TRY {
         TRY {
             // If halted, then notify
-            SB_CHECK(nano_context_D.halted);
-            if (SB_GET(nano_context_D.halted)) {
-                statusWord = NANO_SW_HALTED;
+            SB_CHECK(libn_context_D.halted);
+            if (SB_GET(libn_context_D.halted)) {
+                statusWord = LIBN_SW_HALTED;
                 goto sendSW;
             }
 
 #ifdef HAVE_IO_U2F
             if (G_io_apdu_state == APDU_U2F) {
-                apduHash = nano_simple_hash(G_io_apdu_buffer, nano_context_D.inLength);
-                if (apduHash == nano_context_D.u2fRequestHash) {
-                    if (nano_context_D.state != NANO_STATE_READY) {
+                apduHash = libn_simple_hash(G_io_apdu_buffer, libn_context_D.inLength);
+                if (apduHash == libn_context_D.u2fRequestHash) {
+                    if (libn_context_D.state != LIBN_STATE_READY) {
                         // Request ongoing, setup a timeout
-                        nano_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
+                        libn_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
 
                         resp->ioFlags |= IO_ASYNCH_REPLY;
-                        statusWord = NANO_SW_OK;
+                        statusWord = LIBN_SW_OK;
                         goto sendSW;
 
-                    } else if (nano_context_D.stateData.asyncResponse.outLength > 0) {
+                    } else if (libn_context_D.stateData.asyncResponse.outLength > 0) {
                         // Immediately return the previous response to this request
-                        nano_context_move_async_response();
+                        libn_context_move_async_response();
                         goto sendBuffer;
                     }
                 }
@@ -73,13 +73,13 @@ void app_dispatch(void) {
                 }
             }
             if (dispatched == DISPATCHER_APDUS) {
-                statusWord = NANO_SW_INS_NOT_SUPPORTED;
+                statusWord = LIBN_SW_INS_NOT_SUPPORTED;
                 goto sendSW;
             }
             if (DISPATCHER_DATA_IN[dispatched]) {
                 if (G_io_apdu_buffer[ISO_OFFSET_LC] == 0x00 ||
-                    nano_context_D.inLength - 5 == 0) {
-                    statusWord = NANO_SW_INCORRECT_LENGTH;
+                    libn_context_D.inLength - 5 == 0) {
+                    statusWord = LIBN_SW_INCORRECT_LENGTH;
                     goto sendSW;
                 }
                 // notify we need to receive data
@@ -92,8 +92,8 @@ void app_dispatch(void) {
 #ifdef HAVE_IO_U2F
             if (G_io_apdu_state == APDU_U2F && (resp->ioFlags & IO_ASYNCH_REPLY) != 0) {
                 // Setup the timeout and request details
-                nano_context_D.u2fRequestHash = apduHash;
-                nano_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
+                libn_context_D.u2fRequestHash = apduHash;
+                libn_context_D.u2fTimeout = U2F_REQUEST_TIMEOUT;
             }
 #endif // HAVE_IO_U2F
 
@@ -113,38 +113,38 @@ void app_dispatch(void) {
             resp->buffer[0] = 0x6F;
             resp->buffer[1] = e;
             // we caught something suspicious
-            SB_SET(nano_context_D.halted, 1);
+            SB_SET(libn_context_D.halted, 1);
         }
         FINALLY;
     }
     END_TRY;
 }
 
-void app_async_response(nano_apdu_response_t *resp, uint16_t statusWord) {
+void app_async_response(libn_apdu_response_t *resp, uint16_t statusWord) {
     resp->buffer[resp->outLength] = (statusWord >> 8);
     resp->buffer[resp->outLength + 1] = (statusWord & 0xff);
     resp->outLength += 2;
 
     // Queue up the response to be sent when convenient
-    nano_context_D.state = NANO_STATE_READY;
-    os_memmove(&nano_context_D.stateData.asyncResponse, resp, sizeof(nano_apdu_response_t));
+    libn_context_D.state = LIBN_STATE_READY;
+    os_memmove(&libn_context_D.stateData.asyncResponse, resp, sizeof(libn_apdu_response_t));
     app_apply_state();
 }
 
-bool app_send_async_response(nano_apdu_response_t *resp) {
+bool app_send_async_response(libn_apdu_response_t *resp) {
 #ifdef HAVE_IO_U2F
     if (G_io_apdu_state == APDU_IDLE) {
         return false;
     }
 
-    nano_context_D.u2fTimeout = 0;
+    libn_context_D.u2fTimeout = 0;
 #endif // HAVE_IO_U2F
 
     // Move the async result data to sync buffer
-    nano_context_move_async_response();
+    libn_context_move_async_response();
 
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX,
-        nano_context_D.response.outLength);
+        libn_context_D.response.outLength);
     return true;
 }
 
@@ -154,15 +154,15 @@ bool app_apply_state(void) {
     }
 
     // First make sure that the UI displays the correct state
-    bool uxChanged = nano_bagl_apply_state();
+    bool uxChanged = libn_bagl_apply_state();
     if (uxChanged) {
         return true;
     }
 
     // In READY state, try to return the queued asyncResponse
-    if (nano_context_D.state == NANO_STATE_READY &&
-        nano_context_D.stateData.asyncResponse.outLength > 0) {
-        bool responseSent = app_send_async_response(&nano_context_D.stateData.asyncResponse);
+    if (libn_context_D.state == LIBN_STATE_READY &&
+        libn_context_D.stateData.asyncResponse.outLength > 0) {
+        bool responseSent = app_send_async_response(&libn_context_D.stateData.asyncResponse);
         if (responseSent) {
             return true;
         }
@@ -173,23 +173,23 @@ bool app_apply_state(void) {
 }
 
 void app_main(void) {
-    os_memset(nano_context_D.response.buffer, 0, 255); // paranoia
+    os_memset(libn_context_D.response.buffer, 0, 255); // paranoia
 
     // Process the incoming APDUs
 
     // first exchange, no out length :) only wait the apdu
-    nano_context_D.response.outLength = 0;
-    nano_context_D.response.ioFlags = 0;
+    libn_context_D.response.outLength = 0;
+    libn_context_D.response.ioFlags = 0;
     for (;;) {
         L_DEBUG_APP(("Main Loop\n"));
 
         // os_memset(G_io_apdu_buffer, 0, 255); // paranoia
 
         // receive the whole apdu using the 7 bytes headers (ledger transport)
-        nano_context_D.inLength =
-            io_exchange(CHANNEL_APDU | nano_context_D.response.ioFlags,
+        libn_context_D.inLength =
+            io_exchange(CHANNEL_APDU | libn_context_D.response.ioFlags,
                         // use the previous outlength as the reply
-                        nano_context_D.response.outLength);
+                        libn_context_D.response.outLength);
 
         app_dispatch();
 

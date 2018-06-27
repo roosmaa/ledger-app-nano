@@ -1,6 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
-*   (c) 2016 Ledger
+*   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -15,22 +15,20 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_H
+#ifndef LIBN_APDU_CACHE_BLOCK_H
 
-#define NANO_H
+#define LIBN_APDU_CACHE_BLOCK_H
 
-#include "os.h"
+#include "libn_types.h"
+#include "libn_helpers.h"
 
-#define L_DEBUG_APP(x)
-#define L_DEBUG_NOPREFIX(x)
-#define L_DEBUG_BUF(x)
+typedef struct {
+    libn_public_key_t publicKey;
+    libn_block_data_t block;
+    libn_hash_t blockHash;
+    libn_signature_t signature;
+} libn_apdu_cache_block_request_t;
 
-#define SW_TECHNICAL_DETAILS(x) NANO_SW_TECHNICAL_PROBLEM
+uint16_t libn_apdu_cache_block(libn_apdu_response_t *resp);
 
-#include "nano_secure_value.h"
-#include "nano_types.h"
-
-void app_async_response(nano_apdu_response_t *resp, uint16_t statusWord);
-bool app_apply_state(void);
-
-#endif
+#endif // LIBN_APDU_CACHE_BLOCK_H

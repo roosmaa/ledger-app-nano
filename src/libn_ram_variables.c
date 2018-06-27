@@ -1,5 +1,6 @@
 /*******************************************************************************
 *   $NANO Wallet for Ledger Nano S & Blue
+*   (c) 2016 Ledger
 *   (c) 2018 Mart Roosmaa
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,24 +16,15 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#ifndef NANO_APDU_SIGN_BLOCK_H
+#include "libn_ram_variables.h"
+#include "os_io_seproxyhal.h"
 
-#define NANO_APDU_SIGN_BLOCK_H
+// Bolos SDK variables
+uint8_t G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
+ux_state_t ux;
 
-#include "nano_types.h"
-#include "nano_helpers.h"
+uint8_t libn_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
+libn_context_t libn_context_D;
 
-typedef struct {
-    uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
-    nano_public_key_t publicKey;
-    nano_hash_t blockHash;
-    nano_public_key_t recipient;
-    nano_address_prefix_t recipientPrefix;
-    nano_amount_t amount;
-    nano_public_key_t representative;
-    nano_address_prefix_t representativePrefix;
-} nano_apdu_sign_block_request_t;
-
-uint16_t nano_apdu_sign_block(nano_apdu_response_t *resp);
-
-#endif // NANO_APDU_SIGN_BLOCK_H
+ram_a_t ram_a;
+ram_b_t ram_b;

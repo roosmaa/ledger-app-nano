@@ -15,6 +15,6 @@
 *  limitations under the License.
 ********************************************************************************/
 
-#include "nano_internal.h"
+#include "libn_internal.h"
 
-nano_storage_t N_nano_real;
+libn_storage_t N_libn_real;

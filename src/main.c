@@ -22,8 +22,8 @@
 #include "os_io_seproxyhal.h"
 #include "cx.h"
 
-#include "nano_internal.h"
-#include "nano_bagl.h"
+#include "libn_internal.h"
+#include "libn_bagl.h"
 
 #ifdef HAVE_IO_U2F
 
@@ -38,7 +38,7 @@ void ui_ticker_event(bool uxAllowed);
 #ifdef HAVE_IO_U2F
 
 void u2f_message_timeout() {
-    nano_context_D.u2fTimeout = 0;
+    libn_context_D.u2fTimeout = 0;
 
     G_io_apdu_buffer[0] = 0x69;
     G_io_apdu_buffer[1] = 0x85;
@@ -123,9 +123,9 @@ uint8_t io_event(uint8_t channel) {
         }
 
 #ifdef HAVE_IO_U2F
-        if (nano_context_D.u2fTimeout > 0) {
-            nano_context_D.u2fTimeout -= MIN(100, nano_context_D.u2fTimeout);
-            if (nano_context_D.u2fTimeout == 0) {
+        if (libn_context_D.u2fTimeout > 0) {
+            libn_context_D.u2fTimeout -= MIN(100, libn_context_D.u2fTimeout);
+            if (libn_context_D.u2fTimeout == 0) {
                 u2f_message_timeout();
                 break;
             }
@@ -171,7 +171,7 @@ __attribute__((section(".boot"))) int main(void) {
             TRY {
                 io_seproxyhal_init();
 
-                nano_context_init();
+                libn_context_init();
 
                 // deactivate usb before activating
                 USB_power(false);
@@ -185,7 +185,7 @@ __attribute__((section(".boot"))) int main(void) {
 #if defined(TARGET_BLUE)
                 // setup the status bar colors (remembered after wards, even
                 // more if another app does not resetup after app switch)
-                UX_SET_STATUS_BAR_COLOR(0xFFFFFF, NANO_BAGL_COLOR_APP);
+                UX_SET_STATUS_BAR_COLOR(0xFFFFFF, LIBN_BAGL_COLOR_APP);
 #endif // TARGET_BLUE
 
                 ui_idle();

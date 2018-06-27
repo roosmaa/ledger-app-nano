@@ -21,66 +21,66 @@
 #include "os_io_seproxyhal.h"
 
 #include "glyphs.h"
-#include "nano_internal.h"
-#include "nano_bagl.h"
+#include "libn_internal.h"
+#include "libn_bagl.h"
 
 #if defined(TARGET_NANOS)
 
 extern ux_state_t ux;
 
 // display stepped screens
-nano_state_t bagl_state;
+libn_state_t bagl_state;
 uint16_t ux_step;
 uint16_t ux_step_count;
 
 union {
     struct {
-        char account[NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN+1];
+        char account[LIBN_ACCOUNT_STRING_BASE_LEN+LIBN_PREFIX_MAX_LEN+1];
     } displayAddress;
     struct {
         bool showAmount;
         bool showRecipient;
         bool showRepresentative;
         char confirmLabel[20];
-        char confirmValue[MAX(NANO_ACCOUNT_STRING_BASE_LEN+NANO_PREFIX_MAX_LEN+1, 2*sizeof(nano_hash_t)+1)];
+        char confirmValue[MAX(LIBN_ACCOUNT_STRING_BASE_LEN+LIBN_PREFIX_MAX_LEN+1, 2*sizeof(libn_hash_t)+1)];
     } confirmSignBlock;
 } vars;
 
-void ui_write_address_truncated(char *label, nano_address_prefix_t prefix, nano_public_key_t publicKey) {
-    nano_write_account_string((uint8_t *)label, prefix, publicKey);
+void ui_write_address_truncated(char *label, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
+    libn_write_account_string((uint8_t *)label, prefix, publicKey);
 
     size_t prefixSize;
     switch (prefix) {
-    case NANO_NANO_PREFIX:
-        prefixSize = NANO_NANO_PREFIX_LEN;
+    case LIBN_NANO_PREFIX:
+        prefixSize = LIBN_NANO_PREFIX_LEN;
         break;
-    case NANO_XRB_PREFIX:
-        prefixSize = NANO_XRB_PREFIX_LEN;
+    case LIBN_XRB_PREFIX:
+        prefixSize = LIBN_XRB_PREFIX_LEN;
         break;
     }
 
     os_memset(label + prefixSize + 5, '.', 2);
-    os_memmove(label + prefixSize + 7, label + prefixSize + NANO_ACCOUNT_STRING_BASE_LEN - 5, 5);
+    os_memmove(label + prefixSize + 7, label + prefixSize + LIBN_ACCOUNT_STRING_BASE_LEN - 5, 5);
     label[prefixSize+12] = '\0';
 }
 
-void ui_write_address_full(char *label, nano_address_prefix_t prefix, nano_public_key_t publicKey) {
-    nano_write_account_string((uint8_t *)label, prefix, publicKey);
+void ui_write_address_full(char *label, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
+    libn_write_account_string((uint8_t *)label, prefix, publicKey);
     switch (prefix) {
-    case NANO_NANO_PREFIX:
-        label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_NANO_PREFIX_LEN] = '\0';
+    case LIBN_NANO_PREFIX:
+        label[LIBN_ACCOUNT_STRING_BASE_LEN+LIBN_NANO_PREFIX_LEN] = '\0';
         break;
-    case NANO_XRB_PREFIX:
-        label[NANO_ACCOUNT_STRING_BASE_LEN+NANO_XRB_PREFIX_LEN] = '\0';
+    case LIBN_XRB_PREFIX:
+        label[LIBN_ACCOUNT_STRING_BASE_LEN+LIBN_XRB_PREFIX_LEN] = '\0';
         break;
     }
 }
 
-void ui_write_hash_truncated(char *label, nano_hash_t hash) {
-    nano_write_hex_string((uint8_t *)label, hash, sizeof(nano_hash_t));
+void ui_write_hash_truncated(char *label, libn_hash_t hash) {
+    libn_write_hex_string((uint8_t *)label, hash, sizeof(libn_hash_t));
     // Truncate hash to 12345..67890 format
     os_memset(label+5, '.', 2);
-    os_memmove(label+7, label+2*sizeof(nano_hash_t)-5, 5);
+    os_memmove(label+7, label+2*sizeof(libn_hash_t)-5, 5);
     label[12] = '\0';
 }
 
@@ -90,7 +90,7 @@ const ux_menu_entry_t menu_settings[];
 const ux_menu_entry_t menu_settings_autoreceive[];
 
 void menu_settings_autoreceive_change(uint32_t enabled) {
-    nano_set_auto_receive(enabled);
+    libn_set_auto_receive(enabled);
     // go back to the menu entry
     UX_MENU_DISPLAY(0, menu_settings, NULL);
 }
@@ -144,7 +144,7 @@ const bagl_element_t *menu_prepro(const ux_menu_entry_t *menu_entry, bagl_elemen
 }
 
 void ui_idle(void) {
-    bagl_state = NANO_STATE_READY;
+    bagl_state = LIBN_STATE_READY;
     ux_step_count = 0;
     UX_MENU_DISPLAY(0, menu_main, menu_prepro);
 }
@@ -256,11 +256,11 @@ uint32_t ui_display_address_button(uint32_t button_mask,
                                    uint32_t button_mask_counter) {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-        nano_bagl_display_address_callback(false);
+        libn_bagl_display_address_callback(false);
         break;
 
     case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-        nano_bagl_display_address_callback(true);
+        libn_bagl_display_address_callback(true);
         break;
 
     // For other button combinations return early and do nothing
@@ -272,20 +272,20 @@ uint32_t ui_display_address_button(uint32_t button_mask,
     return 0;
 }
 
-void nano_bagl_display_address(void) {
-    if (nano_context_D.state != NANO_STATE_CONFIRM_ADDRESS) {
+void libn_bagl_display_address(void) {
+    if (libn_context_D.state != LIBN_STATE_CONFIRM_ADDRESS) {
         return;
     }
-    nano_apdu_get_address_request_t *req = &nano_context_D.stateData.getAddressRequest;
+    libn_apdu_get_address_request_t *req = &libn_context_D.stateData.getAddressRequest;
 
     os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
     // Encode public key into an address string
     ui_write_address_full(
       vars.displayAddress.account,
-      NANO_DEFAULT_PREFIX,
+      LIBN_DEFAULT_PREFIX,
       req->publicKey);
 
-    bagl_state = NANO_STATE_CONFIRM_ADDRESS;
+    bagl_state = LIBN_STATE_CONFIRM_ADDRESS;
     ux_step_count = 2;
     ux_step = 0;
     UX_DISPLAY(ui_display_address, ui_display_address_prepro);
@@ -364,17 +364,17 @@ const bagl_element_t ui_confirm_sign_block[] = {
 };
 
 void ui_confirm_sign_block_prepare_confirm_step(void) {
-    if (nano_context_D.state != NANO_STATE_CONFIRM_SIGNATURE) {
+    if (libn_context_D.state != LIBN_STATE_CONFIRM_SIGNATURE) {
         return;
     }
-    nano_apdu_sign_block_request_t *req = &nano_context_D.stateData.signBlockRequest;
+    libn_apdu_sign_block_request_t *req = &libn_context_D.stateData.signBlockRequest;
     uint8_t step = 1;
 
     if (ux_step == step++) {
         strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
         ui_write_address_truncated(
             vars.confirmSignBlock.confirmValue,
-            NANO_DEFAULT_PREFIX,
+            LIBN_DEFAULT_PREFIX,
             req->publicKey);
         return;
     }
@@ -386,7 +386,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
             } else {
                 strcpy(vars.confirmSignBlock.confirmLabel, "Receive amount");
             }
-            nano_amount_format(
+            libn_amount_format(
                 vars.confirmSignBlock.confirmValue,
                 sizeof(vars.confirmSignBlock.confirmValue),
                 req->amount);
@@ -461,11 +461,11 @@ uint32_t ui_confirm_sign_block_button(uint32_t button_mask,
                                       uint32_t button_mask_counter) {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-        nano_bagl_confirm_sign_block_callback(false);
+        libn_bagl_confirm_sign_block_callback(false);
         break;
 
     case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-        nano_bagl_confirm_sign_block_callback(true);
+        libn_bagl_confirm_sign_block_callback(true);
         break;
 
     // For other button combinations return early and do nothing
@@ -477,26 +477,26 @@ uint32_t ui_confirm_sign_block_button(uint32_t button_mask,
     return 0;
 }
 
-void nano_bagl_confirm_sign_block(void) {
-    if (nano_context_D.state != NANO_STATE_CONFIRM_SIGNATURE) {
+void libn_bagl_confirm_sign_block(void) {
+    if (libn_context_D.state != LIBN_STATE_CONFIRM_SIGNATURE) {
         return;
     }
-    nano_apdu_sign_block_request_t *req = &nano_context_D.stateData.signBlockRequest;
+    libn_apdu_sign_block_request_t *req = &libn_context_D.stateData.signBlockRequest;
 
     os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
 
-    if (!nano_is_zero(req->amount, sizeof(req->amount))) {
+    if (!libn_is_zero(req->amount, sizeof(req->amount))) {
         vars.confirmSignBlock.showAmount = true;
 
-        if (!nano_is_zero(req->recipient, sizeof(req->recipient))) {
+        if (!libn_is_zero(req->recipient, sizeof(req->recipient))) {
             vars.confirmSignBlock.showRecipient = true;
         }
     }
-    if (!nano_is_zero(req->representative, sizeof(req->representative))) {
+    if (!libn_is_zero(req->representative, sizeof(req->representative))) {
         vars.confirmSignBlock.showRepresentative = true;
     }
 
-    bagl_state = NANO_STATE_CONFIRM_SIGNATURE;
+    bagl_state = LIBN_STATE_CONFIRM_SIGNATURE;
     ux_step = 0;
     ux_step_count = 3
         + (vars.confirmSignBlock.showAmount ? 1 : 0)
@@ -505,27 +505,27 @@ void nano_bagl_confirm_sign_block(void) {
     UX_DISPLAY(ui_confirm_sign_block, ui_confirm_sign_block_prepro);
 }
 
-bool nano_bagl_apply_state() {
+bool libn_bagl_apply_state() {
     if (!UX_DISPLAYED()) {
         return false;
     }
 
-    switch (nano_context_D.state) {
-    case NANO_STATE_READY:
-        if (bagl_state != NANO_STATE_READY) {
+    switch (libn_context_D.state) {
+    case LIBN_STATE_READY:
+        if (bagl_state != LIBN_STATE_READY) {
             ui_idle();
             return true;
         }
         break;
-    case NANO_STATE_CONFIRM_ADDRESS:
-        if (bagl_state != NANO_STATE_CONFIRM_ADDRESS) {
-            nano_bagl_display_address();
+    case LIBN_STATE_CONFIRM_ADDRESS:
+        if (bagl_state != LIBN_STATE_CONFIRM_ADDRESS) {
+            libn_bagl_display_address();
             return true;
         }
         break;
-    case NANO_STATE_CONFIRM_SIGNATURE:
-        if (bagl_state != NANO_STATE_CONFIRM_SIGNATURE) {
-            nano_bagl_confirm_sign_block();
+    case LIBN_STATE_CONFIRM_SIGNATURE:
+        if (bagl_state != LIBN_STATE_CONFIRM_SIGNATURE) {
+            libn_bagl_confirm_sign_block();
             return true;
         }
         break;
