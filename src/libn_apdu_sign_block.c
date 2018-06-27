@@ -22,8 +22,8 @@
 
 #define P1_UNUSED 0x00
 
-#define P2_RECIPIENT_XRB_FLAG 0x01
-#define P2_REPRESENTATIVE_XRB_FLAG 0x02
+#define P2_RECIPIENT_SECONDARY_PREFIX_FLAG 0x01
+#define P2_REPRESENTATIVE_SECONDARY_PREFIX_FLAG 0x02
 
 uint16_t libn_apdu_sign_block_output(libn_apdu_response_t *resp, libn_apdu_sign_block_request_t *req);
 
@@ -61,15 +61,15 @@ uint16_t libn_apdu_sign_block(libn_apdu_response_t *resp) {
     }
 
     // Store address display format preferences
-    if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_RECIPIENT_XRB_FLAG) != 0) {
-        req->recipientPrefix = LIBN_XRB_PREFIX;
+    if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_RECIPIENT_SECONDARY_PREFIX_FLAG) != 0) {
+        req->recipientPrefix = LIBN_SECONDARY_PREFIX;
     } else {
-        req->recipientPrefix = LIBN_NANO_PREFIX;
+        req->recipientPrefix = LIBN_PRIMARY_PREFIX;
     }
-    if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_REPRESENTATIVE_XRB_FLAG) != 0) {
-        req->representativePrefix = LIBN_XRB_PREFIX;
+    if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_REPRESENTATIVE_SECONDARY_PREFIX_FLAG) != 0) {
+        req->representativePrefix = LIBN_SECONDARY_PREFIX;
     } else {
-        req->representativePrefix = LIBN_NANO_PREFIX;
+        req->representativePrefix = LIBN_PRIMARY_PREFIX;
     }
 
     // Derive public key for hashing

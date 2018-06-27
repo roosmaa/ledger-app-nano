@@ -8,7 +8,7 @@ REGISTER_COINS(
         /* bip32Prefix */ { HARDENED(44), HARDENED(165) },
         /* addressPrimaryPrefix */ "nano_",
         /* addressSecondaryPrefix */ "xrb_",
-        /* addressDefaultPrefix */ LIBN_DEFAULT_ADDRESS_PREFIX_SECONDARY,
+        /* addressDefaultPrefix */ LIBN_SECONDARY_PREFIX,
         /* defaultUnit */ "Mnano",
         /* defaultUnitScale */ 30, // 1 Mnano = 10^30 raw
     })

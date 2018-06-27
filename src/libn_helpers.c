@@ -82,36 +82,66 @@ void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLe
     }
 }
 
+char libn_normalize_prefix_char(char ch) {
+    if (ch >= 'A' && ch <= 'Z') {
+        // Convert upper-case to lower-case
+        return 'a' + ('A' - ch);
+    } else if (ch == '-' || ch == '_') {
+        // Prefix separator normalises to underscore
+        return '_';
+    } else {
+        // Everything else stays the same
+        return ch;
+    }
+}
+
+bool libn_has_fuzzy_prefix_match(const uint8_t *address, size_t addressLen,
+                                 const char *prefix, size_t prefixLen) {
+    uint8_t i;
+    char c1, c2;
+    if (addressLen != prefixLen + LIBN_ACCOUNT_STRING_BASE_LEN) {
+        return false;
+    }
+    for (i = 0; i < prefixLen; i++) {
+        c1 = libn_normalize_prefix_char(address[i]);
+        c2 = libn_normalize_prefix_char(prefix[i]);
+        if (c1 != c2) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool libn_read_account_string(uint8_t *buffer, size_t size,
                               libn_address_prefix_t *outPrefix,
                               libn_public_key_t outKey) {
+    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     uint8_t k, i, c;
     uint8_t checkInp[5];
     uint8_t check[5];
 
     // Check prefix and exclude it from the buffer
-    if ((buffer[0] == 'n' || buffer[0] == 'N') &&
-        (buffer[1] == 'a' || buffer[1] == 'A') &&
-        (buffer[2] == 'n' || buffer[2] == 'N') &&
-        (buffer[3] == 'o' || buffer[3] == 'O') &&
-        (buffer[4] == '-' || buffer[4] == '_')) {
-        if (size != LIBN_ACCOUNT_STRING_BASE_LEN + LIBN_NANO_PREFIX_LEN) {
-            return false;
+    bool prefixRemoved = false;
+    uint8_t prefixLen;
+    if (!prefixRemoved) {
+        prefixLen = strnlen(coin->addressPrimaryPrefix, sizeof(coin->addressPrimaryPrefix));
+        if (libn_has_fuzzy_prefix_match(buffer, size, coin->addressPrimaryPrefix, prefixLen)) {
+            size -= prefixLen;
+            buffer += prefixLen;
+            *outPrefix = LIBN_PRIMARY_PREFIX;
+            prefixRemoved = true;
         }
-        size -= 5;
-        buffer += 5;
-        *outPrefix = LIBN_NANO_PREFIX;
-    } else if ((buffer[0] == 'x' || buffer[0] == 'X') &&
-               (buffer[1] == 'r' || buffer[1] == 'R') &&
-               (buffer[2] == 'b' || buffer[2] == 'B') &&
-               (buffer[3] == '-' || buffer[3] == '_')) {
-        if (size != LIBN_ACCOUNT_STRING_BASE_LEN + LIBN_XRB_PREFIX_LEN) {
-            return false;
+    }
+    if (!prefixRemoved) {
+        prefixLen = strnlen(coin->addressSecondaryPrefix, sizeof(coin->addressSecondaryPrefix));
+        if (libn_has_fuzzy_prefix_match(buffer, size, coin->addressSecondaryPrefix, prefixLen)) {
+            size -= prefixLen;
+            buffer += prefixLen;
+            *outPrefix = LIBN_SECONDARY_PREFIX;
+            prefixRemoved = true;
         }
-        size -= 4;
-        buffer += 4;
-        *outPrefix = LIBN_XRB_PREFIX;
-    } else {
+    }
+    if (!prefixRemoved) {
         return false;
     }
 
@@ -184,8 +214,10 @@ bool libn_read_account_string(uint8_t *buffer, size_t size,
     return true;
 }
 
-void libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
-                               const libn_public_key_t publicKey) {
+size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
+                                 const libn_public_key_t publicKey) {
+    const libn_coin_conf_t *coin = &libn_coin_conf_D;
+    uint8_t prefixLen;
     uint8_t k, i, c;
     uint8_t check[5];
 
@@ -195,20 +227,15 @@ void libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
     blake2b_final(hash, check);
 
     switch (prefix) {
-    case LIBN_NANO_PREFIX:
-        buffer[0] = 'n';
-        buffer[1] = 'a';
-        buffer[2] = 'n';
-        buffer[3] = 'o';
-        buffer[4] = '_';
-        buffer += LIBN_NANO_PREFIX_LEN;
+    case LIBN_PRIMARY_PREFIX:
+        prefixLen = strnlen(coin->addressPrimaryPrefix, sizeof(coin->addressPrimaryPrefix));
+        os_memmove(buffer, coin->addressPrimaryPrefix, prefixLen);
+        buffer += prefixLen;
         break;
-    case LIBN_XRB_PREFIX:
-        buffer[0] = 'x';
-        buffer[1] = 'r';
-        buffer[2] = 'b';
-        buffer[3] = '_';
-        buffer += LIBN_XRB_PREFIX_LEN;
+    case LIBN_SECONDARY_PREFIX:
+        prefixLen = strnlen(coin->addressSecondaryPrefix, sizeof(coin->addressSecondaryPrefix));
+        os_memmove(buffer, coin->addressSecondaryPrefix, prefixLen);
+        buffer += prefixLen;
         break;
     }
 
@@ -254,6 +281,7 @@ void libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
         buffer[LIBN_ACCOUNT_STRING_BASE_LEN-1-k] = BASE32_ALPHABET[c];
     }
     #undef accGetByte
+    return prefixLen + LIBN_ACCOUNT_STRING_BASE_LEN;
 }
 
 int8_t libn_amount_cmp(const libn_amount_t a, const libn_amount_t b) {

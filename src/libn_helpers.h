@@ -37,8 +37,8 @@ void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLe
 bool libn_read_account_string(uint8_t *buffer, size_t size,
                               libn_address_prefix_t *outPrefix,
                               libn_public_key_t outKey);
-void libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
-                               const libn_public_key_t publicKey);
+size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
+                                 const libn_public_key_t publicKey);
 
 int8_t libn_amount_cmp(const libn_amount_t a, const libn_amount_t b);
 void libn_amount_subtract(libn_amount_t value, const libn_amount_t other);

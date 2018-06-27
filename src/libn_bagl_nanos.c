@@ -33,47 +33,38 @@ libn_state_t bagl_state;
 uint16_t ux_step;
 uint16_t ux_step_count;
 
+#define ACCOUNT_BUF_LEN ( \
+    LIBN_ACCOUNT_STRING_BASE_LEN \
+    + MAX(sizeof((libn_coin_conf_t){}.addressPrimaryPrefix), \
+          sizeof((libn_coin_conf_t){}.addressSecondaryPrefix)) \
+    + 1 \
+)
+
 union {
     struct {
-        char account[LIBN_ACCOUNT_STRING_BASE_LEN+LIBN_PREFIX_MAX_LEN+1];
+        char account[ACCOUNT_BUF_LEN];
     } displayAddress;
     struct {
         bool showAmount;
         bool showRecipient;
         bool showRepresentative;
         char confirmLabel[20];
-        char confirmValue[MAX(LIBN_ACCOUNT_STRING_BASE_LEN+LIBN_PREFIX_MAX_LEN+1, 2*sizeof(libn_hash_t)+1)];
+        char confirmValue[MAX(ACCOUNT_BUF_LEN, 2*sizeof(libn_hash_t)+1)];
     } confirmSignBlock;
 } vars;
 
 void ui_write_address_truncated(char *label, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
-    libn_write_account_string((uint8_t *)label, prefix, publicKey);
+    const size_t addressLen = libn_write_account_string((uint8_t *)label, prefix, publicKey);
+    const size_t prefixLen = addressLen - LIBN_ACCOUNT_STRING_BASE_LEN;
 
-    size_t prefixSize;
-    switch (prefix) {
-    case LIBN_NANO_PREFIX:
-        prefixSize = LIBN_NANO_PREFIX_LEN;
-        break;
-    case LIBN_XRB_PREFIX:
-        prefixSize = LIBN_XRB_PREFIX_LEN;
-        break;
-    }
-
-    os_memset(label + prefixSize + 5, '.', 2);
-    os_memmove(label + prefixSize + 7, label + prefixSize + LIBN_ACCOUNT_STRING_BASE_LEN - 5, 5);
-    label[prefixSize+12] = '\0';
+    os_memset(label + prefixLen + 5, '.', 2);
+    os_memmove(label + prefixLen + 7, label + addressLen - 5, 5);
+    label[prefixLen+12] = '\0';
 }
 
 void ui_write_address_full(char *label, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
-    libn_write_account_string((uint8_t *)label, prefix, publicKey);
-    switch (prefix) {
-    case LIBN_NANO_PREFIX:
-        label[LIBN_ACCOUNT_STRING_BASE_LEN+LIBN_NANO_PREFIX_LEN] = '\0';
-        break;
-    case LIBN_XRB_PREFIX:
-        label[LIBN_ACCOUNT_STRING_BASE_LEN+LIBN_XRB_PREFIX_LEN] = '\0';
-        break;
-    }
+    const size_t addressLen = libn_write_account_string((uint8_t *)label, prefix, publicKey);
+    label[addressLen] = '\0';
 }
 
 void ui_write_hash_truncated(char *label, libn_hash_t hash) {
@@ -273,6 +264,7 @@ uint32_t ui_display_address_button(uint32_t button_mask,
 }
 
 void libn_bagl_display_address(void) {
+    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     if (libn_context_D.state != LIBN_STATE_CONFIRM_ADDRESS) {
         return;
     }
@@ -282,7 +274,7 @@ void libn_bagl_display_address(void) {
     // Encode public key into an address string
     ui_write_address_full(
       vars.displayAddress.account,
-      LIBN_DEFAULT_PREFIX,
+      coin->addressDefaultPrefix,
       req->publicKey);
 
     bagl_state = LIBN_STATE_CONFIRM_ADDRESS;
@@ -364,6 +356,7 @@ const bagl_element_t ui_confirm_sign_block[] = {
 };
 
 void ui_confirm_sign_block_prepare_confirm_step(void) {
+    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     if (libn_context_D.state != LIBN_STATE_CONFIRM_SIGNATURE) {
         return;
     }
@@ -374,7 +367,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
         ui_write_address_truncated(
             vars.confirmSignBlock.confirmValue,
-            LIBN_DEFAULT_PREFIX,
+            coin->addressDefaultPrefix,
             req->publicKey);
         return;
     }

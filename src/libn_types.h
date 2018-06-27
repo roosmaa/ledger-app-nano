@@ -51,9 +51,9 @@ typedef enum {
 } libn_coin_type_t;
 
 typedef enum {
-    LIBN_DEFAULT_ADDRESS_PREFIX_PRIMARY,
-    LIBN_DEFAULT_ADDRESS_PREFIX_SECONDARY,
-} libn_default_address_prefix_t;
+    LIBN_PRIMARY_PREFIX,
+    LIBN_SECONDARY_PREFIX,
+} libn_address_prefix_t;
 
 typedef struct {
     const char coinName[10];
@@ -61,22 +61,10 @@ typedef struct {
     const uint32_t bip32Prefix[2];
     const char addressPrimaryPrefix[6];
     const char addressSecondaryPrefix[6];
-    const libn_default_address_prefix_t addressDefaultPrefix;
+    const libn_address_prefix_t addressDefaultPrefix;
     const char defaultUnit[10];
     const uint8_t defaultUnitScale;
 } libn_coin_conf_t;
-
-#define LIBN_PREFIX_MAX_LEN 5
-#define LIBN_NANO_PREFIX_LEN 5 // len("nano_")
-#define LIBN_XRB_PREFIX_LEN 4 // len("xrb_")
-
-typedef enum {
-    LIBN_NANO_PREFIX, // nano_
-    LIBN_XRB_PREFIX, // xrb_
-} libn_address_prefix_t;
-
-#define LIBN_DEFAULT_PREFIX LIBN_XRB_PREFIX
-#define LIBN_DEFAULT_PREFIX_LEN LIBN_XRB_PREFIX_LEN
 
 typedef struct {
     libn_hash_t parent;
