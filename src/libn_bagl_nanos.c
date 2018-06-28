@@ -21,6 +21,7 @@
 #include "os_io_seproxyhal.h"
 
 #include "glyphs.h"
+#include "coins.h"
 #include "libn_internal.h"
 #include "libn_bagl.h"
 
@@ -35,8 +36,8 @@ uint16_t ux_step_count;
 
 #define ACCOUNT_BUF_LEN ( \
     LIBN_ACCOUNT_STRING_BASE_LEN \
-    + MAX(sizeof((libn_coin_conf_t){}.addressPrimaryPrefix), \
-          sizeof((libn_coin_conf_t){}.addressSecondaryPrefix)) \
+    + MAX(sizeof(COIN_PRIMARY_PREFIX), \
+          sizeof(COIN_SECONDARY_PREFIX)) \
     + 1 \
 )
 
@@ -119,7 +120,6 @@ const ux_menu_entry_t menu_main[] = {
     UX_MENU_END};
 
 const bagl_element_t *menu_prepro(const ux_menu_entry_t *menu_entry, bagl_element_t *element) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     // Customise the about menu appearance
     if (menu_entry->userid == 0xAB) {
         switch (element->component.userid) {
@@ -135,7 +135,7 @@ const bagl_element_t *menu_prepro(const ux_menu_entry_t *menu_entry, bagl_elemen
         // Customise the badge for the coin
         switch (element->component.userid) {
         case 0x10: // icon
-            element->text = (const char *)coin->coinBadge;
+            element->text = (const char *)COIN_BADGE;
             break;
         }
     }
@@ -272,7 +272,6 @@ uint32_t ui_display_address_button(uint32_t button_mask,
 }
 
 void libn_bagl_display_address(void) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     if (libn_context_D.state != LIBN_STATE_CONFIRM_ADDRESS) {
         return;
     }
@@ -282,7 +281,7 @@ void libn_bagl_display_address(void) {
     // Encode public key into an address string
     ui_write_address_full(
       vars.displayAddress.account,
-      coin->addressDefaultPrefix,
+      COIN_DEFAULT_PREFIX,
       req->publicKey);
 
     bagl_state = LIBN_STATE_CONFIRM_ADDRESS;
@@ -364,7 +363,6 @@ const bagl_element_t ui_confirm_sign_block[] = {
 };
 
 void ui_confirm_sign_block_prepare_confirm_step(void) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     if (libn_context_D.state != LIBN_STATE_CONFIRM_SIGNATURE) {
         return;
     }
@@ -375,7 +373,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
         ui_write_address_truncated(
             vars.confirmSignBlock.confirmValue,
-            coin->addressDefaultPrefix,
+            COIN_DEFAULT_PREFIX,
             req->publicKey);
         return;
     }

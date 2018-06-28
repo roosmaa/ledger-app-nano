@@ -15,6 +15,7 @@
 *  limitations under the License.
 ********************************************************************************/
 
+#include "coins.h"
 #include "libn_internal.h"
 #include "libn_apdu_constants.h"
 #include "ed25519.h"
@@ -84,7 +85,6 @@ void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLe
 
 size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
                                  const libn_public_key_t publicKey) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     uint8_t prefixLen;
     uint8_t k, i, c;
     uint8_t check[5];
@@ -96,13 +96,13 @@ size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
 
     switch (prefix) {
     case LIBN_PRIMARY_PREFIX:
-        prefixLen = strnlen(coin->addressPrimaryPrefix, sizeof(coin->addressPrimaryPrefix));
-        os_memmove(buffer, coin->addressPrimaryPrefix, prefixLen);
+        prefixLen = strnlen(COIN_PRIMARY_PREFIX, sizeof(COIN_PRIMARY_PREFIX));
+        os_memmove(buffer, COIN_PRIMARY_PREFIX, prefixLen);
         buffer += prefixLen;
         break;
     case LIBN_SECONDARY_PREFIX:
-        prefixLen = strnlen(coin->addressSecondaryPrefix, sizeof(coin->addressSecondaryPrefix));
-        os_memmove(buffer, coin->addressSecondaryPrefix, prefixLen);
+        prefixLen = strnlen(COIN_SECONDARY_PREFIX, sizeof(COIN_SECONDARY_PREFIX));
+        os_memmove(buffer, COIN_SECONDARY_PREFIX, prefixLen);
         buffer += prefixLen;
         break;
     }
@@ -177,11 +177,10 @@ void libn_amount_subtract(libn_amount_t value, const libn_amount_t other) {
 
 void libn_amount_format(char *dest, size_t destLen,
                         const libn_amount_t balance) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     libn_amount_format_heap_t *h = &ram_b.libn_amount_format_heap_D;
     os_memset(h->buf, 0, sizeof(h->buf));
     os_memmove(h->num, balance, sizeof(h->num));
-    h->unitLen = strnlen(coin->defaultUnit, sizeof(coin->defaultUnit));
+    h->unitLen = strnlen(COIN_UNIT, sizeof(COIN_UNIT));
 
     size_t end = sizeof(h->buf);
     end -= 1; // '\0' NULL terminator
@@ -217,7 +216,7 @@ void libn_amount_format(char *dest, size_t destLen,
              h->num[12] || h->num[13] || h->num[14] || h->num[15]);
 
     // Assign the location for the decimal point
-    size_t point = end - 1 - coin->defaultUnitScale;
+    size_t point = end - 1 - COIN_UNIT_SCALE;
     // Make sure that the number is zero padded until the point location
     while (start > point) {
         h->buf[--start] = '0';
@@ -240,7 +239,7 @@ void libn_amount_format(char *dest, size_t destLen,
 
     // Append the unit
     h->buf[end++] = ' ';
-    os_memmove(h->buf + end, coin->defaultUnit, h->unitLen);
+    os_memmove(h->buf + end, COIN_UNIT, h->unitLen);
     end += h->unitLen;
     h->buf[end] = '\0';
 
@@ -252,7 +251,6 @@ void libn_amount_format(char *dest, size_t destLen,
 void libn_derive_keypair(uint8_t *bip32Path,
                          libn_private_key_t out_privateKey,
                          libn_public_key_t out_publicKey) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     // NB! Explicit scope to limit usage of `h` as it becomes invalid
     //     once the ed25519 function is called. The memory will be
     //     reused for blake2b hashing.
@@ -260,7 +258,7 @@ void libn_derive_keypair(uint8_t *bip32Path,
         libn_derive_keypair_heap_t *h = &ram_b.libn_derive_keypair_heap_D;
         uint8_t bip32PathLength;
         uint8_t i;
-        const uint8_t bip32PrefixLength = sizeof(coin->bip32Prefix) / sizeof(coin->bip32Prefix[0]);
+        const uint8_t bip32PrefixLength = sizeof(COIN_BIP32_PREFIX) / sizeof(COIN_BIP32_PREFIX[0]);
 
         bip32PathLength = bip32Path[0];
         if (bip32PathLength > MAX_BIP32_PATH) {
@@ -276,7 +274,7 @@ void libn_derive_keypair(uint8_t *bip32Path,
             THROW(INVALID_PARAMETER);
         }
         for (i = 0; i < bip32PrefixLength; i++) {
-            if (h->bip32PathInt[i] != coin->bip32Prefix[i]) {
+            if (h->bip32PathInt[i] != COIN_BIP32_PREFIX[i]) {
                 THROW(INVALID_PARAMETER);
             }
         }
@@ -337,8 +335,7 @@ void libn_sign_nonce(libn_signature_t signature,
                      const libn_nonce_t nonce,
                      const libn_private_key_t privateKey,
                      const libn_public_key_t publicKey) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
-    uint8_t msg[sizeof(coin->coinName) +
+    uint8_t msg[sizeof(COIN_NAME) +
                 sizeof(NONCE_PREAMBLE) +
                 2 * sizeof(libn_nonce_t)];
     size_t len;
@@ -347,8 +344,8 @@ void libn_sign_nonce(libn_signature_t signature,
     // nonce (eg. "Nano Signed Nonce:\n96DFEF63B836C9B1DD57CFF76F6DF3D0")
     uint8_t *ptr = msg;
     // Append the coin name
-    len = strnlen(coin->coinName, sizeof(coin->coinName));
-    os_memmove(ptr, coin->coinName, len);
+    len = strnlen(COIN_NAME, sizeof(COIN_NAME));
+    os_memmove(ptr, COIN_NAME, len);
     ptr += len;
     // Apend the " Signed Nonce:\n"
     os_memmove(ptr, NONCE_PREAMBLE, sizeof(NONCE_PREAMBLE));

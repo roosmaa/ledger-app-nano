@@ -22,8 +22,6 @@
 #include "libn_internal.h"
 #include "glyphs.h"
 
-#define HARDENED(x) ((x) + 0x80000000)
-
 #define REGISTER_COINS(...)                                                   \
     void init_coin_config(libn_coin_type_t coin_type) {                       \
         switch (coin_type) {                                                  \

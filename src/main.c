@@ -20,13 +20,14 @@
 #include "libn_internal.h"
 #include "coins.h"
 
-#ifdef IS_SHARED_LIBRARY
+#if defined(IS_SHARED_LIBRARY) || defined(IS_STANDALONE_APP)
 
 __attribute__((section(".boot"))) int main(int arg0) {
-    const uint32_t *libcall_args = (uint32_t *)arg0;
-
     // exit critical section
     __asm volatile("cpsie i");
+
+#ifdef IS_SHARED_LIBRARY
+    const uint32_t *libcall_args = (uint32_t *)arg0;
 
     if (libcall_args) {
         if (libcall_args[0] != 0x100) {
@@ -37,6 +38,7 @@ __attribute__((section(".boot"))) int main(int arg0) {
     } else {
         init_coin_config(DEFAULT_COIN_TYPE);
     }
+#endif
 
     // ensure exception will work as planned
     os_boot();
@@ -64,7 +66,7 @@ __attribute__((section(".boot"))) int main(int arg0) {
     return 0;
 }
 
-#else // IS_SHARED_LIBRARY
+#else // IS_SHARED_LIBRARY || IS_STANDALONE_APP
 
 __attribute__((section(".boot"))) int main(void) {
     // in RAM allocation (on stack), to allow simple simple traversal into the
@@ -88,4 +90,4 @@ __attribute__((section(".boot"))) int main(void) {
     return 0;
 }
 
-#endif // IS_SHARED_LIBRARY
+#endif // IS_SHARED_LIBRARY || IS_STANDALONE_APP

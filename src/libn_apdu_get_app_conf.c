@@ -15,6 +15,7 @@
 *  limitations under the License.
 ********************************************************************************/
 
+#include "coins.h"
 #include "libn_internal.h"
 #include "libn_apdu_get_app_conf.h"
 #include "libn_apdu_constants.h"
@@ -48,7 +49,6 @@ uint16_t libn_apdu_get_app_conf(libn_apdu_response_t *resp) {
 }
 
 uint16_t libn_apdu_get_app_conf_output(libn_apdu_response_t *resp) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     uint8_t *outPtr = resp->buffer;
     uint8_t length;
 
@@ -61,9 +61,9 @@ uint16_t libn_apdu_get_app_conf_output(libn_apdu_response_t *resp) {
     outPtr += 1;
 
     // Output coin name
-    length = strnlen(coin->coinName, sizeof(coin->coinName));
+    length = strnlen(COIN_NAME, sizeof(COIN_NAME));
     *outPtr = length;
-    os_memmove(outPtr + 1, coin->coinName, length);
+    os_memmove(outPtr + 1, COIN_NAME, length);
     outPtr += 1 + length;
 
     resp->outLength = outPtr - resp->buffer;

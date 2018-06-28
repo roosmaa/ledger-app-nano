@@ -1,6 +1,10 @@
 #include "coins.h"
 #include "coins_dsl.h"
 
+#ifndef IS_STANDALONE_APP
+
+libn_coin_conf_t libn_coin_conf_D;
+
 REGISTER_COINS(
     COIN(LIBN_COIN_TYPE_NANO, {
         /* coinName */ "Nano",
@@ -23,3 +27,5 @@ REGISTER_COINS(
         /* defaultUnitScale */ 29, // 1 BANANO = 10^29 raw
     })
 )
+
+#endif

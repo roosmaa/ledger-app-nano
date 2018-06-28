@@ -16,6 +16,7 @@
 *  limitations under the License.
 ********************************************************************************/
 
+#include "coins.h"
 #include "libn_internal.h"
 #include "libn_apdu_get_address.h"
 #include "libn_apdu_constants.h"
@@ -83,7 +84,6 @@ uint16_t libn_apdu_get_address(libn_apdu_response_t *resp) {
 }
 
 uint16_t libn_apdu_get_address_output(libn_apdu_response_t *resp, libn_apdu_get_address_request_t *req) {
-    const libn_coin_conf_t *coin = &libn_coin_conf_D;
     uint8_t length;
     uint8_t *outPtr = resp->buffer;
 
@@ -93,7 +93,7 @@ uint16_t libn_apdu_get_address_output(libn_apdu_response_t *resp, libn_apdu_get_
     outPtr += length;
 
     // Encode & output account address
-    length = libn_write_account_string(outPtr + 1, coin->addressDefaultPrefix, req->publicKey);
+    length = libn_write_account_string(outPtr + 1, COIN_DEFAULT_PREFIX, req->publicKey);
     *outPtr = length;
     outPtr += 1 + length;
 

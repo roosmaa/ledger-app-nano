@@ -28,7 +28,6 @@
 /** Buffer used for asynchronous response data **/
 extern uint8_t libn_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 extern libn_context_t libn_context_D;
-extern libn_coin_conf_t libn_coin_conf_D;
 
 /* Different APDU heaps are mutually exclusive,
    so can be mapped to a shared memory space. */
