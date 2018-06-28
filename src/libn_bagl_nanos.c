@@ -406,7 +406,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
 
     if (vars.confirmSignBlock.showRepresentative) {
         if (ux_step == step++) {
-            strcpy(vars.confirmSignBlock.confirmLabel, "Represtative");
+            strcpy(vars.confirmSignBlock.confirmLabel, "Representative");
             ui_write_address_full(
                 vars.confirmSignBlock.confirmValue,
                 req->representativePrefix,
