@@ -20,6 +20,6 @@ REGISTER_COINS(
         /* addressSecondaryPrefix */ "ban_",
         /* addressDefaultPrefix */ LIBN_PRIMARY_PREFIX,
         /* defaultUnit */ "BANANO",
-        /* defaultUnitScale */ 30, // 1 Mnano = 10^30 raw
+        /* defaultUnitScale */ 29, // 1 BANANO = 10^29 raw
     })
 )
