@@ -29,7 +29,7 @@
 
 #endif // HAVE_IO_U2F
 
-void ui_idle(void);
+void libn_bagl_idle(void);
 void ui_ticker_event(bool uxAllowed);
 
 void app_dispatch(void) {
@@ -197,13 +197,7 @@ void app_init(void) {
     BLE_power(true, "Ledger Wallet");
 #endif // HAVE_BLE
 
-#if defined(TARGET_BLUE)
-    // setup the status bar colors (remembered after wards, even
-    // more if another app does not resetup after app switch)
-    UX_SET_STATUS_BAR_COLOR(0xFFFFFF, LIBN_BAGL_COLOR_APP);
-#endif // TARGET_BLUE
-
-    ui_idle();
+    libn_bagl_idle();
 }
 
 void app_main(void) {
@@ -258,10 +252,14 @@ void u2f_message_timeout() {
 
     // reset apdu state
     G_io_apdu_state = APDU_IDLE;
-    G_io_apdu_offset = 0;
     G_io_apdu_length = 0;
-    G_io_apdu_seq = 0;
     G_io_apdu_media = IO_APDU_MEDIA_NONE;
+#if defined(TARGET_NANOS)
+    // These globals have been deprecated in Blue SDK (2.1.1), feel
+    // free to remove them when Nano S SDK also deprecates them
+    G_io_apdu_offset = 0;
+    G_io_apdu_seq = 0;
+#endif
 }
 
 #endif // HAVE_IO_U2F

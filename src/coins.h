@@ -36,28 +36,54 @@ void init_coin_config(libn_coin_type_t coin_type);
 #define COIN_DEFAULT_PREFIX libn_coin_conf_D.addressDefaultPrefix
 #define COIN_UNIT libn_coin_conf_D.defaultUnit
 #define COIN_UNIT_SCALE libn_coin_conf_D.defaultUnitScale
+#if defined(TARGET_BLUE)
+#define COIN_COLOR_BG libn_coin_conf_D.colorBackground
+#define COIN_COLOR_FG libn_coin_conf_D.colorForeground
+#define COIN_COLOR_ALT_BG libn_coin_conf_D.colorAltBackground
+#define COIN_COLOR_ALT_FG libn_coin_conf_D.colorAltForeground
+#endif // TARGET_BLUE
 
 #elif defined(DEFAULT_COIN_TYPE_LIBN_COIN_TYPE_NANO)
 
 #define COIN_NAME "Nano"
+#if defined(TARGET_BLUE)
+#define COIN_BADGE &C_blue_badge_nano
+#else
 #define COIN_BADGE &C_nanos_badge_nano
+#endif
 #define COIN_BIP32_PREFIX ((uint32_t [2]){ HARDENED(44), HARDENED(165) })
 #define COIN_PRIMARY_PREFIX "nano_"
 #define COIN_SECONDARY_PREFIX "xrb_"
 #define COIN_DEFAULT_PREFIX LIBN_SECONDARY_PREFIX
 #define COIN_UNIT "NANO"
 #define COIN_UNIT_SCALE 30
+#if defined(TARGET_BLUE)
+#define COIN_COLOR_BG 0xF9F9F9
+#define COIN_COLOR_FG 0x000000
+#define COIN_COLOR_ALT_BG 0x4A90E2
+#define COIN_COLOR_ALT_FG 0xE0FFFF
+#endif // TARGET_BLUE
 
 #elif defined(DEFAULT_COIN_TYPE_LIBN_COIN_TYPE_BANANO)
 
 #define COIN_NAME "Banano"
+#if defined(TARGET_BLUE)
+#define COIN_BADGE &C_blue_badge_banano
+#else
 #define COIN_BADGE &C_nanos_badge_banano
+#endif
 #define COIN_BIP32_PREFIX ((uint32_t [2]){ HARDENED(44), HARDENED(198) })
 #define COIN_PRIMARY_PREFIX "ban_"
 #define COIN_SECONDARY_PREFIX "ban_"
 #define COIN_DEFAULT_PREFIX LIBN_PRIMARY_PREFIX
 #define COIN_UNIT "BANANO"
 #define COIN_UNIT_SCALE 29
+#if defined(TARGET_BLUE)
+#define COIN_COLOR_BG 0xF9F9F9
+#define COIN_COLOR_FG 0x000000
+#define COIN_COLOR_ALT_BG 0xFBDD11
+#define COIN_COLOR_ALT_FG 0xFF6058
+#endif // TARGET_BLUE
 
 #endif
 

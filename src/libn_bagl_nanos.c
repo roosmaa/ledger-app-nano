@@ -142,7 +142,7 @@ const bagl_element_t *menu_prepro(const ux_menu_entry_t *menu_entry, bagl_elemen
     return element;
 }
 
-void ui_idle(void) {
+void libn_bagl_idle(void) {
     bagl_state = LIBN_STATE_READY;
     ux_step_count = 0;
     UX_MENU_DISPLAY(0, menu_main, menu_prepro);
@@ -267,7 +267,7 @@ uint32_t ui_display_address_button(uint32_t button_mask,
         return 0;
     }
 
-    ui_idle();
+    libn_bagl_idle();
     return 0;
 }
 
@@ -472,7 +472,7 @@ uint32_t ui_confirm_sign_block_button(uint32_t button_mask,
         return 0;
     }
 
-    ui_idle();
+    libn_bagl_idle();
     return 0;
 }
 
@@ -512,7 +512,7 @@ bool libn_bagl_apply_state() {
     switch (libn_context_D.state) {
     case LIBN_STATE_READY:
         if (bagl_state != LIBN_STATE_READY) {
-            ui_idle();
+            libn_bagl_idle();
             return true;
         }
         break;

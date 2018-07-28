@@ -65,6 +65,12 @@ typedef struct {
     const libn_address_prefix_t addressDefaultPrefix;
     const char defaultUnit[10];
     const uint8_t defaultUnitScale;
+#if defined(TARGET_BLUE)
+    const uint32_t colorBackground;
+    const uint32_t colorForeground;
+    const uint32_t colorAltBackground;
+    const uint32_t colorAltForeground;
+#endif // TARGET_BLUE
 } libn_coin_conf_t;
 
 typedef struct {
