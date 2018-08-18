@@ -47,9 +47,30 @@ libn_idle_state_t bagl_idle_state;
 #define OPEN_LABEL_PREFIX "Open "
 #define OPEN_LABEL_SUFFIX " wallet"
 
-char header_text[sizeof(COIN_NAME)+1];
+typedef union {
+    uint8_t buf[ACCOUNT_BUF_LEN + 1];
+    struct {
+        char first[ACCOUNT_BUF_LEN - LIBN_ACCOUNT_STRING_BASE_LEN / 2];
+        char second[LIBN_ACCOUNT_STRING_BASE_LEN / 2 + 1];
+    } lines;
+} ui_split_address_t;
+
+void ui_write_split_address(ui_split_address_t *address, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
+    const size_t addressLen = libn_write_account_string(address->buf, prefix, publicKey);
+    address->buf[addressLen] = '\0';
+    // Move the last 30 characters to the 2nd line memory space
+    address->lines.second[sizeof(address->lines.second) - 1] = '\0';
+    for (size_t i = 1; i < sizeof(address->lines.second); i++) {
+        const size_t di = sizeof(address->lines.second) - 1 - i;
+        const size_t si = addressLen - 1 - (i - 1);
+        address->lines.second[di] = address->buf[si];
+        address->buf[si] = '\0';
+    }
+}
+
 union {
     struct {
+        char appTitle[sizeof(COIN_NAME)+1];
         char openLabel[sizeof(OPEN_LABEL_PREFIX)
             + sizeof(COIN_NAME)
             + sizeof(OPEN_LABEL_SUFFIX)
@@ -59,7 +80,7 @@ union {
         bagl_element_t autoReceiveToggle;
     } settings;
     struct {
-        char account[ACCOUNT_BUF_LEN];
+        ui_split_address_t address;
     } displayAddress;
     struct {
         bool showAmount;
@@ -74,6 +95,8 @@ const bagl_element_t *ui_touch_settings(const bagl_element_t *e);
 const bagl_element_t *ui_touch_exit(const bagl_element_t *e);
 const bagl_element_t *ui_touch_back(const bagl_element_t *e);
 const bagl_element_t *ui_touch_auto_receive(const bagl_element_t *e);
+const bagl_element_t *ui_touch_reject(const bagl_element_t *e);
+const bagl_element_t *ui_touch_confirm(const bagl_element_t *e);
 
 const bagl_element_t ui_idle[] = {
     // Header background
@@ -103,7 +126,7 @@ const bagl_element_t ui_idle[] = {
       /* fgcolor */ COIN_COLOR_ALT_FG, /* bgcolor */ COIN_COLOR_ALT_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
-     /* text */ header_text, /* touch_area_brim */ 0,
+     /* text */ vars.idle.appTitle, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
     {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
@@ -183,11 +206,11 @@ void libn_bagl_idle(void) {
     UX_SET_STATUS_BAR_COLOR(COIN_COLOR_ALT_FG, COIN_COLOR_ALT_BG);
 
     // Uppercase the coin name
-    os_memset(header_text, 0, sizeof(header_text));
-    strncpy(header_text, COIN_NAME, MIN(sizeof(header_text)-1, sizeof(COIN_NAME)));
-    for (size_t i = 0; i < sizeof(header_text); i++) {
-        if (header_text[i] >= 'a' && header_text[i] <= 'z') {
-            header_text[i] = 'A' + header_text[i] - 'a';
+    os_memset(vars.idle.appTitle, 0, sizeof(vars.idle.appTitle));
+    strncpy(vars.idle.appTitle, COIN_NAME, MIN(sizeof(vars.idle.appTitle)-1, sizeof(COIN_NAME)));
+    for (size_t i = 0; i < sizeof(vars.idle.appTitle); i++) {
+        if (vars.idle.appTitle[i] >= 'a' && vars.idle.appTitle[i] <= 'z') {
+            vars.idle.appTitle[i] = 'A' + vars.idle.appTitle[i] - 'a';
         }
     }
 
@@ -367,6 +390,10 @@ const bagl_element_t *ui_settings_prepro(const bagl_element_t *e) {
 }
 
 void libn_bagl_settings(void) {
+    if (libn_context_D.state != LIBN_STATE_READY) {
+        return;
+    }
+
     bagl_state = LIBN_STATE_READY;
     bagl_idle_state = LIBN_IDLE_STATE_SETTINGS;
 
@@ -381,6 +408,100 @@ void libn_bagl_settings(void) {
         const size_t totalElements = sizeof(ui_settings) / sizeof(bagl_element_t);
         UX_REDISPLAY_IDX(totalElements - 1);
     }
+}
+
+const bagl_element_t ui_confirm_address[] = {
+    // Header background
+    {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
+      /* x */ 0, /* y */ 20, /* width */ 320, /* height */ 48,
+      /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* font_id */ 0, /* icon_id */ 0},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    // Content background
+    {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
+      /* x */ 0, /* y */ 68, /* width */ 320, /* height */ 413,
+      /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_BG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ 0, /* icon_id */ 0},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    // Header views
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
+      /* x */ 0, /* y */ 45, /* width */ 320, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ COIN_COLOR_ALT_FG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "CONFIRM ADDRESS", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    // Content views
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
+      /* x */ 30, /* y */ 105, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "Account address", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
+      /* x */ 30, /* y */ 131, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.displayAddress.address.lines.first, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
+      /* x */ 30, /* y */ 157, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.displayAddress.address.lines.second, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
+      /* x */ 40, /* y */ 414, /* width */ 115, /* height */ 36,
+      /* stroke */ 0, /* radius */ 18, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_REJECT_BG, /* bgcolor */ COIN_COLOR_REJECT_FG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
+      /* icon_id */ 0},
+     /* text */ "REJECT", /* touch_area_brim */ 0,
+     /* overfgcolor */ COIN_COLOR_REJECT_OVER_BG, /* overbgcolor */ COIN_COLOR_REJECT_OVER_FG,
+     /* tap */ ui_touch_reject, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
+      /* x */ 165, /* y */ 414, /* width */ 115, /* height */ 36,
+      /* stroke */ 0, /* radius */ 18, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_CONFIRM_BG, /* bgcolor */ COIN_COLOR_CONFIRM_FG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
+      /* icon_id */ 0},
+     /* text */ "CONFIRM", /* touch_area_brim */ 0,
+     /* overfgcolor */ COIN_COLOR_CONFIRM_OVER_BG, /* overbgcolor */ COIN_COLOR_CONFIRM_OVER_FG,
+     /* tap */ ui_touch_confirm, /* out */ NULL, /* over */ NULL},
+};
+
+uint32_t ui_confirm_address_button(uint32_t button_mask,
+                                   uint32_t button_mask_counter) {
+    return 0;
+}
+
+void libn_bagl_confirm_address(void) {
+    if (libn_context_D.state != LIBN_STATE_CONFIRM_ADDRESS) {
+        return;
+    }
+
+    bagl_state = LIBN_STATE_CONFIRM_ADDRESS;
+    UX_DISPLAY(ui_confirm_address, NULL);
 }
 
 void ui_ticker_event(bool uxAllowed) {
@@ -407,9 +528,7 @@ bool libn_bagl_apply_state() {
         break;
     case LIBN_STATE_CONFIRM_ADDRESS:
         if (bagl_state != LIBN_STATE_CONFIRM_ADDRESS) {
-            // TODO
-            libn_bagl_idle();
-            // libn_bagl_display_address();
+            libn_bagl_confirm_address();
             return true;
         }
         break;
@@ -446,6 +565,20 @@ const bagl_element_t *ui_touch_back(const bagl_element_t *e) {
 const bagl_element_t *ui_touch_auto_receive(const bagl_element_t *e) {
     libn_set_auto_receive(!N_libn.autoReceive);
     libn_bagl_settings();
+    return NULL;
+}
+
+const bagl_element_t *ui_touch_reject(const bagl_element_t *e) {
+    if (bagl_state == LIBN_STATE_CONFIRM_ADDRESS) {
+        libn_bagl_display_address_callback(false);
+    }
+    return NULL;
+}
+
+const bagl_element_t *ui_touch_confirm(const bagl_element_t *e) {
+    if (bagl_state == LIBN_STATE_CONFIRM_ADDRESS) {
+        libn_bagl_display_address_callback(true);
+    }
     return NULL;
 }
 

@@ -41,6 +41,14 @@ void init_coin_config(libn_coin_type_t coin_type);
 #define COIN_COLOR_FG libn_coin_conf_D.colorForeground
 #define COIN_COLOR_ALT_BG libn_coin_conf_D.colorAltBackground
 #define COIN_COLOR_ALT_FG libn_coin_conf_D.colorAltForeground
+#define COIN_COLOR_REJECT_BG libn_coin_conf_D.colorRejectBackground
+#define COIN_COLOR_REJECT_FG libn_coin_conf_D.colorRejectForeground
+#define COIN_COLOR_REJECT_OVER_BG libn_coin_conf_D.colorRejectOverBackground
+#define COIN_COLOR_REJECT_OVER_FG libn_coin_conf_D.colorRejectOverForeground
+#define COIN_COLOR_CONFIRM_BG libn_coin_conf_D.colorConfirmBackground
+#define COIN_COLOR_CONFIRM_FG libn_coin_conf_D.colorConfirmForeground
+#define COIN_COLOR_CONFIRM_OVER_BG libn_coin_conf_D.colorConfirmOverBackground
+#define COIN_COLOR_CONFIRM_OVER_FG libn_coin_conf_D.colorConfirmOverForeground
 #endif // TARGET_BLUE
 
 #elif defined(DEFAULT_COIN_TYPE_LIBN_COIN_TYPE_NANO)
@@ -62,6 +70,14 @@ void init_coin_config(libn_coin_type_t coin_type);
 #define COIN_COLOR_FG 0x000000
 #define COIN_COLOR_ALT_BG 0x4A90E2
 #define COIN_COLOR_ALT_FG 0xE0FFFF
+#define COIN_COLOR_REJECT_BG 0xCCCCCC
+#define COIN_COLOR_REJECT_FG 0x000000
+#define COIN_COLOR_REJECT_OVER_BG 0xB7B7B7
+#define COIN_COLOR_REJECT_OVER_FG 0x000000
+#define COIN_COLOR_CONFIRM_BG 0x32BC49
+#define COIN_COLOR_CONFIRM_FG 0xFFFFFF
+#define COIN_COLOR_CONFIRM_OVER_BG 0x248C35
+#define COIN_COLOR_CONFIRM_OVER_FG 0xFFFFFF
 #endif // TARGET_BLUE
 
 #elif defined(DEFAULT_COIN_TYPE_LIBN_COIN_TYPE_BANANO)
@@ -83,6 +99,14 @@ void init_coin_config(libn_coin_type_t coin_type);
 #define COIN_COLOR_FG 0x000000
 #define COIN_COLOR_ALT_BG 0xFBDD11
 #define COIN_COLOR_ALT_FG 0xFF6058
+#define COIN_COLOR_REJECT_BG 0xCCCCCC
+#define COIN_COLOR_REJECT_FG 0x000000
+#define COIN_COLOR_REJECT_OVER_BG 0xB7B7B7
+#define COIN_COLOR_REJECT_OVER_FG 0x000000
+#define COIN_COLOR_CONFIRM_BG 0x32BC49
+#define COIN_COLOR_CONFIRM_FG 0xFFFFFF
+#define COIN_COLOR_CONFIRM_OVER_BG 0x248C35
+#define COIN_COLOR_CONFIRM_OVER_FG 0xFFFFFF
 #endif // TARGET_BLUE
 
 #endif

@@ -24,6 +24,14 @@ REGISTER_COINS(
         /* colorForeground */ 0x000000,
         /* colorAltBackground */ 0x4A90E2,
         /* colorAltForeground */ 0xE0FFFF,
+        /* colorRejectBackground */ 0xCCCCCC,
+        /* colorRejectForeground */ 0x000000,
+        /* colorRejectOverBackground */ 0xB7B7B7,
+        /* colorRejectOverForeground */ 0x000000,
+        /* colorConfirmBackground */ 0x32BC49,
+        /* colorConfirmForeground */ 0xFFFFFF,
+        /* colorConfirmOverBackground */ 0x248C35,
+        /* colorConfirmOverForeground */ 0xFFFFFF,
 #endif // TARGET_BLUE
     })
     COIN(LIBN_COIN_TYPE_BANANO, {
@@ -44,6 +52,14 @@ REGISTER_COINS(
         /* colorForeground */ 0x000000,
         /* colorAltBackground */ 0xFBDD11,
         /* colorAltForeground */ 0xFF6058,
+        /* colorRejectBackground */ 0xCCCCCC,
+        /* colorRejectForeground */ 0x000000,
+        /* colorRejectOverBackground */ 0xB7B7B7,
+        /* colorRejectOverForeground */ 0x000000,
+        /* colorConfirmBackground */ 0x32BC49,
+        /* colorConfirmForeground */ 0xFFFFFF,
+        /* colorConfirmOverBackground */ 0x248C35,
+        /* colorConfirmOverForeground */ 0xFFFFFF,
 #endif // TARGET_BLUE
     })
 )

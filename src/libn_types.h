@@ -70,6 +70,14 @@ typedef struct {
     const uint32_t colorForeground;
     const uint32_t colorAltBackground;
     const uint32_t colorAltForeground;
+    const uint32_t colorRejectBackground;
+    const uint32_t colorRejectForeground;
+    const uint32_t colorRejectOverBackground;
+    const uint32_t colorRejectOverForeground;
+    const uint32_t colorConfirmBackground;
+    const uint32_t colorConfirmForeground;
+    const uint32_t colorConfirmOverBackground;
+    const uint32_t colorConfirmOverForeground;
 #endif // TARGET_BLUE
 } libn_coin_conf_t;
 
