@@ -395,7 +395,7 @@ const bagl_element_t ui_settings[] = {
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
       /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
       /* font_id */ 0, /* icon_id */ 0},
-     /* text */ (char *)&C_blue_icon_toggle_off, /* touch_area_brim */ 0,
+     /* text */ (char *)COIN_ICON_TOGGLE_OFF, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
 };
@@ -414,8 +414,8 @@ const bagl_element_t *ui_settings_prepro(const bagl_element_t *e) {
     case 0x01:
         os_memmove(&mutableElement, e, sizeof(bagl_element_t));
         mutableElement.text = (const char *)(N_libn.autoReceive
-            ? &C_blue_icon_toggle_on
-            : &C_blue_icon_toggle_off);
+            ? COIN_ICON_TOGGLE_ON
+            : COIN_ICON_TOGGLE_OFF);
         return &mutableElement;
     }
 

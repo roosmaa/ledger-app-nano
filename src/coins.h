@@ -49,6 +49,8 @@ void init_coin_config(libn_coin_type_t coin_type);
 #define COIN_COLOR_CONFIRM_FG libn_coin_conf_D.colorConfirmForeground
 #define COIN_COLOR_CONFIRM_OVER_BG libn_coin_conf_D.colorConfirmOverBackground
 #define COIN_COLOR_CONFIRM_OVER_FG libn_coin_conf_D.colorConfirmOverForeground
+#define COIN_ICON_TOGGLE_OFF libn_coin_conf_D.iconToggleOff
+#define COIN_ICON_TOGGLE_ON libn_coin_conf_D.iconToggleOn
 #endif // TARGET_BLUE
 
 #elif defined(DEFAULT_COIN_TYPE_LIBN_COIN_TYPE_NANO)
@@ -70,14 +72,16 @@ void init_coin_config(libn_coin_type_t coin_type);
 #define COIN_COLOR_FG 0x000000
 #define COIN_COLOR_ALT_BG 0x4A90E2
 #define COIN_COLOR_ALT_FG 0xE0FFFF
-#define COIN_COLOR_REJECT_BG 0xCCCCCC
+#define COIN_COLOR_REJECT_BG 0xC6C6C6
 #define COIN_COLOR_REJECT_FG 0x000000
-#define COIN_COLOR_REJECT_OVER_BG 0xB7B7B7
+#define COIN_COLOR_REJECT_OVER_BG 0xADADAD
 #define COIN_COLOR_REJECT_OVER_FG 0x000000
-#define COIN_COLOR_CONFIRM_BG 0x32BC49
-#define COIN_COLOR_CONFIRM_FG 0xFFFFFF
-#define COIN_COLOR_CONFIRM_OVER_BG 0x248C35
+#define COIN_COLOR_CONFIRM_BG 0x4A90E2
+#define COIN_COLOR_CONFIRM_FG 0xE0FFFF
+#define COIN_COLOR_CONFIRM_OVER_BG 0x3177C9
 #define COIN_COLOR_CONFIRM_OVER_FG 0xFFFFFF
+#define COIN_ICON_TOGGLE_OFF &C_blue_icon_toggle_off
+#define COIN_ICON_TOGGLE_ON &C_blue_icon_toggle_on_nano
 #endif // TARGET_BLUE
 
 #elif defined(DEFAULT_COIN_TYPE_LIBN_COIN_TYPE_BANANO)
@@ -99,14 +103,16 @@ void init_coin_config(libn_coin_type_t coin_type);
 #define COIN_COLOR_FG 0x000000
 #define COIN_COLOR_ALT_BG 0xFBDD11
 #define COIN_COLOR_ALT_FG 0xFF6058
-#define COIN_COLOR_REJECT_BG 0xCCCCCC
+#define COIN_COLOR_REJECT_BG 0xC6C6C6
 #define COIN_COLOR_REJECT_FG 0x000000
-#define COIN_COLOR_REJECT_OVER_BG 0xB7B7B7
+#define COIN_COLOR_REJECT_OVER_BG 0xADADAD
 #define COIN_COLOR_REJECT_OVER_FG 0x000000
-#define COIN_COLOR_CONFIRM_BG 0x32BC49
-#define COIN_COLOR_CONFIRM_FG 0xFFFFFF
-#define COIN_COLOR_CONFIRM_OVER_BG 0x248C35
-#define COIN_COLOR_CONFIRM_OVER_FG 0xFFFFFF
+#define COIN_COLOR_CONFIRM_BG 0xFBDD11
+#define COIN_COLOR_CONFIRM_FG 0xFF6058
+#define COIN_COLOR_CONFIRM_OVER_BG 0xE2C400
+#define COIN_COLOR_CONFIRM_OVER_FG 0xE6473F
+#define COIN_ICON_TOGGLE_OFF &C_blue_icon_toggle_off
+#define COIN_ICON_TOGGLE_ON &C_blue_icon_toggle_on_banano
 #endif // TARGET_BLUE
 
 #endif

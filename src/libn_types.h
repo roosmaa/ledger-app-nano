@@ -78,6 +78,8 @@ typedef struct {
     const uint32_t colorConfirmForeground;
     const uint32_t colorConfirmOverBackground;
     const uint32_t colorConfirmOverForeground;
+    const bagl_icon_details_t *iconToggleOff;
+    const bagl_icon_details_t *iconToggleOn;
 #endif // TARGET_BLUE
 } libn_coin_conf_t;
 
