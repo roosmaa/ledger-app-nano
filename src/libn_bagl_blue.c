@@ -37,10 +37,13 @@ extern ux_state_t ux;
 libn_state_t bagl_state;
 libn_idle_state_t bagl_idle_state;
 
+#define COIN_MAX_PREFIX ( \
+    MAX(sizeof(COIN_PRIMARY_PREFIX), \
+        sizeof(COIN_SECONDARY_PREFIX)) \
+)
 #define ACCOUNT_BUF_LEN ( \
     LIBN_ACCOUNT_STRING_BASE_LEN \
-    + MAX(sizeof(COIN_PRIMARY_PREFIX), \
-          sizeof(COIN_SECONDARY_PREFIX)) \
+    + COIN_MAX_PREFIX \
     + 1 \
 )
 
@@ -68,6 +71,36 @@ void ui_write_split_address(ui_split_address_t *address, libn_address_prefix_t p
     }
 }
 
+typedef char ui_truncated_address_t[13 + COIN_MAX_PREFIX];
+
+void ui_write_address_truncated(ui_truncated_address_t label, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
+    uint8_t buf[ACCOUNT_BUF_LEN];
+    const size_t addressLen = libn_write_account_string(buf, prefix, publicKey);
+    const size_t prefixLen = addressLen - LIBN_ACCOUNT_STRING_BASE_LEN;
+
+    os_memmove(label, buf, prefixLen + 5);
+    os_memset(label + prefixLen + 5, '.', 2);
+    os_memmove(label + prefixLen + 7, buf + addressLen - 5, 5);
+    label[prefixLen+12] = '\0';
+}
+
+typedef char ui_truncated_hash_t[13];
+
+void ui_write_hash_truncated(ui_truncated_hash_t label, libn_hash_t hash) {
+    uint8_t buf[sizeof(libn_hash_t) * 2];
+    libn_write_hex_string(buf, hash, sizeof(libn_hash_t));
+    // Truncate hash to 12345..67890 format
+    os_memmove(label, buf, 5);
+    os_memset(label+5, '.', 2);
+    os_memmove(label+7, buf+sizeof(buf)-5, 5);
+    label[12] = '\0';
+}
+
+#define SEND_AMOUNT_LABEL "Send amount"
+#define RECEIVE_AMOUNT_LABEL "Receive amount"
+
+bagl_element_t mutableElement;
+
 union {
     struct {
         char appTitle[sizeof(COIN_NAME)+1];
@@ -77,17 +110,17 @@ union {
             + 1];
     } idle;
     struct {
-        bagl_element_t autoReceiveToggle;
     } settings;
     struct {
         ui_split_address_t address;
     } displayAddress;
     struct {
-        bool showAmount;
-        bool showRecipient;
-        bool showRepresentative;
-        char confirmLabel[20];
-        char confirmValue[MAX(ACCOUNT_BUF_LEN, 2*sizeof(libn_hash_t)+1)];
+        ui_truncated_address_t accountAddress;
+        char amountLabel[MAX(sizeof(SEND_AMOUNT_LABEL), sizeof(RECEIVE_AMOUNT_LABEL))];
+        char amountValue[40];
+        ui_split_address_t recipientAddress;
+        ui_split_address_t representativeAddress;
+        ui_truncated_hash_t blockHash;
     } confirmSignBlock;
 } vars;
 
@@ -379,11 +412,11 @@ const bagl_element_t *ui_settings_prepro(const bagl_element_t *e) {
 
     switch (e->component.userid) {
     case 0x01:
-        os_memmove(&vars.settings.autoReceiveToggle, e, sizeof(bagl_element_t));
-        vars.settings.autoReceiveToggle.text = (const char *)(N_libn.autoReceive
+        os_memmove(&mutableElement, e, sizeof(bagl_element_t));
+        mutableElement.text = (const char *)(N_libn.autoReceive
             ? &C_blue_icon_toggle_on
             : &C_blue_icon_toggle_off);
-        return &vars.settings.autoReceiveToggle;
+        return &mutableElement;
     }
 
     return e;
@@ -499,13 +532,286 @@ void libn_bagl_confirm_address(void) {
     if (libn_context_D.state != LIBN_STATE_CONFIRM_ADDRESS) {
         return;
     }
+    libn_apdu_get_address_request_t *req = &libn_context_D.stateData.getAddressRequest;
+
+    os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
+    // Encode public key into an address string
+    ui_write_split_address(
+      &vars.displayAddress.address,
+      COIN_DEFAULT_PREFIX,
+      req->publicKey);
 
     bagl_state = LIBN_STATE_CONFIRM_ADDRESS;
     UX_DISPLAY(ui_confirm_address, NULL);
 }
 
+const bagl_element_t ui_confirm_block[] = {
+    // Header background
+    {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
+      /* x */ 0, /* y */ 20, /* width */ 320, /* height */ 48,
+      /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* font_id */ 0, /* icon_id */ 0},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    // Content background
+    {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
+      /* x */ 0, /* y */ 68, /* width */ 320, /* height */ 413,
+      /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_BG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ 0, /* icon_id */ 0},
+     /* text */ NULL, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    // Header views
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
+      /* x */ 0, /* y */ 45, /* width */ 320, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
+      /* fgcolor */ COIN_COLOR_ALT_FG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "CONFIRM BLOCK", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    // Content views
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x10,
+      /* x */ 30, /* y */ 105, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "Your account", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x11,
+      /* x */ 30, /* y */ 131, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.accountAddress, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x20,
+      /* x */ 30, /* y */ 160, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.amountLabel, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x21,
+      /* x */ 30, /* y */ 186, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.amountValue, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x30,
+      /* x */ 30, /* y */ 215, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "Send to", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x31,
+      /* x */ 30, /* y */ 241, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.recipientAddress.lines.first,
+     /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x32,
+      /* x */ 30, /* y */ 262, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.recipientAddress.lines.second,
+     /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x40,
+      /* x */ 30, /* y */ 291, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "Representative", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x41,
+      /* x */ 30, /* y */ 317, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.representativeAddress.lines.first,
+     /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x42,
+      /* x */ 30, /* y */ 338, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.representativeAddress.lines.second,
+     /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x50,
+      /* x */ 30, /* y */ 367, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ "Block hash", /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_LABELINE, /* userid */ 0x51,
+      /* x */ 30, /* y */ 393, /* width */ 260, /* height */ 30,
+      /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
+      /* scrollspeed */ 0},
+     /* text */ vars.confirmSignBlock.blockHash, /* touch_area_brim */ 0,
+     /* overfgcolor */ 0, /* overbgcolor */ 0,
+     /* tap */ NULL, /* out */ NULL, /* over */ NULL},
+
+    {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
+      /* x */ 40, /* y */ 414, /* width */ 115, /* height */ 36,
+      /* stroke */ 0, /* radius */ 18, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_REJECT_BG, /* bgcolor */ COIN_COLOR_REJECT_FG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
+      /* icon_id */ 0},
+     /* text */ "REJECT", /* touch_area_brim */ 0,
+     /* overfgcolor */ COIN_COLOR_REJECT_OVER_BG, /* overbgcolor */ COIN_COLOR_REJECT_OVER_FG,
+     /* tap */ ui_touch_reject, /* out */ NULL, /* over */ NULL},
+    {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
+      /* x */ 165, /* y */ 414, /* width */ 115, /* height */ 36,
+      /* stroke */ 0, /* radius */ 18, /* fill */ BAGL_FILL,
+      /* fgcolor */ COIN_COLOR_CONFIRM_BG, /* bgcolor */ COIN_COLOR_CONFIRM_FG,
+      /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
+      /* icon_id */ 0},
+     /* text */ "CONFIRM", /* touch_area_brim */ 0,
+     /* overfgcolor */ COIN_COLOR_CONFIRM_OVER_BG, /* overbgcolor */ COIN_COLOR_CONFIRM_OVER_FG,
+     /* tap */ ui_touch_confirm, /* out */ NULL, /* over */ NULL},
+};
+
+uint32_t ui_confirm_block_button(uint32_t button_mask,
+                                   uint32_t button_mask_counter) {
+    return 0;
+}
+
+const bagl_element_t *ui_confirm_block_prepro(const bagl_element_t *e) {
+    const bool showAmount = vars.confirmSignBlock.amountValue[0] != '\0';
+    const bool showRecipient = vars.confirmSignBlock.recipientAddress.buf[0] != '\0';
+    const bool showRepresentative = vars.confirmSignBlock.representativeAddress.buf[0] != '\0';
+
+    uint16_t y = 97;
+
+    #define LAYOUT(el_uid, el_vis) {                    \
+        if (el_vis) {                                   \
+            const bool isHeader = (el_uid & 0x0F) == 0; \
+            y += isHeader ? 8 : 0;                      \
+            if (e->component.userid == el_uid) {        \
+                os_memmove(&mutableElement, e,          \
+                    sizeof(bagl_element_t));            \
+                mutableElement.component.y = y;        \
+                return &mutableElement;                 \
+            }                                           \
+            y += (isHeader ? 5 : 0) + 21;               \
+        } else if (e->component.userid == el_uid) {     \
+            return NULL;                                \
+        }                                               \
+    }
+
+    // Account
+    LAYOUT(0x10, true);
+    LAYOUT(0x11, true);
+    // Amount
+    LAYOUT(0x20, showAmount);
+    LAYOUT(0x21, showAmount);
+    // Recipient
+    LAYOUT(0x30, showRecipient);
+    LAYOUT(0x31, showRecipient);
+    LAYOUT(0x32, showRecipient);
+    // Representative
+    LAYOUT(0x40, showRepresentative);
+    LAYOUT(0x41, showRepresentative);
+    LAYOUT(0x42, showRepresentative);
+    // Block hash
+    LAYOUT(0x50, true);
+    LAYOUT(0x51, true);
+
+    #undef LAYOUT
+
+    return e;
+}
+
+void libn_bagl_confirm_block(void) {
+    if (libn_context_D.state != LIBN_STATE_CONFIRM_SIGNATURE) {
+        return;
+    }
+    libn_apdu_sign_block_request_t *req = &libn_context_D.stateData.signBlockRequest;
+
+    os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
+
+    ui_write_address_truncated(
+        vars.confirmSignBlock.accountAddress,
+        COIN_DEFAULT_PREFIX,
+        req->publicKey);
+
+    if (!libn_is_zero(req->amount, sizeof(req->amount))) {
+        libn_amount_format(
+            vars.confirmSignBlock.amountValue,
+            sizeof(vars.confirmSignBlock.amountValue),
+            req->amount);
+
+        if (!libn_is_zero(req->recipient, sizeof(req->recipient))) {
+            strcpy(vars.confirmSignBlock.amountLabel, SEND_AMOUNT_LABEL);
+            ui_write_split_address(
+                &vars.confirmSignBlock.recipientAddress,
+                req->recipientPrefix,
+                req->recipient);
+        } else {
+            strcpy(vars.confirmSignBlock.amountLabel, RECEIVE_AMOUNT_LABEL);
+        }
+    }
+
+    if (!libn_is_zero(req->representative, sizeof(req->representative))) {
+        ui_write_split_address(
+            &vars.confirmSignBlock.representativeAddress,
+            req->representativePrefix,
+            req->representative);
+    }
+
+    ui_write_hash_truncated(
+        vars.confirmSignBlock.blockHash,
+        req->blockHash);
+
+    bagl_state = LIBN_STATE_CONFIRM_SIGNATURE;
+    UX_DISPLAY(ui_confirm_block, ui_confirm_block_prepro);
+}
+
 void ui_ticker_event(bool uxAllowed) {
-    // TODO
 }
 
 bool libn_bagl_apply_state() {
@@ -534,9 +840,7 @@ bool libn_bagl_apply_state() {
         break;
     case LIBN_STATE_CONFIRM_SIGNATURE:
         if (bagl_state != LIBN_STATE_CONFIRM_SIGNATURE) {
-            // TODO
-            libn_bagl_idle();
-            // libn_bagl_confirm_sign_block();
+            libn_bagl_confirm_block();
             return true;
         }
         break;
@@ -569,15 +873,27 @@ const bagl_element_t *ui_touch_auto_receive(const bagl_element_t *e) {
 }
 
 const bagl_element_t *ui_touch_reject(const bagl_element_t *e) {
-    if (bagl_state == LIBN_STATE_CONFIRM_ADDRESS) {
+    switch (bagl_state) {
+    case LIBN_STATE_READY: break;
+    case LIBN_STATE_CONFIRM_ADDRESS:
         libn_bagl_display_address_callback(false);
+        break;
+    case LIBN_STATE_CONFIRM_SIGNATURE:
+        libn_bagl_confirm_sign_block_callback(false);
+        break;
     }
     return NULL;
 }
 
 const bagl_element_t *ui_touch_confirm(const bagl_element_t *e) {
-    if (bagl_state == LIBN_STATE_CONFIRM_ADDRESS) {
+    switch (bagl_state) {
+    case LIBN_STATE_READY: break;
+    case LIBN_STATE_CONFIRM_ADDRESS:
         libn_bagl_display_address_callback(true);
+        break;
+    case LIBN_STATE_CONFIRM_SIGNATURE:
+        libn_bagl_confirm_sign_block_callback(true);
+        break;
     }
     return NULL;
 }
