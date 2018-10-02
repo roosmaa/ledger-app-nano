@@ -80,7 +80,7 @@ DEFINES += DEFAULT_COIN_TYPE_$(BANANO_COIN_TYPE)
 endif
 DEFINES += DEFAULT_COIN_TYPE=$(BANANO_COIN_TYPE)
 
-else ifeq ($(filter clean,$(MAKECMDGOALS)),)
+else ifeq ($(filter clean listvariants,$(MAKECMDGOALS)),)
 $(error Unsupported COIN - use nano, banano)
 endif
 
