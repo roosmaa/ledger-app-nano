@@ -54,7 +54,9 @@ APP_LOAD_FLAGS = --appFlags 0x50 --dep Nano
 DEFINES += SHARED_LIBRARY_NAME=\"$(NANO_APP_NAME)\"
 
 else
+ifneq ($(MAKECMDGOALS),listvariants)
 $(error Unsupported APP_TYPE - use standalone, shared)
+endif
 endif
 
 ifeq ($(COIN),nano)
