@@ -80,7 +80,6 @@ typedef struct {
              + sizeof((libn_coin_conf_t){}.defaultUnit)
              + 1 /* '\0' NULL terminator */];
     libn_amount_t num;
-    uint8_t unitLen;
 } libn_amount_format_heap_t;
 
 #endif // LIBN_HEAPS_H

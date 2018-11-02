@@ -19,6 +19,7 @@
 #include "libn_apdu_constants.h"
 #include "libn_apdu_sign_block.h"
 #include "libn_bagl.h"
+#include "coins.h"
 
 #define P1_UNUSED 0x00
 
@@ -60,17 +61,24 @@ uint16_t libn_apdu_sign_block(libn_apdu_response_t *resp) {
         return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
-    // Store address display format preferences
+    // Configure the formatters
+    libn_address_formatter_for_coin(&req->addressFormatter, COIN_DEFAULT_PREFIX);
+    libn_amount_formatter_for_coin(&req->amountFormatter);
+
+    libn_address_prefix_t prefix;
     if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_RECIPIENT_SECONDARY_PREFIX_FLAG) != 0) {
-        req->recipientPrefix = LIBN_SECONDARY_PREFIX;
+        prefix = LIBN_SECONDARY_PREFIX;
     } else {
-        req->recipientPrefix = LIBN_PRIMARY_PREFIX;
+        prefix = LIBN_PRIMARY_PREFIX;
     }
+    libn_address_formatter_for_coin(&req->recipientFormatter, prefix);
+
     if ((G_io_apdu_buffer[ISO_OFFSET_P2] & P2_REPRESENTATIVE_SECONDARY_PREFIX_FLAG) != 0) {
-        req->representativePrefix = LIBN_SECONDARY_PREFIX;
+        prefix = LIBN_SECONDARY_PREFIX;
     } else {
-        req->representativePrefix = LIBN_PRIMARY_PREFIX;
+        prefix = LIBN_PRIMARY_PREFIX;
     }
+    libn_address_formatter_for_coin(&req->representativeFormatter, prefix);
 
     // Derive public key for hashing
     libn_derive_keypair(req->keyPath, h->privateKey, req->publicKey);

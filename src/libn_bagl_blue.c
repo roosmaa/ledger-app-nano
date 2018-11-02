@@ -58,8 +58,10 @@ typedef union {
     } lines;
 } ui_split_address_t;
 
-void ui_write_split_address(ui_split_address_t *address, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
-    const size_t addressLen = libn_write_account_string(address->buf, prefix, publicKey);
+void ui_write_split_address(const libn_address_formatter_t *fmt,
+                            ui_split_address_t *address,
+                            const libn_public_key_t publicKey) {
+    const size_t addressLen = libn_address_format(fmt, address->buf, publicKey);
     address->buf[addressLen] = '\0';
     // Move the last 30 characters to the 2nd line memory space
     address->lines.second[sizeof(address->lines.second) - 1] = '\0';
@@ -73,9 +75,11 @@ void ui_write_split_address(ui_split_address_t *address, libn_address_prefix_t p
 
 typedef char ui_truncated_address_t[13 + COIN_MAX_PREFIX];
 
-void ui_write_address_truncated(ui_truncated_address_t label, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
+void ui_write_address_truncated(const libn_address_formatter_t *fmt,
+                                ui_truncated_address_t label,
+                                const libn_public_key_t publicKey) {
     uint8_t buf[ACCOUNT_BUF_LEN];
-    const size_t addressLen = libn_write_account_string(buf, prefix, publicKey);
+    const size_t addressLen = libn_address_format(fmt, buf, publicKey);
     const size_t prefixLen = addressLen - LIBN_ACCOUNT_STRING_BASE_LEN;
 
     os_memmove(label, buf, prefixLen + 5);
@@ -537,9 +541,9 @@ void libn_bagl_confirm_address(void) {
     os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
     // Encode public key into an address string
     ui_write_split_address(
-      &vars.displayAddress.address,
-      COIN_DEFAULT_PREFIX,
-      req->publicKey);
+        &req->addressFormatter,
+        &vars.displayAddress.address,
+        req->publicKey);
 
     bagl_state = LIBN_STATE_CONFIRM_ADDRESS;
     UX_DISPLAY(ui_confirm_address, NULL);
@@ -775,12 +779,13 @@ void libn_bagl_confirm_block(void) {
     os_memset(&vars.confirmSignBlock, 0, sizeof(vars.confirmSignBlock));
 
     ui_write_address_truncated(
+        &req->addressFormatter,
         vars.confirmSignBlock.accountAddress,
-        COIN_DEFAULT_PREFIX,
         req->publicKey);
 
     if (!libn_is_zero(req->amount, sizeof(req->amount))) {
         libn_amount_format(
+            &req->amountFormatter,
             vars.confirmSignBlock.amountValue,
             sizeof(vars.confirmSignBlock.amountValue),
             req->amount);
@@ -788,8 +793,8 @@ void libn_bagl_confirm_block(void) {
         if (!libn_is_zero(req->recipient, sizeof(req->recipient))) {
             strcpy(vars.confirmSignBlock.amountLabel, SEND_AMOUNT_LABEL);
             ui_write_split_address(
+                &req->recipientFormatter,
                 &vars.confirmSignBlock.recipientAddress,
-                req->recipientPrefix,
                 req->recipient);
         } else {
             strcpy(vars.confirmSignBlock.amountLabel, RECEIVE_AMOUNT_LABEL);
@@ -798,8 +803,8 @@ void libn_bagl_confirm_block(void) {
 
     if (!libn_is_zero(req->representative, sizeof(req->representative))) {
         ui_write_split_address(
+            &req->representativeFormatter,
             &vars.confirmSignBlock.representativeAddress,
-            req->representativePrefix,
             req->representative);
     }
 
