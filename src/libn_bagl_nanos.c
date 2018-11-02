@@ -54,8 +54,10 @@ union {
     } confirmSignBlock;
 } vars;
 
-void ui_write_address_truncated(char *label, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
-    const size_t addressLen = libn_write_account_string((uint8_t *)label, prefix, publicKey);
+void ui_write_address_truncated(const libn_address_formatter_t *fmt,
+                                char *label,
+                                const libn_public_key_t publicKey) {
+    const size_t addressLen = libn_address_format(fmt, (uint8_t *)label, publicKey);
     const size_t prefixLen = addressLen - LIBN_ACCOUNT_STRING_BASE_LEN;
 
     os_memset(label + prefixLen + 5, '.', 2);
@@ -63,8 +65,10 @@ void ui_write_address_truncated(char *label, libn_address_prefix_t prefix, libn_
     label[prefixLen+12] = '\0';
 }
 
-void ui_write_address_full(char *label, libn_address_prefix_t prefix, libn_public_key_t publicKey) {
-    const size_t addressLen = libn_write_account_string((uint8_t *)label, prefix, publicKey);
+void ui_write_address_full(const libn_address_formatter_t *fmt,
+                           char *label,
+                           const libn_public_key_t publicKey) {
+    const size_t addressLen = libn_address_format(fmt, (uint8_t *)label, publicKey);
     label[addressLen] = '\0';
 }
 
@@ -280,9 +284,9 @@ void libn_bagl_display_address(void) {
     os_memset(&vars.displayAddress, 0, sizeof(vars.displayAddress));
     // Encode public key into an address string
     ui_write_address_full(
-      vars.displayAddress.account,
-      COIN_DEFAULT_PREFIX,
-      req->publicKey);
+        &req->addressFormatter,
+        vars.displayAddress.account,
+        req->publicKey);
 
     bagl_state = LIBN_STATE_CONFIRM_ADDRESS;
     ux_step_count = 2;
@@ -372,8 +376,8 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
     if (ux_step == step++) {
         strcpy(vars.confirmSignBlock.confirmLabel, "Your account");
         ui_write_address_truncated(
+            &req->addressFormatter,
             vars.confirmSignBlock.confirmValue,
-            COIN_DEFAULT_PREFIX,
             req->publicKey);
         return;
     }
@@ -386,6 +390,7 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
                 strcpy(vars.confirmSignBlock.confirmLabel, "Receive amount");
             }
             libn_amount_format(
+                &req->amountFormatter,
                 vars.confirmSignBlock.confirmValue,
                 sizeof(vars.confirmSignBlock.confirmValue),
                 req->amount);
@@ -397,8 +402,8 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         if (ux_step == step++) {
             strcpy(vars.confirmSignBlock.confirmLabel, "Send to");
             ui_write_address_full(
+                &req->recipientFormatter,
                 vars.confirmSignBlock.confirmValue,
-                req->recipientPrefix,
                 req->recipient);
             return;
         }
@@ -408,8 +413,8 @@ void ui_confirm_sign_block_prepare_confirm_step(void) {
         if (ux_step == step++) {
             strcpy(vars.confirmSignBlock.confirmLabel, "Representative");
             ui_write_address_full(
+                &req->representativeFormatter,
                 vars.confirmSignBlock.confirmValue,
-                req->representativePrefix,
                 req->representative);
             return;
         }

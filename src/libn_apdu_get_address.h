@@ -22,6 +22,7 @@
 #include "libn_types.h"
 
 typedef struct {
+    libn_address_formatter_t addressFormatter;
     libn_public_key_t publicKey;
 } libn_apdu_get_address_request_t;
 

@@ -24,13 +24,15 @@
 
 typedef struct {
     uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    libn_address_formatter_t addressFormatter;
     libn_public_key_t publicKey;
     libn_hash_t blockHash;
     libn_public_key_t recipient;
-    libn_address_prefix_t recipientPrefix;
+    libn_address_formatter_t recipientFormatter;
     libn_amount_t amount;
+    libn_amount_formatter_t amountFormatter;
     libn_public_key_t representative;
-    libn_address_prefix_t representativePrefix;
+    libn_address_formatter_t representativeFormatter;
 } libn_apdu_sign_block_request_t;
 
 uint16_t libn_apdu_sign_block(libn_apdu_response_t *resp);

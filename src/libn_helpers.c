@@ -83,9 +83,28 @@ void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLe
     }
 }
 
-size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
-                                 const libn_public_key_t publicKey) {
-    uint8_t prefixLen;
+void libn_address_formatter_for_coin(libn_address_formatter_t *fmt, libn_address_prefix_t prefix) {
+    switch (prefix) {
+    case LIBN_PRIMARY_PREFIX:
+        fmt->prefix = COIN_PRIMARY_PREFIX;
+        fmt->prefixLen = strnlen(COIN_PRIMARY_PREFIX, sizeof(COIN_PRIMARY_PREFIX));
+        break;
+    case LIBN_SECONDARY_PREFIX:
+        fmt->prefix = COIN_SECONDARY_PREFIX;
+        fmt->prefixLen = strnlen(COIN_SECONDARY_PREFIX, sizeof(COIN_SECONDARY_PREFIX));
+        break;
+    }
+}
+
+void libn_amount_formatter_for_coin(libn_amount_formatter_t *fmt) {
+    fmt->suffix = COIN_UNIT;
+    fmt->suffixLen = strnlen(COIN_UNIT, sizeof(COIN_UNIT));
+    fmt->unitScale = COIN_UNIT_SCALE;
+}
+
+size_t libn_address_format(const libn_address_formatter_t *fmt,
+                           uint8_t *buffer,
+                           const libn_public_key_t publicKey) {
     uint8_t k, i, c;
     uint8_t check[5];
 
@@ -94,18 +113,9 @@ size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
     blake2b_update(hash, publicKey, sizeof(libn_public_key_t));
     blake2b_final(hash, check);
 
-    switch (prefix) {
-    case LIBN_PRIMARY_PREFIX:
-        prefixLen = strnlen(COIN_PRIMARY_PREFIX, sizeof(COIN_PRIMARY_PREFIX));
-        os_memmove(buffer, COIN_PRIMARY_PREFIX, prefixLen);
-        buffer += prefixLen;
-        break;
-    case LIBN_SECONDARY_PREFIX:
-        prefixLen = strnlen(COIN_SECONDARY_PREFIX, sizeof(COIN_SECONDARY_PREFIX));
-        os_memmove(buffer, COIN_SECONDARY_PREFIX, prefixLen);
-        buffer += prefixLen;
-        break;
-    }
+    // Write prefix
+    os_memmove(buffer, fmt->prefix, fmt->prefixLen);
+    buffer += fmt->prefixLen;
 
     // Helper macro to create a virtual array of check and publicKey variables
     #define accGetByte(x) (uint8_t)( \
@@ -149,7 +159,7 @@ size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
         buffer[LIBN_ACCOUNT_STRING_BASE_LEN-1-k] = BASE32_ALPHABET[c];
     }
     #undef accGetByte
-    return prefixLen + LIBN_ACCOUNT_STRING_BASE_LEN;
+    return fmt->prefixLen + LIBN_ACCOUNT_STRING_BASE_LEN;
 }
 
 int8_t libn_amount_cmp(const libn_amount_t a, const libn_amount_t b) {
@@ -175,16 +185,16 @@ void libn_amount_subtract(libn_amount_t value, const libn_amount_t other) {
     }
 }
 
-void libn_amount_format(char *dest, size_t destLen,
+void libn_amount_format(const libn_amount_formatter_t *fmt,
+                        char *dest, size_t destLen,
                         const libn_amount_t balance) {
     libn_amount_format_heap_t *h = &ram_b.libn_amount_format_heap_D;
     os_memset(h->buf, 0, sizeof(h->buf));
     os_memmove(h->num, balance, sizeof(h->num));
-    h->unitLen = strnlen(COIN_UNIT, sizeof(COIN_UNIT));
 
     size_t end = sizeof(h->buf);
     end -= 1; // '\0' NULL terminator
-    end -= 1 + h->unitLen; // len(" " + defaultUnit)
+    end -= 1 + fmt->suffixLen; // len(" " + suffix)
     size_t start = end;
 
     // Convert the balance into a string by dividing by 10 until
@@ -216,7 +226,7 @@ void libn_amount_format(char *dest, size_t destLen,
              h->num[12] || h->num[13] || h->num[14] || h->num[15]);
 
     // Assign the location for the decimal point
-    size_t point = end - 1 - COIN_UNIT_SCALE;
+    size_t point = end - 1 - fmt->unitScale;
     // Make sure that the number is zero padded until the point location
     while (start > point) {
         h->buf[--start] = '0';
@@ -239,8 +249,8 @@ void libn_amount_format(char *dest, size_t destLen,
 
     // Append the unit
     h->buf[end++] = ' ';
-    os_memmove(h->buf + end, COIN_UNIT, h->unitLen);
-    end += h->unitLen;
+    os_memmove(h->buf + end, fmt->suffix, fmt->suffixLen);
+    end += fmt->suffixLen;
     h->buf[end] = '\0';
 
     // Copy the result to the destination buffer
