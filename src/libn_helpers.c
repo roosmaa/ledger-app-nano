@@ -22,6 +22,7 @@
 #include "blake2b.h"
 
 #define LIBN_CURVE CX_CURVE_Ed25519
+#define LIBN_SEED_KEY "ed25519 seed"
 
 // Define some binary "literals" for the massive bit manipulation operation
 // when converting public key to account string.
@@ -278,8 +279,12 @@ void libn_derive_keypair(uint8_t *bip32Path,
                 THROW(INVALID_PARAMETER);
             }
         }
-        os_perso_derive_node_bip32(LIBN_CURVE, h->bip32PathInt, bip32PathLength,
-                                   out_privateKey, h->chainCode);
+        os_perso_derive_node_bip32_seed_key(
+            HDW_ED25519_SLIP10, LIBN_CURVE,
+            h->bip32PathInt, bip32PathLength,
+            out_privateKey, h->chainCode,
+            (unsigned char *)LIBN_SEED_KEY, sizeof(LIBN_SEED_KEY)
+        );
         os_memset(h->chainCode, 0, sizeof(h->chainCode));
     }
 
