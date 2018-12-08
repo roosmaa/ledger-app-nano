@@ -49,6 +49,7 @@ typedef uint8_t libn_nonce_t[16];
 typedef enum {
     LIBN_COIN_TYPE_NANO,
     LIBN_COIN_TYPE_BANANO,
+    LIBN_COIN_TYPE_NOS,
 } libn_coin_type_t;
 
 typedef enum {
