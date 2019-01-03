@@ -43,6 +43,12 @@ BANANO_PATH_PARAM = --path "44'/198'"
 BANANO_COIN_TYPE = LIBN_COIN_TYPE_BANANO
 ALL_PATH_PARAMS += $(BANANO_PATH_PARAM)
 
+# NOS coin config
+NOS_APP_NAME = "NOS"
+NOS_PATH_PARAM = --path "44'/229'"
+NOS_COIN_TYPE = LIBN_COIN_TYPE_NOS
+ALL_PATH_PARAMS += $(NOS_PATH_PARAM)
+
 ifeq ($(APP_TYPE), standalone)
 LIB_LOAD_FLAGS = --appFlags 0x50
 APP_LOAD_FLAGS = --appFlags 0x50
@@ -80,13 +86,21 @@ DEFINES += DEFAULT_COIN_TYPE_$(BANANO_COIN_TYPE)
 endif
 DEFINES += DEFAULT_COIN_TYPE=$(BANANO_COIN_TYPE)
 
+else ifeq ($(COIN),nos)
+APPNAME = $(NOS_APP_NAME)
+APP_LOAD_PARAMS += $(APP_LOAD_FLAGS) $(NOS_PATH_PARAM)
+ifeq ($(APP_TYPE), standalone)
+DEFINES += DEFAULT_COIN_TYPE_$(NOS_COIN_TYPE)
+endif
+DEFINES += DEFAULT_COIN_TYPE=$(NOS_COIN_TYPE)
+
 else ifeq ($(filter clean listvariants,$(MAKECMDGOALS)),)
-$(error Unsupported COIN - use nano, banano)
+$(error Unsupported COIN - use nano, banano, nos)
 endif
 
 APPVERSION_M=1
 APPVERSION_N=1
-APPVERSION_P=0
+APPVERSION_P=1
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 
 MAX_ADPU_INPUT_SIZE=217
@@ -168,4 +182,4 @@ dep/%.d: %.c Makefile
 
 
 listvariants:
-	@echo VARIANTS COIN nano banano
+	@echo VARIANTS COIN nano banano nos

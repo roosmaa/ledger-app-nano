@@ -81,10 +81,33 @@ const ux_menu_entry_t menu_main[];
 const ux_menu_entry_t menu_settings[];
 const ux_menu_entry_t menu_settings_autoreceive[];
 
+const bagl_element_t *menu_prepro(const ux_menu_entry_t *menu_entry, bagl_element_t *element) {
+    // Customise the about menu appearance
+    if (menu_entry->userid == 0xAB) {
+        switch (element->component.userid) {
+        case 0x21: // 1st line
+            element->component.font_id = BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER;
+            break;
+        case 0x22: // 2nd line
+            element->component.stroke = 10; // scrolldelay
+            element->component.icon_id = 26; // scrollspeed
+            break;
+        }
+    } else if (menu_entry->userid == 0xBA) {
+        // Customise the badge for the coin
+        switch (element->component.userid) {
+        case 0x10: // icon
+            element->text = (const char *)COIN_BADGE;
+            break;
+        }
+    }
+    return element;
+}
+
 void menu_settings_autoreceive_change(uint32_t enabled) {
     libn_set_auto_receive(enabled);
     // go back to the menu entry
-    UX_MENU_DISPLAY(0, menu_settings, NULL);
+    UX_MENU_DISPLAY(0, menu_settings, menu_prepro);
 }
 
 void menu_settings_autoreceive_init(uint32_t ignored) {
@@ -118,29 +141,6 @@ const ux_menu_entry_t menu_main[] = {
     {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},
     {NULL, os_sched_exit, 0, &C_nanos_icon_dashboard, "Quit app", NULL, 50, 29},
     UX_MENU_END};
-
-const bagl_element_t *menu_prepro(const ux_menu_entry_t *menu_entry, bagl_element_t *element) {
-    // Customise the about menu appearance
-    if (menu_entry->userid == 0xAB) {
-        switch (element->component.userid) {
-        case 0x21: // 1st line
-            element->component.font_id = BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER;
-            break;
-        case 0x22: // 2nd line
-            element->component.stroke = 10; // scrolldelay
-            element->component.icon_id = 26; // scrollspeed
-            break;
-        }
-    } else if (menu_entry->userid == 0xBA) {
-        // Customise the badge for the coin
-        switch (element->component.userid) {
-        case 0x10: // icon
-            element->text = (const char *)COIN_BADGE;
-            break;
-        }
-    }
-    return element;
-}
 
 void libn_bagl_idle(void) {
     bagl_state = LIBN_STATE_READY;
