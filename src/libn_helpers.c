@@ -84,7 +84,39 @@ void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLe
     }
 }
 
-void libn_address_formatter_for_coin(libn_address_formatter_t *fmt, libn_address_prefix_t prefix) {
+// Extract a single-path component from the encoded bip32 path
+uint32_t libn_bip32_get_component(uint8_t *path, uint8_t n) {
+    uint8_t pathLength = path[0];
+    if (n >= pathLength) {
+        THROW(INVALID_PARAMETER);
+    }
+    return libn_read_u32(&path[1 + 4 * n], 1, 0);
+}
+
+void libn_address_formatter_for_coin(libn_address_formatter_t *fmt, libn_address_prefix_t prefix, uint8_t *bip32Path) {
+    // NOS multi-currency coin handling
+    if (strcmp(COIN_NAME, "NOS") == 0) {
+        uint32_t currencyComponent = libn_bip32_get_component(bip32Path, 2);
+
+        #define SUBCURRENCY(CODE, PREFIX, SUFFIX, SCALE) \
+            case HARDENED((CODE)): \
+                fmt->prefix = (PREFIX); \
+                fmt->prefixLen = strlen((PREFIX)); \
+                break
+        switch (currencyComponent) {
+        #include "nos_subcurrencies.h"
+        case HARDENED(0):
+            fmt->prefix = COIN_PRIMARY_PREFIX;
+            fmt->prefixLen = strnlen(COIN_PRIMARY_PREFIX, sizeof(COIN_PRIMARY_PREFIX));
+            break;
+        default:
+            THROW(INVALID_PARAMETER);
+        }
+        #undef SUBCURRENCY
+        return;
+    }
+
+    // Default prefixes
     switch (prefix) {
     case LIBN_PRIMARY_PREFIX:
         fmt->prefix = COIN_PRIMARY_PREFIX;
@@ -97,7 +129,32 @@ void libn_address_formatter_for_coin(libn_address_formatter_t *fmt, libn_address
     }
 }
 
-void libn_amount_formatter_for_coin(libn_amount_formatter_t *fmt) {
+void libn_amount_formatter_for_coin(libn_amount_formatter_t *fmt, uint8_t *bip32Path) {
+    // NOS multi-currency coin handling
+    if (strcmp(COIN_NAME, "NOS") == 0) {
+        uint32_t currencyComponent = libn_bip32_get_component(bip32Path, 2);
+
+        #define SUBCURRENCY(CODE, PREFIX, SUFFIX, SCALE) \
+            case HARDENED((CODE)): \
+                fmt->suffix = (SUFFIX); \
+                fmt->suffixLen = strlen((SUFFIX)); \
+                fmt->unitScale = SCALE; \
+                break
+        switch (currencyComponent) {
+        #include "nos_subcurrencies.h"
+        case HARDENED(0):
+            fmt->suffix = COIN_UNIT;
+            fmt->suffixLen = strnlen(COIN_UNIT, sizeof(COIN_UNIT));
+            fmt->unitScale = COIN_UNIT_SCALE;
+            break;
+        default:
+            THROW(INVALID_PARAMETER);
+        }
+        #undef SUBCURRENCY
+        return;
+    }
+
+    // Default prefixes
     fmt->suffix = COIN_UNIT;
     fmt->suffixLen = strnlen(COIN_UNIT, sizeof(COIN_UNIT));
     fmt->unitScale = COIN_UNIT_SCALE;
@@ -269,7 +326,7 @@ void libn_derive_keypair(uint8_t *bip32Path,
         libn_derive_keypair_heap_t *h = &ram_b.libn_derive_keypair_heap_D;
         uint8_t bip32PathLength;
         uint8_t i;
-        const uint8_t bip32PrefixLength = sizeof(COIN_BIP32_PREFIX) / sizeof(COIN_BIP32_PREFIX[0]);
+        const uint8_t bip32PrefixLength = 2;
 
         bip32PathLength = bip32Path[0];
         if (bip32PathLength > MAX_BIP32_PATH) {

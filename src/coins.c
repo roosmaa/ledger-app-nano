@@ -73,12 +73,12 @@ REGISTER_COINS(
 #else
         /* coinBadge */ &C_nanos_badge_nano,
 #endif
-        /* bip32Prefix */ { HARDENED(44), HARDENED(229), HARDENED(840) },
-        /* addressPrimaryPrefix */ "usd_",
-        /* addressSecondaryPrefix */ "usd_",
+        /* bip32Prefix */ { HARDENED(44), HARDENED(229) },
+        /* addressPrimaryPrefix */ "nos_",
+        /* addressSecondaryPrefix */ "nos_",
         /* addressDefaultPrefix */ LIBN_PRIMARY_PREFIX,
-        /* defaultUnit */ "USD",
-        /* defaultUnitScale */ 2, // 1 USD = 10^2 raw
+        /* defaultUnit */ "NOS",
+        /* defaultUnitScale */ 19, // 1 NOS = 10^19 raw
 #if defined(TARGET_BLUE)
         /* colorBackground */ 0xF9F9F9,
         /* colorForeground */ 0x000000,
