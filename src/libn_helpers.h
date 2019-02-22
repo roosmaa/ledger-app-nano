@@ -34,8 +34,11 @@ void libn_write_u32_le(uint8_t *buffer, uint32_t value);
 
 void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLen);
 
-void libn_address_formatter_for_coin(libn_address_formatter_t *fmt, libn_address_prefix_t prefix);
-void libn_amount_formatter_for_coin(libn_amount_formatter_t *fmt);
+void libn_address_formatter_for_coin(libn_address_formatter_t *fmt,
+                                     libn_address_prefix_t prefix,
+                                     uint8_t *bip32Path);
+void libn_amount_formatter_for_coin(libn_amount_formatter_t *fmt,
+                                    uint8_t *bip32Path);
 
 size_t libn_address_format(const libn_address_formatter_t *fmt,
                            uint8_t *buffer,

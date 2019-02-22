@@ -64,7 +64,7 @@ uint16_t libn_apdu_get_address(libn_apdu_response_t *resp) {
     }
 
     // Configure the formatter
-    libn_address_formatter_for_coin(&h->req.addressFormatter, COIN_DEFAULT_PREFIX);
+    libn_address_formatter_for_coin(&h->req.addressFormatter, COIN_DEFAULT_PREFIX, keyPathPtr);
 
     // Retrieve the public key for the path
     libn_derive_keypair(keyPathPtr, h->privateKey, h->req.publicKey);

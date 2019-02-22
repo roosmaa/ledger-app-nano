@@ -123,12 +123,12 @@ void init_coin_config(libn_coin_type_t coin_type);
 #else
 #define COIN_BADGE &C_nanos_badge_nos
 #endif
-#define COIN_BIP32_PREFIX ((uint32_t [3]){ HARDENED(44), HARDENED(229), HARDENED(840) })
-#define COIN_PRIMARY_PREFIX "usd_"
-#define COIN_SECONDARY_PREFIX "usd_"
+#define COIN_BIP32_PREFIX ((uint32_t [2]){ HARDENED(44), HARDENED(229) })
+#define COIN_PRIMARY_PREFIX "nos_"
+#define COIN_SECONDARY_PREFIX "nos_"
 #define COIN_DEFAULT_PREFIX LIBN_PRIMARY_PREFIX
-#define COIN_UNIT "USD"
-#define COIN_UNIT_SCALE 2
+#define COIN_UNIT "NOS"
+#define COIN_UNIT_SCALE 19
 #if defined(TARGET_BLUE)
 #define COIN_COLOR_BG 0xF9F9F9
 #define COIN_COLOR_FG 0x000000
