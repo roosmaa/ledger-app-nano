@@ -254,12 +254,6 @@ void u2f_message_timeout() {
     G_io_apdu_state = APDU_IDLE;
     G_io_apdu_length = 0;
     G_io_apdu_media = IO_APDU_MEDIA_NONE;
-#if defined(TARGET_NANOS)
-    // These globals have been deprecated in Blue SDK (2.1.1), feel
-    // free to remove them when Nano S SDK also deprecates them
-    G_io_apdu_offset = 0;
-    G_io_apdu_seq = 0;
-#endif
 }
 
 #endif // HAVE_IO_U2F

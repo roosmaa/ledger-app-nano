@@ -34,12 +34,20 @@ void libn_write_u32_le(uint8_t *buffer, uint32_t value);
 
 void libn_write_hex_string(uint8_t *buffer, const uint8_t *bytes, size_t bytesLen);
 
-size_t libn_write_account_string(uint8_t *buffer, libn_address_prefix_t prefix,
-                                 const libn_public_key_t publicKey);
+void libn_address_formatter_for_coin(libn_address_formatter_t *fmt,
+                                     libn_address_prefix_t prefix,
+                                     uint8_t *bip32Path);
+void libn_amount_formatter_for_coin(libn_amount_formatter_t *fmt,
+                                    uint8_t *bip32Path);
+
+size_t libn_address_format(const libn_address_formatter_t *fmt,
+                           uint8_t *buffer,
+                           const libn_public_key_t publicKey);
 
 int8_t libn_amount_cmp(const libn_amount_t a, const libn_amount_t b);
 void libn_amount_subtract(libn_amount_t value, const libn_amount_t other);
-void libn_amount_format(char *dest, size_t destLen,
+void libn_amount_format(const libn_amount_formatter_t *fmt,
+                        char *dest, size_t destLen,
                         const libn_amount_t balance);
 
 void libn_derive_keypair(uint8_t *bip32Path,

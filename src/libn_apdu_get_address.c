@@ -63,6 +63,9 @@ uint16_t libn_apdu_get_address(libn_apdu_response_t *resp) {
         return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
+    // Configure the formatter
+    libn_address_formatter_for_coin(&h->req.addressFormatter, COIN_DEFAULT_PREFIX, keyPathPtr);
+
     // Retrieve the public key for the path
     libn_derive_keypair(keyPathPtr, h->privateKey, h->req.publicKey);
     os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
@@ -93,7 +96,7 @@ uint16_t libn_apdu_get_address_output(libn_apdu_response_t *resp, libn_apdu_get_
     outPtr += length;
 
     // Encode & output account address
-    length = libn_write_account_string(outPtr + 1, COIN_DEFAULT_PREFIX, req->publicKey);
+    length = libn_address_format(&req->addressFormatter, outPtr + 1, req->publicKey);
     *outPtr = length;
     outPtr += 1 + length;
 

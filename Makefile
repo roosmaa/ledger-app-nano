@@ -100,7 +100,7 @@ endif
 
 APPVERSION_M=1
 APPVERSION_N=1
-APPVERSION_P=1
+APPVERSION_P=2
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 
 MAX_ADPU_INPUT_SIZE=217
@@ -139,10 +139,6 @@ DEFINES   += U2F_REQUEST_TIMEOUT=10000 # 10 seconds
 DEFINES   += UNUSED\(x\)=\(void\)x
 DEFINES   += APPVERSION=\"$(APPVERSION)\"
 
-# Ed25519 (donna)
-DEFINES   += ED25519_CUSTOMHASH
-DEFINES   += ED25519_CUSTOMRANDOM
-
 ##############
 # Compiler #
 ##############
@@ -163,7 +159,7 @@ LDLIBS   += -lm -lgcc -lc
 include $(BOLOS_SDK)/Makefile.glyphs
 
 ### variables processed by the common makefile.rules of the SDK to grab source files and include dirs
-APP_SOURCE_PATH  += src vendor/ed25519-donna vendor/blake2
+APP_SOURCE_PATH  += src
 SDK_SOURCE_PATH  += lib_stusb
 SDK_SOURCE_PATH  += lib_stusb_impl
 SDK_SOURCE_PATH  += lib_u2f
