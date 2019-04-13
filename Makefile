@@ -23,9 +23,9 @@ ifeq (customCA.key,$(wildcard customCA.key))
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
-# Default to standalone app
+# Default to shared app
 ifeq ($(APP_TYPE),)
-APP_TYPE=standalone
+APP_TYPE=shared
 endif
 
 APP_LOAD_PARAMS = --curve ed25519 $(COMMON_LOAD_PARAMS)
