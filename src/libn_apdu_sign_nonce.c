@@ -25,7 +25,7 @@
 uint16_t libn_apdu_sign_nonce_output(libn_apdu_response_t *resp, libn_apdu_sign_nonce_request_t *req);
 
 uint16_t libn_apdu_sign_nonce(libn_apdu_response_t *resp) {
-    libn_apdu_sign_nonce_request_t *req = &ram_a.libn_apdu_sign_nonce_heap_D.req;
+    libn_apdu_sign_nonce_request_t req;
     uint8_t *inPtr;
     uint8_t readLen;
 
@@ -50,34 +50,36 @@ uint16_t libn_apdu_sign_nonce(libn_apdu_response_t *resp) {
 
     inPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
     readLen = 1 + (*inPtr) * 4;
-    os_memmove(req->keyPath, inPtr, MIN(readLen, sizeof(req->keyPath)));
+    os_memmove(req.keyPath, inPtr, MIN(readLen, sizeof(req.keyPath)));
     inPtr += readLen;
 
     if (!os_global_pin_is_validated()) {
         return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
 
-    readLen = sizeof(req->nonce);
-    os_memmove(req->nonce, inPtr, readLen);
+    readLen = sizeof(req.nonce);
+    os_memmove(req.nonce, inPtr, readLen);
     inPtr += readLen;
 
-    uint16_t statusWord = libn_apdu_sign_nonce_output(resp, req);
-    os_memset(req, 0, sizeof(*req)); // sanitise request data
+    uint16_t statusWord = libn_apdu_sign_nonce_output(resp, &req);
+    os_memset(&req, 0, sizeof(req)); // sanitise request data
     return statusWord;
 }
 
 uint16_t libn_apdu_sign_nonce_output(libn_apdu_response_t *resp, libn_apdu_sign_nonce_request_t *req) {
-    libn_apdu_sign_nonce_heap_output_t *h = &ram_a.libn_apdu_sign_nonce_heap_D.io.output;
+    libn_private_key_t privateKey;
+    libn_public_key_t publicKey;
+    libn_signature_t signature;
     uint8_t *outPtr = resp->buffer;
 
     // Derive key and sign the block
-    libn_derive_keypair(req->keyPath, h->privateKey, h->publicKey);
-    libn_sign_nonce(h->signature, req->nonce, h->privateKey, h->publicKey);
-    os_memset(h->privateKey, 0, sizeof(h->privateKey));
+    libn_derive_keypair(req->keyPath, privateKey, publicKey);
+    libn_sign_nonce(signature, req->nonce, privateKey, publicKey);
+    os_memset(privateKey, 0, sizeof(privateKey));
 
     // Output signature
-    os_memmove(outPtr, h->signature, sizeof(h->signature));
-    outPtr += sizeof(h->signature);
+    os_memmove(outPtr, signature, sizeof(signature));
+    outPtr += sizeof(signature);
 
     resp->outLength = outPtr - resp->buffer;
 
