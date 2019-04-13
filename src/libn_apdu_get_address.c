@@ -31,7 +31,9 @@
 uint16_t libn_apdu_get_address_output(libn_apdu_response_t *resp, libn_apdu_get_address_request_t *req);
 
 uint16_t libn_apdu_get_address(libn_apdu_response_t *resp) {
-    libn_apdu_get_address_heap_t *h = &ram_a.libn_apdu_get_address_heap_D;
+    libn_apdu_get_address_request_t req;
+    libn_private_key_t privateKey;
+
     uint8_t *keyPathPtr;
     bool display = (G_io_apdu_buffer[ISO_OFFSET_P1] == P1_DISPLAY);
 
@@ -64,24 +66,24 @@ uint16_t libn_apdu_get_address(libn_apdu_response_t *resp) {
     }
 
     // Configure the formatter
-    libn_address_formatter_for_coin(&h->req.addressFormatter, COIN_DEFAULT_PREFIX, keyPathPtr);
+    libn_address_formatter_for_coin(&req.addressFormatter, COIN_DEFAULT_PREFIX, keyPathPtr);
 
     // Retrieve the public key for the path
-    libn_derive_keypair(keyPathPtr, h->privateKey, h->req.publicKey);
-    os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
+    libn_derive_keypair(keyPathPtr, privateKey, req.publicKey);
+    os_memset(privateKey, 0, sizeof(privateKey)); // sanitise private key
 
     if (display) {
         // Update app state to confirm the address
         libn_context_D.state = LIBN_STATE_CONFIRM_ADDRESS;
-        os_memmove(&libn_context_D.stateData.getAddressRequest, &h->req, sizeof(h->req));
-        os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
+        os_memmove(&libn_context_D.stateData.getAddressRequest, &req, sizeof(req));
+        os_memset(&req, 0, sizeof(req)); // sanitise request data
         app_apply_state();
 
         resp->ioFlags |= IO_ASYNCH_REPLY;
         return LIBN_SW_OK;
     } else {
-        uint16_t statusWord = libn_apdu_get_address_output(resp, &h->req);
-        os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
+        uint16_t statusWord = libn_apdu_get_address_output(resp, &req);
+        os_memset(&req, 0, sizeof(req)); // sanitise request data
         return statusWord;
     }
 }

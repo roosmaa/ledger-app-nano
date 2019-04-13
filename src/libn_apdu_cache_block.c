@@ -26,7 +26,9 @@
 uint16_t libn_apdu_cache_block_output(libn_apdu_response_t *resp, libn_apdu_cache_block_request_t *req);
 
 uint16_t libn_apdu_cache_block(libn_apdu_response_t *resp) {
-    libn_apdu_cache_block_heap_t *h = &ram_a.libn_apdu_cache_block_heap_D;
+    libn_apdu_cache_block_request_t req;
+    uint8_t keyPath[MAX_BIP32_PATH_LENGTH];
+    libn_private_key_t privateKey;
     uint8_t *inPtr;
     uint8_t readLen;
 
@@ -51,7 +53,7 @@ uint16_t libn_apdu_cache_block(libn_apdu_response_t *resp) {
 
     inPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
     readLen = 1 + (*inPtr) * 4;
-    os_memmove(h->keyPath, inPtr, MIN(readLen, sizeof(h->keyPath)));
+    os_memmove(keyPath, inPtr, MIN(readLen, sizeof(keyPath)));
     inPtr += readLen;
 
     if (!os_global_pin_is_validated()) {
@@ -63,50 +65,42 @@ uint16_t libn_apdu_cache_block(libn_apdu_response_t *resp) {
     }
 
     // Derive public key for hashing
-    libn_derive_keypair(h->keyPath, h->privateKey, h->req.publicKey);
-    os_memset(h->privateKey, 0, sizeof(h->privateKey)); // sanitise private key
-    os_memset(&h->keyPath, 0, sizeof(h->keyPath));
+    libn_derive_keypair(keyPath, privateKey, req.publicKey);
+    os_memset(privateKey, 0, sizeof(privateKey)); // sanitise private key
+    os_memset(&keyPath, 0, sizeof(keyPath));
 
     // Reset block state
-    os_memset(&h->req.block, 0, sizeof(h->req.block));
+    os_memset(&req.block, 0, sizeof(req.block));
 
     // Parse input data
-    readLen = sizeof(h->req.block.parent);
-    os_memmove(h->req.block.parent, inPtr, readLen);
+    readLen = sizeof(req.block.parent);
+    os_memmove(req.block.parent, inPtr, readLen);
     inPtr += readLen;
 
-    readLen = sizeof(h->req.block.link);
-    os_memmove(h->req.block.link, inPtr, readLen);
+    readLen = sizeof(req.block.link);
+    os_memmove(req.block.link, inPtr, readLen);
     inPtr += readLen;
 
-    readLen = sizeof(h->req.block.representative);
-    os_memmove(h->req.block.representative, inPtr, readLen);
+    readLen = sizeof(req.block.representative);
+    os_memmove(req.block.representative, inPtr, readLen);
     inPtr += readLen;
 
-    readLen = sizeof(h->req.block.balance);
-    os_memmove(h->req.block.balance, inPtr, readLen);
+    readLen = sizeof(req.block.balance);
+    os_memmove(req.block.balance, inPtr, readLen);
     inPtr += readLen;
 
-    readLen = sizeof(h->req.signature);
-    os_memmove(h->req.signature, inPtr, readLen);
+    readLen = sizeof(req.signature);
+    os_memmove(req.signature, inPtr, readLen);
     inPtr += readLen;
 
-    libn_hash_block(h->req.blockHash, &h->req.block, h->req.publicKey);
+    libn_hash_block(req.blockHash, &req.block, req.publicKey);
 
-    uint16_t statusWord = libn_apdu_cache_block_output(resp, &h->req);
-    os_memset(&h->req, 0, sizeof(h->req)); // sanitise request data
+    uint16_t statusWord = libn_apdu_cache_block_output(resp, &req);
+    os_memset(&req, 0, sizeof(req)); // sanitise request data
     return statusWord;
 }
 
 uint16_t libn_apdu_cache_block_output(libn_apdu_response_t *resp, libn_apdu_cache_block_request_t *req) {
-    // TODO: Enable signature verification once Ledger SDK primitives can be used
-    // bool isValidSignature = libn_verify_hash_signature(
-    //     req->blockHash, req->publicKey, req->signature);
-    //
-    // if (!isValidSignature) {
-    //     return LIBN_SW_INVALID_SIGNATURE;
-    // }
-
     // Copy the data over to the cache
     os_memset(&libn_context_D.cachedBlock, 0, sizeof(libn_context_D.cachedBlock));
     os_memmove(libn_context_D.cachedBlock.representative, req->block.representative,

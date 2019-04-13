@@ -25,6 +25,3 @@ ux_state_t ux;
 
 uint8_t libn_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 libn_context_t libn_context_D;
-
-ram_a_t ram_a;
-ram_b_t ram_b;

@@ -12,21 +12,15 @@ void ed25519_randombytes_unsafe(void *out, size_t outlen) {
    we can re-use the blake2b context in shared memory area. */
 
 void ed25519_hash_init(ed25519_hash_context *ctx) {
-    UNUSED(ctx);
-    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
-    blake2b_init(hash, 64, NULL, 0);
+    blake2b_init(ctx, 64, NULL, 0);
 }
 
 void ed25519_hash_update(ed25519_hash_context *ctx, uint8_t const *in, size_t inlen) {
-    UNUSED(ctx);
-    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
-    blake2b_update(hash, in, inlen);
+    blake2b_update(ctx, in, inlen);
 }
 
 void ed25519_hash_final(ed25519_hash_context *ctx, uint8_t *out) {
-    UNUSED(ctx);
-    blake2b_ctx *hash = &ram_b.blake2b_ctx_D;
-    blake2b_final(hash, out);
+    blake2b_final(ctx, out);
 }
 
 void ed25519_hash (uint8_t *out, uint8_t const *in, size_t inlen) {

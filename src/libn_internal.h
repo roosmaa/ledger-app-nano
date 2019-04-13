@@ -21,7 +21,6 @@
 #include "libn_app.h"
 #include "libn_types.h"
 #include "libn_context.h"
-#include "libn_heaps.h"
 #include "libn_ram_variables.h"
 #include "libn_rom_variables.h"
 #include "libn_filesystem.h"
