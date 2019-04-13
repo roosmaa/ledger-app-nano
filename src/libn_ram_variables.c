@@ -21,7 +21,13 @@
 
 // Bolos SDK variables
 uint8_t G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
+
+#if defined(TARGET_NANOX)
+ux_state_t G_ux;
+bolos_ux_params_t G_ux_params;
+#else
 ux_state_t ux;
+#endif
 
 uint8_t libn_async_buffer_D[MAX_ADPU_OUTPUT_SIZE + 2 /* status word */];
 libn_context_t libn_context_D;

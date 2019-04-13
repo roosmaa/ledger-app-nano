@@ -29,9 +29,17 @@ typedef struct libn_storage_s {
 } libn_storage_t;
 
 // the global nvram memory variable
-extern libn_storage_t N_libn_real;
+#if defined(TARGET_NANOX)
 
+extern libn_storage_t const N_libn_real;
 #define N_libn (*(libn_storage_t *)PIC(&N_libn_real))
+
+#else
+
+extern libn_storage_t N_libn_real;
+#define N_libn (*(volatile libn_storage_t *)PIC(&N_libn_real))
+
+#endif
 
 void libn_set_auto_receive(bool enabled);
 
