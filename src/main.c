@@ -38,6 +38,8 @@ __attribute__((section(".boot"))) int main(int arg0) {
     } else {
         init_coin_config(DEFAULT_COIN_TYPE);
     }
+#else
+    init_coin_config(DEFAULT_COIN_TYPE);
 #endif
 
     // ensure exception will work as planned
