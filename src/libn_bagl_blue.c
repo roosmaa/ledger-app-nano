@@ -27,6 +27,8 @@
 
 #if defined(TARGET_BLUE)
 
+#error Use ledger-blue branch to build for Ledger Blue
+
 typedef enum {
     LIBN_IDLE_STATE_HOME,
     LIBN_IDLE_STATE_SETTINGS,
