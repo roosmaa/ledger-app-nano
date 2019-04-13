@@ -17,8 +17,4 @@
 
 #include "libn_internal.h"
 
-#if defined(TARGET_NANOX)
 libn_storage_t const N_libn_real;
-#else
-libn_storage_t N_libn_real;
-#endif
