@@ -69,9 +69,9 @@ REGISTER_COINS(
     COIN(LIBN_COIN_TYPE_NOS, {
         .coinName = "NOS",
 #if defined(TARGET_BLUE)
-        .coinBadge = &C_blue_badge_nano,
+        .coinBadge = &C_blue_badge_nos,
 #else
-        .coinBadge = &C_nanos_badge_nano,
+        .coinBadge = &C_nanos_badge_nos,
 #endif
         .bip32Prefix = { HARDENED(44), HARDENED(229) },
         .addressPrimaryPrefix = "nos_",
