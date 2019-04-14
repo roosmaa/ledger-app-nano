@@ -128,6 +128,35 @@ union {
     } confirmSignBlock;
 } vars;
 
+#define COLOR_BG               0x001001
+#define COLOR_FG               0x001002
+#define COLOR_ALT_BG           0x001003
+#define COLOR_ALT_FG           0x001004
+#define COLOR_REJECT_BG        0x001005
+#define COLOR_REJECT_FG        0x001006
+#define COLOR_REJECT_OVER_BG   0x001007
+#define COLOR_REJECT_OVER_FG   0x001008
+#define COLOR_CONFIRM_BG       0x001009
+#define COLOR_CONFIRM_FG       0x001010
+#define COLOR_CONFIRM_OVER_BG  0x001011
+#define COLOR_CONFIRM_OVER_FG  0x001012
+
+#define REMAP_TO_COIN_COLORS(variable) switch (variable) {                    \
+    case COLOR_BG: variable = COIN_COLOR_BG; break;                           \
+    case COLOR_FG: variable = COIN_COLOR_FG; break;                           \
+    case COLOR_ALT_BG: variable = COIN_COLOR_ALT_BG; break;                   \
+    case COLOR_ALT_FG: variable = COIN_COLOR_ALT_FG; break;                   \
+    case COLOR_REJECT_BG: variable = COIN_COLOR_REJECT_BG; break;             \
+    case COLOR_REJECT_FG: variable = COIN_COLOR_REJECT_FG; break;             \
+    case COLOR_REJECT_OVER_BG: variable = COIN_COLOR_REJECT_OVER_BG; break;   \
+    case COLOR_REJECT_OVER_FG: variable = COIN_COLOR_REJECT_OVER_FG; break;   \
+    case COLOR_CONFIRM_BG: variable = COIN_COLOR_CONFIRM_BG; break;           \
+    case COLOR_CONFIRM_FG: variable = COIN_COLOR_CONFIRM_FG; break;           \
+    case COLOR_CONFIRM_OVER_BG: variable = COIN_COLOR_CONFIRM_OVER_BG; break; \
+    case COLOR_CONFIRM_OVER_FG: variable = COIN_COLOR_CONFIRM_OVER_FG; break; \
+    default: break;                                                           \
+}
+
 const bagl_element_t *ui_touch_settings(const bagl_element_t *e);
 const bagl_element_t *ui_touch_exit(const bagl_element_t *e);
 const bagl_element_t *ui_touch_back(const bagl_element_t *e);
@@ -137,10 +166,10 @@ const bagl_element_t *ui_touch_confirm(const bagl_element_t *e);
 
 const bagl_element_t ui_idle[] = {
     // Header background
-    {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
+    {{/* type */ BAGL_RECTANGLE, /* userid */ 0x01,
       /* x */ 0, /* y */ 20, /* width */ 320, /* height */ 48,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* fgcolor */ COLOR_ALT_BG, /* bgcolor */ COLOR_ALT_BG,
       /* font_id */ 0, /* icon_id */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
@@ -150,7 +179,7 @@ const bagl_element_t ui_idle[] = {
     {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 68, /* width */ 320, /* height */ 413,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_BG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_BG, /* bgcolor */ COLOR_BG,
       /* font_id */ 0, /* icon_id */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
@@ -160,7 +189,7 @@ const bagl_element_t ui_idle[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 0, /* y */ 45, /* width */ 320, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
-      /* fgcolor */ COIN_COLOR_ALT_FG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* fgcolor */ COLOR_ALT_FG, /* bgcolor */ COLOR_ALT_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.idle.appTitle, /* touch_area_brim */ 0,
@@ -169,35 +198,35 @@ const bagl_element_t ui_idle[] = {
     {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 19, /* width */ 56, /* height */ 44,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_FG,
+      /* fgcolor */ COLOR_ALT_BG, /* bgcolor */ COLOR_ALT_FG,
       /* font_id */ BAGL_FONT_SYMBOLS_0 | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
       /* scrollspeed */ 0},
      /* text */ BAGL_FONT_SYMBOLS_0_SETTINGS, /* touch_area_brim */ 0,
-     /* overfgcolor */ COIN_COLOR_ALT_BG, /* overbgcolor */ COIN_COLOR_ALT_FG,
+     /* overfgcolor */ COLOR_ALT_BG, /* overbgcolor */ COLOR_ALT_FG,
      /* tap */ ui_touch_settings, /* out */ NULL, /* over */ NULL},
     {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
       /* x */ 264, /* y */ 19, /* width */ 56, /* height */ 44,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_FG,
+      /* fgcolor */ COLOR_ALT_BG, /* bgcolor */ COLOR_ALT_FG,
       /* font_id */ BAGL_FONT_SYMBOLS_0 | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
       /* scrollspeed */ 0},
      /* text */ BAGL_FONT_SYMBOLS_0_DASHBOARD, /* touch_area_brim */ 0,
-     /* overfgcolor */ COIN_COLOR_ALT_BG, /* overbgcolor */ COIN_COLOR_ALT_FG,
+     /* overfgcolor */ COLOR_ALT_BG, /* overbgcolor */ COLOR_ALT_FG,
      /* tap */ ui_touch_exit, /* out */ NULL, /* over */ NULL},
 
     // Content views
-    {{/* type */ BAGL_ICON, /* userid */ 0x00,
+    {{/* type */ BAGL_ICON, /* userid */ 0x01,
       /* x */ 135, /* y */ 178, /* width */ 50, /* height */ 50,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ 0, /* icon_id */ 0},
-     /* text */ (char *)COIN_BADGE, /* touch_area_brim */ 0,
+     /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 0, /* y */ 270, /* width */ 320, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_LIGHT_16_22PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.idle.openLabel, /* touch_area_brim */ 0,
@@ -206,7 +235,7 @@ const bagl_element_t ui_idle[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 0, /* y */ 308, /* width */ 320, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "Connect the Ledger Blue and open your", /* touch_area_brim */ 0,
@@ -215,7 +244,7 @@ const bagl_element_t ui_idle[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 0, /* y */ 331, /* width */ 320, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "preferred wallet to view your accounts.", /* touch_area_brim */ 0,
@@ -224,13 +253,33 @@ const bagl_element_t ui_idle[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 0, /* y */ 450, /* width */ 320, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "Approval requests will show automatically.", /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
 };
+
+const bagl_element_t *ui_idle_prepro(const bagl_element_t *e) {
+    if ((e->component.type & (~BAGL_FLAG_TOUCHABLE)) == BAGL_NONE) {
+        return NULL;
+    }
+
+    os_memmove(&mutableElement, e, sizeof(bagl_element_t));
+    REMAP_TO_COIN_COLORS(mutableElement.component.fgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.component.bgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.overfgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.overbgcolor);
+
+    switch (mutableElement.component.userid) {
+    case 0x01:
+        mutableElement.text = (char *)COIN_BADGE;
+        break;
+    }
+
+    return &mutableElement;
+}
 
 uint32_t ui_idle_button(uint32_t button_mask,
                         uint32_t button_mask_counter) {
@@ -266,7 +315,7 @@ void libn_bagl_idle(void) {
     max = MAX(0, max - strlen(OPEN_LABEL_SUFFIX));
     ptr += strlen(OPEN_LABEL_SUFFIX);
 
-    UX_DISPLAY(ui_idle, NULL);
+    UX_DISPLAY(ui_idle, ui_idle_prepro);
 }
 
 const bagl_element_t ui_settings[] = {
@@ -274,7 +323,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 20, /* width */ 320, /* height */ 48,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* fgcolor */ COLOR_ALT_BG, /* bgcolor */ COLOR_ALT_BG,
       /* font_id */ 0, /* icon_id */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
@@ -284,7 +333,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 68, /* width */ 320, /* height */ 413,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_BG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_BG, /* bgcolor */ COLOR_BG,
       /* font_id */ 0, /* icon_id */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
@@ -294,7 +343,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 0, /* y */ 45, /* width */ 320, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
-      /* fgcolor */ COIN_COLOR_ALT_FG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* fgcolor */ COLOR_ALT_FG, /* bgcolor */ COLOR_ALT_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "SETTINGS", /* touch_area_brim */ 0,
@@ -303,18 +352,18 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 19, /* width */ 50, /* height */ 44,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_FG,
+      /* fgcolor */ COLOR_ALT_BG, /* bgcolor */ COLOR_ALT_FG,
       /* font_id */ BAGL_FONT_SYMBOLS_0 | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
       /* scrollspeed */ 0},
      /* text */ BAGL_FONT_SYMBOLS_0_LEFT, /* touch_area_brim */ 0,
-     /* overfgcolor */ COIN_COLOR_ALT_BG, /* overbgcolor */ COIN_COLOR_ALT_FG,
+     /* overfgcolor */ COLOR_ALT_BG, /* overbgcolor */ COLOR_ALT_FG,
      /* tap */ ui_touch_back, /* out */ NULL, /* over */ NULL},
 
     // Content views
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 105, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX,
       /* scrollspeed */ 0},
      /* text */ "Auto-receive", /* touch_area_brim */ 0,
@@ -323,7 +372,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 126, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_8_11PX,
       /* scrollspeed */ 0},
      /* text */ "No confirmation for receive transactions", /* touch_area_brim */ 0,
@@ -332,16 +381,16 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_NONE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 78, /* width */ 320, /* height */ 68,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ 0, /* scrollspeed */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
-     /* overfgcolor */ COIN_COLOR_ALT_BG, /* overbgcolor */ COIN_COLOR_ALT_FG,
+     /* overfgcolor */ COLOR_ALT_BG, /* overbgcolor */ COLOR_ALT_FG,
      /* tap */ ui_touch_auto_receive, /* out */ NULL, /* over */ NULL},
 
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 329, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX,
       /* scrollspeed */ 0},
      /* text */ "Version", /* touch_area_brim */ 0,
@@ -350,7 +399,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 350, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_8_11PX,
       /* scrollspeed */ 0},
      /* text */ APPVERSION, /* touch_area_brim */ 0,
@@ -359,7 +408,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 379, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX,
       /* scrollspeed */ 0},
      /* text */ "Developer", /* touch_area_brim */ 0,
@@ -368,7 +417,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 400, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_8_11PX,
       /* scrollspeed */ 0},
      /* text */ "Mart Roosmaa", /* touch_area_brim */ 0,
@@ -377,7 +426,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 429, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX,
       /* scrollspeed */ 0},
      /* text */ "Source code", /* touch_area_brim */ 0,
@@ -386,7 +435,7 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 450, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_8_11PX,
       /* scrollspeed */ 0},
      /* text */ "https://github.com/roosmaa/blue-app-nano", /* touch_area_brim */ 0,
@@ -397,9 +446,9 @@ const bagl_element_t ui_settings[] = {
     {{/* type */ BAGL_ICON, /* userid */ 0x01,
       /* x */ 258, /* y */ 98, /* width */ 32, /* height */ 18,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ 0, /* icon_id */ 0},
-     /* text */ (char *)COIN_ICON_TOGGLE_OFF, /* touch_area_brim */ 0,
+     /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
      /* tap */ NULL, /* out */ NULL, /* over */ NULL},
 };
@@ -414,16 +463,21 @@ const bagl_element_t *ui_settings_prepro(const bagl_element_t *e) {
         return NULL;
     }
 
+    os_memmove(&mutableElement, e, sizeof(bagl_element_t));
+    REMAP_TO_COIN_COLORS(mutableElement.component.fgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.component.bgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.overfgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.overbgcolor);
+
     switch (e->component.userid) {
     case 0x01:
-        os_memmove(&mutableElement, e, sizeof(bagl_element_t));
         mutableElement.text = (const char *)(N_libn.autoReceive
             ? COIN_ICON_TOGGLE_ON
             : COIN_ICON_TOGGLE_OFF);
-        return &mutableElement;
+        break;
     }
 
-    return e;
+    return &mutableElement;
 }
 
 void libn_bagl_settings(void) {
@@ -452,7 +506,7 @@ const bagl_element_t ui_confirm_address[] = {
     {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 20, /* width */ 320, /* height */ 48,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* fgcolor */ COLOR_ALT_BG, /* bgcolor */ COLOR_ALT_BG,
       /* font_id */ 0, /* icon_id */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
@@ -462,7 +516,7 @@ const bagl_element_t ui_confirm_address[] = {
     {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 68, /* width */ 320, /* height */ 413,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_BG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_BG, /* bgcolor */ COLOR_BG,
       /* font_id */ 0, /* icon_id */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
@@ -472,7 +526,7 @@ const bagl_element_t ui_confirm_address[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 0, /* y */ 45, /* width */ 320, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
-      /* fgcolor */ COIN_COLOR_ALT_FG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* fgcolor */ COLOR_ALT_FG, /* bgcolor */ COLOR_ALT_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "CONFIRM ADDRESS", /* touch_area_brim */ 0,
@@ -483,7 +537,7 @@ const bagl_element_t ui_confirm_address[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 105, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "Account address", /* touch_area_brim */ 0,
@@ -492,7 +546,7 @@ const bagl_element_t ui_confirm_address[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 131, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.displayAddress.address.lines.first, /* touch_area_brim */ 0,
@@ -501,7 +555,7 @@ const bagl_element_t ui_confirm_address[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 30, /* y */ 157, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.displayAddress.address.lines.second, /* touch_area_brim */ 0,
@@ -510,22 +564,36 @@ const bagl_element_t ui_confirm_address[] = {
     {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
       /* x */ 40, /* y */ 414, /* width */ 115, /* height */ 36,
       /* stroke */ 0, /* radius */ 18, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_REJECT_BG, /* bgcolor */ COIN_COLOR_REJECT_FG,
+      /* fgcolor */ COLOR_REJECT_BG, /* bgcolor */ COLOR_REJECT_FG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
       /* icon_id */ 0},
      /* text */ "REJECT", /* touch_area_brim */ 0,
-     /* overfgcolor */ COIN_COLOR_REJECT_OVER_BG, /* overbgcolor */ COIN_COLOR_REJECT_OVER_FG,
+     /* overfgcolor */ COLOR_REJECT_OVER_BG, /* overbgcolor */ COLOR_REJECT_OVER_FG,
      /* tap */ ui_touch_reject, /* out */ NULL, /* over */ NULL},
     {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
       /* x */ 165, /* y */ 414, /* width */ 115, /* height */ 36,
       /* stroke */ 0, /* radius */ 18, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_CONFIRM_BG, /* bgcolor */ COIN_COLOR_CONFIRM_FG,
+      /* fgcolor */ COLOR_CONFIRM_BG, /* bgcolor */ COLOR_CONFIRM_FG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
       /* icon_id */ 0},
      /* text */ "CONFIRM", /* touch_area_brim */ 0,
-     /* overfgcolor */ COIN_COLOR_CONFIRM_OVER_BG, /* overbgcolor */ COIN_COLOR_CONFIRM_OVER_FG,
+     /* overfgcolor */ COLOR_CONFIRM_OVER_BG, /* overbgcolor */ COLOR_CONFIRM_OVER_FG,
      /* tap */ ui_touch_confirm, /* out */ NULL, /* over */ NULL},
 };
+
+const bagl_element_t *ui_confirm_address_prepro(const bagl_element_t *e) {
+    if ((e->component.type & (~BAGL_FLAG_TOUCHABLE)) == BAGL_NONE) {
+        return NULL;
+    }
+
+    os_memmove(&mutableElement, e, sizeof(bagl_element_t));
+    REMAP_TO_COIN_COLORS(mutableElement.component.fgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.component.bgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.overfgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.overbgcolor);
+
+    return &mutableElement;
+}
 
 uint32_t ui_confirm_address_button(uint32_t button_mask,
                                    uint32_t button_mask_counter) {
@@ -546,7 +614,7 @@ void libn_bagl_confirm_address(void) {
         req->publicKey);
 
     bagl_state = LIBN_STATE_CONFIRM_ADDRESS;
-    UX_DISPLAY(ui_confirm_address, NULL);
+    UX_DISPLAY(ui_confirm_address, ui_confirm_address_prepro);
 }
 
 const bagl_element_t ui_confirm_block[] = {
@@ -554,7 +622,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 20, /* width */ 320, /* height */ 48,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_ALT_BG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* fgcolor */ COLOR_ALT_BG, /* bgcolor */ COLOR_ALT_BG,
       /* font_id */ 0, /* icon_id */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
@@ -564,7 +632,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_RECTANGLE, /* userid */ 0x00,
       /* x */ 0, /* y */ 68, /* width */ 320, /* height */ 413,
       /* stroke */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_BG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_BG, /* bgcolor */ COLOR_BG,
       /* font_id */ 0, /* icon_id */ 0},
      /* text */ NULL, /* touch_area_brim */ 0,
      /* overfgcolor */ 0, /* overbgcolor */ 0,
@@ -574,7 +642,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x00,
       /* x */ 0, /* y */ 45, /* width */ 320, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ 0,
-      /* fgcolor */ COIN_COLOR_ALT_FG, /* bgcolor */ COIN_COLOR_ALT_BG,
+      /* fgcolor */ COLOR_ALT_FG, /* bgcolor */ COLOR_ALT_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "CONFIRM BLOCK", /* touch_area_brim */ 0,
@@ -585,7 +653,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x10,
       /* x */ 30, /* y */ 105, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "Your account", /* touch_area_brim */ 0,
@@ -594,7 +662,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x11,
       /* x */ 30, /* y */ 131, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.confirmSignBlock.accountAddress, /* touch_area_brim */ 0,
@@ -604,7 +672,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x20,
       /* x */ 30, /* y */ 160, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.confirmSignBlock.amountLabel, /* touch_area_brim */ 0,
@@ -613,7 +681,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x21,
       /* x */ 30, /* y */ 186, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.confirmSignBlock.amountValue, /* touch_area_brim */ 0,
@@ -623,7 +691,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x30,
       /* x */ 30, /* y */ 215, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "Send to", /* touch_area_brim */ 0,
@@ -632,7 +700,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x31,
       /* x */ 30, /* y */ 241, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.confirmSignBlock.recipientAddress.lines.first,
@@ -642,7 +710,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x32,
       /* x */ 30, /* y */ 262, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.confirmSignBlock.recipientAddress.lines.second,
@@ -653,7 +721,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x40,
       /* x */ 30, /* y */ 291, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "Representative", /* touch_area_brim */ 0,
@@ -662,7 +730,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x41,
       /* x */ 30, /* y */ 317, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.confirmSignBlock.representativeAddress.lines.first,
@@ -672,7 +740,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x42,
       /* x */ 30, /* y */ 338, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.confirmSignBlock.representativeAddress.lines.second,
@@ -683,7 +751,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x50,
       /* x */ 30, /* y */ 367, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ "Block hash", /* touch_area_brim */ 0,
@@ -692,7 +760,7 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_LABELINE, /* userid */ 0x51,
       /* x */ 30, /* y */ 393, /* width */ 260, /* height */ 30,
       /* scrolldelay */ 0, /* radius */ 0, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_FG, /* bgcolor */ COIN_COLOR_BG,
+      /* fgcolor */ COLOR_FG, /* bgcolor */ COLOR_BG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_CENTER,
       /* scrollspeed */ 0},
      /* text */ vars.confirmSignBlock.blockHash, /* touch_area_brim */ 0,
@@ -702,20 +770,20 @@ const bagl_element_t ui_confirm_block[] = {
     {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
       /* x */ 40, /* y */ 414, /* width */ 115, /* height */ 36,
       /* stroke */ 0, /* radius */ 18, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_REJECT_BG, /* bgcolor */ COIN_COLOR_REJECT_FG,
+      /* fgcolor */ COLOR_REJECT_BG, /* bgcolor */ COLOR_REJECT_FG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
       /* icon_id */ 0},
      /* text */ "REJECT", /* touch_area_brim */ 0,
-     /* overfgcolor */ COIN_COLOR_REJECT_OVER_BG, /* overbgcolor */ COIN_COLOR_REJECT_OVER_FG,
+     /* overfgcolor */ COLOR_REJECT_OVER_BG, /* overbgcolor */ COLOR_REJECT_OVER_FG,
      /* tap */ ui_touch_reject, /* out */ NULL, /* over */ NULL},
     {{/* type */ BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, /* userid */ 0x00,
       /* x */ 165, /* y */ 414, /* width */ 115, /* height */ 36,
       /* stroke */ 0, /* radius */ 18, /* fill */ BAGL_FILL,
-      /* fgcolor */ COIN_COLOR_CONFIRM_BG, /* bgcolor */ COIN_COLOR_CONFIRM_FG,
+      /* fgcolor */ COLOR_CONFIRM_BG, /* bgcolor */ COLOR_CONFIRM_FG,
       /* font_id */ BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER | BAGL_FONT_ALIGNMENT_MIDDLE,
       /* icon_id */ 0},
      /* text */ "CONFIRM", /* touch_area_brim */ 0,
-     /* overfgcolor */ COIN_COLOR_CONFIRM_OVER_BG, /* overbgcolor */ COIN_COLOR_CONFIRM_OVER_FG,
+     /* overfgcolor */ COLOR_CONFIRM_OVER_BG, /* overbgcolor */ COLOR_CONFIRM_OVER_FG,
      /* tap */ ui_touch_confirm, /* out */ NULL, /* over */ NULL},
 };
 
@@ -729,22 +797,26 @@ const bagl_element_t *ui_confirm_block_prepro(const bagl_element_t *e) {
     const bool showRecipient = vars.confirmSignBlock.recipientAddress.buf[0] != '\0';
     const bool showRepresentative = vars.confirmSignBlock.representativeAddress.buf[0] != '\0';
 
+    os_memmove(&mutableElement, e, sizeof(bagl_element_t));
+    REMAP_TO_COIN_COLORS(mutableElement.component.fgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.component.bgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.overfgcolor);
+    REMAP_TO_COIN_COLORS(mutableElement.overbgcolor);
+
     uint16_t y = 97;
 
-    #define LAYOUT(el_uid, el_vis) {                    \
-        if (el_vis) {                                   \
-            const bool isHeader = (el_uid & 0x0F) == 0; \
-            y += isHeader ? 8 : 0;                      \
-            if (e->component.userid == el_uid) {        \
-                os_memmove(&mutableElement, e,          \
-                    sizeof(bagl_element_t));            \
-                mutableElement.component.y = y;        \
-                return &mutableElement;                 \
-            }                                           \
-            y += (isHeader ? 5 : 0) + 21;               \
-        } else if (e->component.userid == el_uid) {     \
-            return NULL;                                \
-        }                                               \
+    #define LAYOUT(el_uid, el_vis) {                         \
+        if (el_vis) {                                        \
+            const bool isHeader = (el_uid & 0x0F) == 0;      \
+            y += isHeader ? 8 : 0;                           \
+            if (mutableElement.component.userid == el_uid) { \
+                mutableElement.component.y = y;              \
+                return &mutableElement;                      \
+            }                                                \
+            y += (isHeader ? 5 : 0) + 21;                    \
+        } else if (e->component.userid == el_uid) {          \
+            return NULL;                                     \
+        }                                                    \
     }
 
     // Account
@@ -767,7 +839,7 @@ const bagl_element_t *ui_confirm_block_prepro(const bagl_element_t *e) {
 
     #undef LAYOUT
 
-    return e;
+    return &mutableElement;
 }
 
 void libn_bagl_confirm_block(void) {
