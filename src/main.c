@@ -38,6 +38,8 @@ __attribute__((section(".boot"))) int main(int arg0) {
     } else {
         init_coin_config(DEFAULT_COIN_TYPE);
     }
+#else
+    init_coin_config(DEFAULT_COIN_TYPE);
 #endif
 
     // ensure exception will work as planned
@@ -70,7 +72,7 @@ __attribute__((section(".boot"))) int main(int arg0) {
 
 __attribute__((section(".boot"))) int main(void) {
     // in RAM allocation (on stack), to allow simple simple traversal into the
-    // bitcoin app (separate NVRAM zone)
+    // main Nano app (separate NVRAM zone)
     uint32_t libcall_params[3];
     BEGIN_TRY {
         TRY {

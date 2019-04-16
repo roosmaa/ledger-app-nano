@@ -23,9 +23,9 @@ ifeq (customCA.key,$(wildcard customCA.key))
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
-# Default to standalone app
+# Default to shared app
 ifeq ($(APP_TYPE),)
-APP_TYPE=standalone
+APP_TYPE=shared
 endif
 
 APP_LOAD_PARAMS = --curve ed25519 $(COMMON_LOAD_PARAMS)
@@ -58,6 +58,9 @@ else ifeq ($(APP_TYPE), shared)
 LIB_LOAD_FLAGS = --appFlags 0x850
 APP_LOAD_FLAGS = --appFlags 0x50 --dep Nano
 DEFINES += SHARED_LIBRARY_NAME=\"$(NANO_APP_NAME)\"
+DEFINES += HAVE_COIN_NANO
+DEFINES += HAVE_COIN_BANANO
+DEFINES += HAVE_COIN_NOS
 
 else
 ifneq ($(MAKECMDGOALS),listvariants)
@@ -73,25 +76,19 @@ DEFINES += IS_SHARED_LIBRARY
 else
 APP_LOAD_PARAMS += $(LIB_LOAD_FLAGS) $(NANO_PATH_PARAM)
 endif
-ifeq ($(APP_TYPE), standalone)
-DEFINES += DEFAULT_COIN_TYPE_$(NANO_COIN_TYPE)
-endif
+DEFINES += HAVE_COIN_NANO
 DEFINES += DEFAULT_COIN_TYPE=$(NANO_COIN_TYPE)
 
 else ifeq ($(COIN),banano)
 APPNAME = $(BANANO_APP_NAME)
 APP_LOAD_PARAMS += $(APP_LOAD_FLAGS) $(BANANO_PATH_PARAM)
-ifeq ($(APP_TYPE), standalone)
-DEFINES += DEFAULT_COIN_TYPE_$(BANANO_COIN_TYPE)
-endif
+DEFINES += HAVE_COIN_BANANO
 DEFINES += DEFAULT_COIN_TYPE=$(BANANO_COIN_TYPE)
 
 else ifeq ($(COIN),nos)
 APPNAME = $(NOS_APP_NAME)
 APP_LOAD_PARAMS += $(APP_LOAD_FLAGS) $(NOS_PATH_PARAM)
-ifeq ($(APP_TYPE), standalone)
-DEFINES += DEFAULT_COIN_TYPE_$(NOS_COIN_TYPE)
-endif
+DEFINES += HAVE_COIN_NOS
 DEFINES += DEFAULT_COIN_TYPE=$(NOS_COIN_TYPE)
 
 else ifeq ($(filter clean listvariants,$(MAKECMDGOALS)),)
@@ -99,8 +96,8 @@ $(error Unsupported COIN - use nano, banano, nos)
 endif
 
 APPVERSION_M=1
-APPVERSION_N=1
-APPVERSION_P=2
+APPVERSION_N=2
+APPVERSION_P=0
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 
 MAX_ADPU_INPUT_SIZE=217
@@ -109,7 +106,11 @@ MAX_ADPU_OUTPUT_SIZE=98
 ifeq ($(TARGET_NAME),TARGET_BLUE)
 ICONNAME=blue_icon_$(COIN).gif
 else
+	ifeq ($(TARGET_NAME),TARGET_NANOX)
+ICONNAME=nanox_icon_$(COIN).gif
+	else
 ICONNAME=nanos_icon_$(COIN).gif
+	endif
 endif
 
 ################
@@ -139,6 +140,17 @@ DEFINES   += U2F_REQUEST_TIMEOUT=10000 # 10 seconds
 DEFINES   += UNUSED\(x\)=\(void\)x
 DEFINES   += APPVERSION=\"$(APPVERSION)\"
 
+ifeq ($(TARGET_NAME),TARGET_NANOX)
+DEFINES       += HAVE_GLO096
+DEFINES       += HAVE_BAGL BAGL_WIDTH=128 BAGL_HEIGHT=64
+DEFINES       += HAVE_BAGL_ELLIPSIS # long label truncation feature
+DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
+DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
+DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
+DEFINES		  += HAVE_UX_FLOW
+DEFINES       += HAVE_UX_LEGACY
+endif
+
 ##############
 # Compiler #
 ##############
@@ -163,6 +175,10 @@ APP_SOURCE_PATH  += src
 SDK_SOURCE_PATH  += lib_stusb
 SDK_SOURCE_PATH  += lib_stusb_impl
 SDK_SOURCE_PATH  += lib_u2f
+
+ifeq ($(TARGET_NAME),TARGET_NANOX)
+SDK_SOURCE_PATH  += lib_ux
+endif
 
 load: all
 	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)

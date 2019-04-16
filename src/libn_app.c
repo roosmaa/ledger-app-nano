@@ -251,9 +251,15 @@ void u2f_message_timeout() {
     u2f_message_reply(&G_io_u2f, U2F_CMD_MSG, G_io_apdu_buffer, 2);
 
     // reset apdu state
+    #if defined(TARGET_NANOX)
+    G_io_app.apdu_state = APDU_IDLE;
+    G_io_app.apdu_length = 0;
+    G_io_app.apdu_media = IO_APDU_MEDIA_NONE;
+    #else
     G_io_apdu_state = APDU_IDLE;
     G_io_apdu_length = 0;
     G_io_apdu_media = IO_APDU_MEDIA_NONE;
+    #endif
 }
 
 #endif // HAVE_IO_U2F

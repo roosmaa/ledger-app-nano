@@ -17,4 +17,4 @@
 
 #include "libn_internal.h"
 
-libn_storage_t N_libn_real;
+libn_storage_t const N_libn_real;
