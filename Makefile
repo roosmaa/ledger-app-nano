@@ -19,7 +19,7 @@ ifeq ($(BOLOS_SDK),)
 $(error Environment variable BOLOS_SDK is not set)
 endif
 ifeq (customCA.key,$(wildcard customCA.key))
-	SCP_PRIVKEY=`cat customCA.key`
+    SCP_PRIVKEY=`cat customCA.key`
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
@@ -143,6 +143,10 @@ DEFINES   += APPVERSION=\"$(APPVERSION)\"
 DEFINES   += ED25519_CUSTOMHASH
 DEFINES   += ED25519_CUSTOMRANDOM
 
+# WebUSB
+WEBUSB_URL = www.ledgerwallet.com
+DEFINES   += HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")
+
 # Enabling debug PRINTF
 DEBUG = 0
 ifneq ($(DEBUG),0)
@@ -204,7 +208,6 @@ include $(BOLOS_SDK)/Makefile.rules
 
 #add dependency on custom makefile filename
 dep/%.d: %.c Makefile
-
 
 listvariants:
 	@echo VARIANTS COIN nano banano nos
