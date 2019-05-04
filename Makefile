@@ -55,13 +55,23 @@ NOS_COIN_TYPE = LIBN_COIN_TYPE_NOS
 ALL_PATH_PARAMS += $(NOS_PATH_PARAM)
 
 ifeq ($(APP_TYPE), standalone)
+    ifeq ($(TARGET_NAME),TARGET_NANOX)
+LIB_LOAD_FLAGS = --appFlags 0x250
+APP_LOAD_FLAGS = --appFlags 0x250
+    else
 LIB_LOAD_FLAGS = --appFlags 0x50
 APP_LOAD_FLAGS = --appFlags 0x50
+    endif
 DEFINES += IS_STANDALONE_APP
 
 else ifeq ($(APP_TYPE), shared)
+    ifeq ($(TARGET_NAME),TARGET_NANOX)
+LIB_LOAD_FLAGS = --appFlags 0xA50
+APP_LOAD_FLAGS = --appFlags 0x250 --dep Nano
+    else
 LIB_LOAD_FLAGS = --appFlags 0x850
 APP_LOAD_FLAGS = --appFlags 0x50 --dep Nano
+    endif
 DEFINES += SHARED_LIBRARY_NAME=\"$(NANO_APP_NAME)\"
 DEFINES += HAVE_COIN_NANO
 DEFINES += HAVE_COIN_BANANO
@@ -155,6 +165,10 @@ DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
 DEFINES	      += HAVE_UX_FLOW
+
+# BLE
+DEFINES       += HAVE_BLE BLE_COMMAND_TIMEOUT_MS=2000
+DEFINES       += HAVE_BLE_APDU # basic ledger apdu transport over BLE
 endif
 
 # Enabling debug PRINTF
@@ -209,6 +223,7 @@ SDK_SOURCE_PATH  += lib_u2f
 
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 SDK_SOURCE_PATH  += lib_ux
+SDK_SOURCE_PATH  += lib_blewbxx lib_blewbxx_impl
 endif
 
 load: all

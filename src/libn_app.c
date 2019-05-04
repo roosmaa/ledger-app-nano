@@ -192,10 +192,11 @@ void app_init(void) {
     USB_power(false);
     USB_power(true);
 
-#ifdef HAVE_BLE
-    BLE_power(false, NULL);
-    BLE_power(true, "Ledger Wallet");
-#endif // HAVE_BLE
+#if defined(TARGET_NANOX)
+    G_io_app.plane_mode = os_setting_get(OS_SETTING_PLANEMODE, NULL, 0);
+    BLE_power(0, NULL);
+    BLE_power(1, "Nano X");
+#endif
 
     libn_bagl_idle();
 }
