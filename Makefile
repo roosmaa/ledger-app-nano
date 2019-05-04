@@ -19,7 +19,7 @@ ifeq ($(BOLOS_SDK),)
 $(error Environment variable BOLOS_SDK is not set)
 endif
 ifeq (customCA.key,$(wildcard customCA.key))
-	SCP_PRIVKEY=`cat customCA.key`
+    SCP_PRIVKEY=`cat customCA.key`
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
@@ -111,11 +111,11 @@ MAX_ADPU_OUTPUT_SIZE=98
 ifeq ($(TARGET_NAME),TARGET_BLUE)
 ICONNAME=blue_icon_$(COIN).gif
 else
-	ifeq ($(TARGET_NAME),TARGET_NANOX)
+    ifeq ($(TARGET_NAME),TARGET_NANOX)
 ICONNAME=nanox_icon_$(COIN).gif
-	else
+    else
 ICONNAME=nanos_icon_$(COIN).gif
-	endif
+    endif
 endif
 
 ################
@@ -143,6 +143,10 @@ DEFINES   += U2F_REQUEST_TIMEOUT=10000 # 10 seconds
 DEFINES   += UNUSED\(x\)=\(void\)x
 DEFINES   += APPVERSION=\"$(APPVERSION)\"
 
+# WebUSB
+WEBUSB_URL = www.ledgerwallet.com
+DEFINES   += HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")
+
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 DEFINES       += HAVE_GLO096
 DEFINES       += HAVE_BAGL BAGL_WIDTH=128 BAGL_HEIGHT=64
@@ -150,7 +154,7 @@ DEFINES       += HAVE_BAGL_ELLIPSIS # long label truncation feature
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
-DEFINES		  += HAVE_UX_FLOW
+DEFINES	      += HAVE_UX_FLOW
 endif
 
 # Enabling debug PRINTF
@@ -218,7 +222,6 @@ include $(BOLOS_SDK)/Makefile.rules
 
 #add dependency on custom makefile filename
 dep/%.d: %.c Makefile
-
 
 listvariants:
 	@echo VARIANTS COIN nano banano nos
