@@ -19,7 +19,7 @@ ifeq ($(BOLOS_SDK),)
 $(error Environment variable BOLOS_SDK is not set)
 endif
 ifeq (customCA.key,$(wildcard customCA.key))
-	SCP_PRIVKEY=`cat customCA.key`
+    SCP_PRIVKEY=`cat customCA.key`
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
@@ -55,13 +55,23 @@ NOS_COIN_TYPE = LIBN_COIN_TYPE_NOS
 ALL_PATH_PARAMS += $(NOS_PATH_PARAM)
 
 ifeq ($(APP_TYPE), standalone)
+    ifeq ($(TARGET_NAME),TARGET_NANOX)
+LIB_LOAD_FLAGS = --appFlags 0x250
+APP_LOAD_FLAGS = --appFlags 0x250
+    else
 LIB_LOAD_FLAGS = --appFlags 0x50
 APP_LOAD_FLAGS = --appFlags 0x50
+    endif
 DEFINES += IS_STANDALONE_APP
 
 else ifeq ($(APP_TYPE), shared)
+    ifeq ($(TARGET_NAME),TARGET_NANOX)
+LIB_LOAD_FLAGS = --appFlags 0xA50
+APP_LOAD_FLAGS = --appFlags 0x250 --dep Nano
+    else
 LIB_LOAD_FLAGS = --appFlags 0x850
 APP_LOAD_FLAGS = --appFlags 0x50 --dep Nano
+    endif
 DEFINES += SHARED_LIBRARY_NAME=\"$(NANO_APP_NAME)\"
 DEFINES += HAVE_COIN_NANO
 DEFINES += HAVE_COIN_BANANO
@@ -111,11 +121,11 @@ MAX_ADPU_OUTPUT_SIZE=98
 ifeq ($(TARGET_NAME),TARGET_BLUE)
 ICONNAME=blue_icon_$(COIN).gif
 else
-	ifeq ($(TARGET_NAME),TARGET_NANOX)
+    ifeq ($(TARGET_NAME),TARGET_NANOX)
 ICONNAME=nanox_icon_$(COIN).gif
-	else
+    else
 ICONNAME=nanos_icon_$(COIN).gif
-	endif
+    endif
 endif
 
 ################
@@ -143,6 +153,10 @@ DEFINES   += U2F_REQUEST_TIMEOUT=10000 # 10 seconds
 DEFINES   += UNUSED\(x\)=\(void\)x
 DEFINES   += APPVERSION=\"$(APPVERSION)\"
 
+# WebUSB
+WEBUSB_URL = www.ledgerwallet.com
+DEFINES   += HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")
+
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 DEFINES       += HAVE_GLO096
 DEFINES       += HAVE_BAGL BAGL_WIDTH=128 BAGL_HEIGHT=64
@@ -150,7 +164,11 @@ DEFINES       += HAVE_BAGL_ELLIPSIS # long label truncation feature
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
-DEFINES		  += HAVE_UX_FLOW
+DEFINES	      += HAVE_UX_FLOW
+
+# BLE
+DEFINES       += HAVE_BLE BLE_COMMAND_TIMEOUT_MS=2000
+DEFINES       += HAVE_BLE_APDU # basic ledger apdu transport over BLE
 endif
 
 # Enabling debug PRINTF
@@ -205,6 +223,7 @@ SDK_SOURCE_PATH  += lib_u2f
 
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 SDK_SOURCE_PATH  += lib_ux
+SDK_SOURCE_PATH  += lib_blewbxx lib_blewbxx_impl
 endif
 
 load: all
@@ -218,7 +237,6 @@ include $(BOLOS_SDK)/Makefile.rules
 
 #add dependency on custom makefile filename
 dep/%.d: %.c Makefile
-
 
 listvariants:
 	@echo VARIANTS COIN nano banano nos
