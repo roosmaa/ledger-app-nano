@@ -258,7 +258,11 @@ void u2f_message_timeout() {
     G_io_app.apdu_media = IO_APDU_MEDIA_NONE;
     #else
     G_io_apdu_state = APDU_IDLE;
+#if CX_APILEVEL < 10 
     G_io_apdu_length = 0;
+#else
+    G_io_app.apdu_length = 0;
+#endif
     G_io_apdu_media = IO_APDU_MEDIA_NONE;
     #endif
 }
