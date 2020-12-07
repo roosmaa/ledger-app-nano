@@ -57,7 +57,7 @@ uint16_t libn_apdu_get_address(libn_apdu_response_t *resp) {
     }
     keyPathPtr = G_io_apdu_buffer + ISO_OFFSET_CDATA;
 
-    if (!os_global_pin_is_validated()) {
+    if (os_global_pin_is_validated() != BOLOS_TRUE) {
         return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
     // Make sure that we're not about to interrupt another operation
