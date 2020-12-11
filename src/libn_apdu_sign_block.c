@@ -54,7 +54,7 @@ uint16_t libn_apdu_sign_block(libn_apdu_response_t *resp) {
     os_memmove(req.keyPath, inPtr, MIN(readLen, sizeof(req.keyPath)));
     inPtr += readLen;
 
-    if (os_global_pin_is_validated() != BOLOS_TRUE) {
+    if (os_global_pin_is_validated() != BOLOS_UX_OK) {
         return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
     // Make sure that we're not about to interrupt another operation

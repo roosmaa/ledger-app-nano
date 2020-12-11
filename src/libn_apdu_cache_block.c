@@ -56,7 +56,7 @@ uint16_t libn_apdu_cache_block(libn_apdu_response_t *resp) {
     os_memmove(keyPath, inPtr, MIN(readLen, sizeof(keyPath)));
     inPtr += readLen;
 
-    if (os_global_pin_is_validated() != BOLOS_TRUE) {
+    if (os_global_pin_is_validated() != BOLOS_UX_OK) {
         return LIBN_SW_SECURITY_STATUS_NOT_SATISFIED;
     }
     // Make sure that we're not about to interrupt another operation
