@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "os_io_seproxyhal.h"
+#include "ux.h"
 
 typedef struct {
     /** IO flags to reply with at the end of an APDU handler */
