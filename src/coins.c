@@ -15,7 +15,7 @@ REGISTER_COINS(
         .bip32Prefix = { HARDENED(44), HARDENED(165) },
         .addressPrimaryPrefix = "nano_",
         .addressSecondaryPrefix = "xrb_",
-        .addressDefaultPrefix = LIBN_SECONDARY_PREFIX,
+        .addressDefaultPrefix = LIBN_PRIMARY_PREFIX,
         .defaultUnit = "NANO",
         .defaultUnitScale = 30, // 1 Mnano = 10^30 raw
         #if defined(TARGET_BLUE)
