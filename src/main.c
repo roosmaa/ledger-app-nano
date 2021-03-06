@@ -31,7 +31,8 @@ __attribute__((section(".boot"))) int main(int arg0) {
 
     if (libcall_args) {
         if (libcall_args[0] != 0x100) {
-            os_lib_throw(INVALID_PARAMETER);
+            app_exit();
+            return 0;
         }
         // grab the coin type from the first parameter
         init_coin_config((libn_coin_type_t)libcall_args[1]);
