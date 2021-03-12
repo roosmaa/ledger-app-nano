@@ -365,7 +365,7 @@ UX_STEP_CB(
     {
         &C_icon_validate_14,
         "Accept",
-        "and send",
+        "and sign",
     });
 UX_STEP_CB(
     ux_confirm_sign_block_flow_8_step,
