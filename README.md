@@ -1,4 +1,7 @@
-# blue-app-nano
+> [!warning]
+> This repository is unmaintained. The repository for the current version of the app [available on Ledger devices] can be found at [LedgerHQ/app-nano](https://github.com/LedgerHQ/app-nano/).
+
+# ledger-app-nano
 
 $NANO wallet application for Ledger Nano S & Ledger Blue devices.
 
